@@ -1162,19 +1162,28 @@ body {
   50%       { border-color: rgba(239,68,68,0.6); box-shadow: 0 0 16px rgba(239,68,68,0.15); }
 }
 
-/* Shield icon */
-.error-icon-wrap {
-  margin-bottom: 0.5rem;
+/* Shield icon + 404 side by side */
+.error-headline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  margin-bottom: 0.25rem;
+  line-height: 1;
 }
 .error-shield-icon {
-  font-size: 4rem;
-  color: var(--warning);
-  filter: drop-shadow(0 0 20px rgba(245,158,11,0.35));
+  font-size: clamp(4.5rem, 15vw, 9rem);
+  background: linear-gradient(135deg, var(--danger), var(--warning));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   animation: error-icon-float 3s ease-in-out infinite;
+  line-height: 1;
+  flex-shrink: 0;
 }
 @keyframes error-icon-float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50%       { transform: translateY(-8px) scale(1); }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
 }
 
 /* 404 number */
@@ -1187,7 +1196,6 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.04em;
-  margin-bottom: 0.25rem;
 }
 
 .error-title {
