@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Đăng ký — AITrading{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-bg-blur"></div>
+  <div class="container position-relative">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="auth-card">
+          <div class="auth-logo">
+            <i class="bi bi-cpu-fill text-accent"></i>
+            <span>AITrading</span>
+          </div>
+          <h2 class="auth-title">Tạo tài khoản miễn phí</h2>
+          <p class="auth-subtitle">Bắt đầu giao dịch thông minh ngay hôm nay.</p>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label-dark">Tên đăng nhập</label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-person input-icon"></i>
+                {{ form.username }}
+              </div>
+              {% if form.username.errors %}
+                <div class="form-error">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              <label class="form-label-dark">Email</label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-envelope input-icon"></i>
+                {{ form.email }}
+              </div>
+              {% if form.email.errors %}
+                <div class="form-error">{{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              <label class="form-label-dark">Mật khẩu</label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-lock input-icon"></i>
+                {{ form.password1 }}
+              </div>
+              {% if form.password1.errors %}
+                <div class="form-error">{{ form.password1.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label class="form-label-dark">Xác nhận mật khẩu</label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-lock-fill input-icon"></i>
+                {{ form.password2 }}
+              </div>
+              {% if form.password2.errors %}
+                <div class="form-error">{{ form.password2.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary-gradient w-100 btn-lg">
+              <i class="bi bi-person-plus me-2"></i>Tạo tài khoản
+            </button>
+          </form>
+
+          <div class="auth-divider"><span>hoặc</span></div>
+          <p class="auth-switch">
+            Đã có tài khoản?
+            <a href="{% url 'login' %}" class="text-accent fw-600">Đăng nhập</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

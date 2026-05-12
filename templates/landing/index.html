@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% block title %}AITrading — Giao dịch thông minh với AI{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-bg-blur"></div>
+  <div class="container position-relative">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-9">
+        <div class="hero-badge animate-fadeInUp">
+          <i class="bi bi-lightning-charge-fill me-1"></i>
+          Nền tảng AI Trading hàng đầu Việt Nam
+        </div>
+        <h1 class="hero-title animate-fadeInUp delay-1">
+          Tối ưu lợi nhuận với<br>
+          <span class="gradient-text">AI Trading Bot</span>
+        </h1>
+        <p class="hero-subtitle animate-fadeInUp delay-2">
+          Thuật toán AI tiên tiến phân tích thị trường 24/7. Backtest chiến lược tự động.
+          Nạp USDT — kích hoạt bot — hưởng lợi nhuận ổn định.
+        </p>
+        <div class="hero-actions animate-fadeInUp delay-3">
+          <a href="{% url 'register' %}" class="btn btn-primary-gradient btn-lg">
+            <i class="bi bi-rocket-takeoff me-2"></i>Bắt đầu miễn phí
+          </a>
+          <a href="{% url 'trading' %}" class="btn btn-outline-light-custom btn-lg">
+            <i class="bi bi-play-circle me-2"></i>Xem Demo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Preview -->
+    <div class="hero-dashboard animate-fadeInUp delay-4">
+      <div class="dashboard-mockup">
+        <div class="mockup-header">
+          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          <span class="mockup-url">aitrading.vn/dashboard</span>
+        </div>
+        <div class="mockup-body">
+          <div class="row g-3">
+            <div class="col-4">
+              <div class="mockup-stat">
+                <div class="mockup-stat-label">Số dư xu</div>
+                <div class="mockup-stat-val text-accent">2,450.00</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="mockup-stat">
+                <div class="mockup-stat-label">Lợi nhuận tháng</div>
+                <div class="mockup-stat-val text-success">+18.5%</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="mockup-stat">
+                <div class="mockup-stat-label">Bot đang chạy</div>
+                <div class="mockup-stat-val text-warning">3 Active</div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-chart mt-3">
+            <svg viewBox="0 0 400 80" class="w-100">
+              <polyline points="0,70 40,60 80,65 120,45 160,50 200,30 240,35 280,20 320,25 360,10 400,15"
+                fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linejoin="round"/>
+              <polyline points="0,70 40,60 80,65 120,45 160,50 200,30 240,35 280,20 320,25 360,10 400,15 400,80 0,80"
+                fill="url(#chartGrad)" opacity="0.15"/>
+              <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3B82F6"/>
+                  <stop offset="100%" stop-color="transparent"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Bar -->
+<section class="stats-bar">
+  <div class="container">
+    <div class="row text-center gy-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-item" data-count="1000000" data-prefix="$" data-suffix="+">
+          <div class="stat-number">$0</div>
+          <div class="stat-label">Giao dịch xử lý</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item" data-count="98.5" data-suffix="%">
+          <div class="stat-number">0%</div>
+          <div class="stat-label">Tỉ lệ thành công</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item" data-count="500" data-suffix="+">
+          <div class="stat-number">0+</div>
+          <div class="stat-label">Người dùng tin dùng</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Hoạt động liên tục</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-header text-center">
+      <span class="section-badge">Tính năng</span>
+      <h2 class="section-title">Tại sao chọn AITrading?</h2>
+      <p class="section-subtitle">Công nghệ AI tối tân kết hợp với chiến lược giao dịch đã được kiểm chứng</p>
+    </div>
+    <div class="row g-4 mt-2">
+      <div class="col-md-4">
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon"><i class="bi bi-cpu"></i></div>
+          <h4 class="feature-title">Thuật toán AI tiên tiến</h4>
+          <p class="feature-desc">Mô hình học máy phân tích hàng nghìn tín hiệu thị trường theo thời gian thực. Tự động nhận dạng xu hướng XAUUSD, Forex, Crypto.</p>
+          <ul class="feature-list">
+            <li><i class="bi bi-check2 text-accent"></i> Phân tích 50+ chỉ báo kỹ thuật</li>
+            <li><i class="bi bi-check2 text-accent"></i> Dự báo xu hướng 15 phút — 4 giờ</li>
+            <li><i class="bi bi-check2 text-accent"></i> Cập nhật mô hình mỗi tuần</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card feature-card-highlight animate-on-scroll">
+          <div class="feature-badge-top">Phổ biến nhất</div>
+          <div class="feature-icon"><i class="bi bi-bar-chart-line"></i></div>
+          <h4 class="feature-title">Backtest tự động</h4>
+          <p class="feature-desc">Kiểm thử chiến lược với dữ liệu lịch sử 5 năm trước khi triển khai thực tế. Báo cáo Sharpe Ratio, Drawdown, Win Rate chi tiết.</p>
+          <ul class="feature-list">
+            <li><i class="bi bi-check2 text-accent"></i> Dữ liệu lịch sử 5 năm</li>
+            <li><i class="bi bi-check2 text-accent"></i> Báo cáo PDF tự động</li>
+            <li><i class="bi bi-check2 text-accent"></i> So sánh đa chiến lược</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card animate-on-scroll">
+          <div class="feature-icon"><i class="bi bi-diagram-3"></i></div>
+          <h4 class="feature-title">Commission Farming</h4>
+          <p class="feature-desc">Tối ưu hóa Rebate (Back Com) khi chạy bot khối lượng lớn trên Exness & GTC. Hệ thống tự động tính toán và báo cáo hoa hồng theo ngày.</p>
+          <ul class="feature-list">
+            <li><i class="bi bi-check2 text-accent"></i> Kết nối Exness / GTC</li>
+            <li><i class="bi bi-check2 text-accent"></i> Tối ưu rebate tự động</li>
+            <li><i class="bi bi-check2 text-accent"></i> Báo cáo hoa hồng hàng ngày</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-section">
+  <div class="container">
+    <div class="section-header text-center">
+      <span class="section-badge">Quy trình</span>
+      <h2 class="section-title">Bắt đầu trong 3 bước đơn giản</h2>
+    </div>
+    <div class="row g-4 mt-2 align-items-center">
+      <div class="col-md-4">
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">01</div>
+          <div class="step-icon"><i class="bi bi-person-plus"></i></div>
+          <h5 class="step-title">Tạo tài khoản</h5>
+          <p class="step-desc">Đăng ký miễn phí, xác thực email OTP, kích hoạt ngay lập tức.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">02</div>
+          <div class="step-icon"><i class="bi bi-wallet2"></i></div>
+          <h5 class="step-title">Nạp USDT</h5>
+          <p class="step-desc">Chuyển USDT từ MetaMask đến ví Admin. Hệ thống tự động xác nhận và cộng xu.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">03</div>
+          <div class="step-icon"><i class="bi bi-robot"></i></div>
+          <h5 class="step-title">Kích hoạt Bot</h5>
+          <p class="step-desc">Chọn chiến lược, kết nối tài khoản Exness/GTC, bot tự động giao dịch 24/7.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Banner -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card">
+      <div class="cta-bg-blur"></div>
+      <div class="row align-items-center position-relative">
+        <div class="col-lg-7">
+          <h2 class="cta-title">Bắt đầu giao dịch thông minh hôm nay</h2>
+          <p class="cta-subtitle">Tham gia cùng 500+ traders đang tin dùng AITrading để tối ưu lợi nhuận mỗi ngày.</p>
+        </div>
+        <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
+          <a href="{% url 'register' %}" class="btn btn-white-gradient btn-lg me-2">
+            <i class="bi bi-rocket-takeoff me-2"></i>Đăng ký ngay
+          </a>
+          <a href="{% url 'trading' %}" class="btn btn-outline-white btn-lg">
+            Tìm hiểu thêm
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

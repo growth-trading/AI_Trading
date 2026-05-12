@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Đăng nhập — AITrading{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-bg-blur"></div>
+  <div class="container position-relative">
+    <div class="row justify-content-center">
+      <div class="col-md-5 col-lg-4">
+        <div class="auth-card">
+          <div class="auth-logo">
+            <i class="bi bi-cpu-fill text-accent"></i>
+            <span>AITrading</span>
+          </div>
+          <h2 class="auth-title">Chào mừng trở lại</h2>
+          <p class="auth-subtitle">Đăng nhập để truy cập dashboard và bot giao dịch.</p>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label-dark">Tên đăng nhập</label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-person input-icon"></i>
+                {{ form.username }}
+              </div>
+              {% if form.username.errors %}
+                <div class="form-error">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label class="form-label-dark">Mật khẩu</label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-lock input-icon"></i>
+                {{ form.password }}
+              </div>
+              {% if form.password.errors %}
+                <div class="form-error">{{ form.password.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary-gradient w-100 btn-lg">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+            </button>
+          </form>
+
+          <div class="auth-divider"><span>hoặc</span></div>
+          <p class="auth-switch">
+            Chưa có tài khoản?
+            <a href="{% url 'register' %}" class="text-accent fw-600">Đăng ký miễn phí</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

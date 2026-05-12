@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — AITrading{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      {% if request.user.avatar %}
+        <img src="{{ request.user.avatar.url }}" class="sidebar-avatar" alt="avatar" />
+      {% else %}
+        <div class="sidebar-avatar-placeholder"><i class="bi bi-person-fill"></i></div>
+      {% endif %}
+      <div>
+        <div class="sidebar-username">{{ request.user.username }}</div>
+        <div class="sidebar-email">{{ request.user.email }}</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'dashboard' %}" class="sidebar-link active">
+        <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
+      </a>
+      <a href="{% url 'deposit' %}" class="sidebar-link">
+        <i class="bi bi-wallet2"></i><span>Nạp tiền</span>
+      </a>
+      <a href="{% url 'trading' %}" class="sidebar-link">
+        <i class="bi bi-robot"></i><span>AI Trading</span>
+      </a>
+      <a href="{% url 'profile' %}" class="sidebar-link">
+        <i class="bi bi-person"></i><span>Hồ sơ</span>
+      </a>
+    </nav>
+    <a href="{% url 'logout' %}" class="sidebar-logout">
+      <i class="bi bi-box-arrow-right"></i><span>Đăng xuất</span>
+    </a>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="dashboard-header">
+      <div>
+        <h1 class="dashboard-title">Dashboard</h1>
+        <p class="dashboard-sub">Chào mừng trở lại, <span class="text-accent">{{ request.user.username }}</span>!</p>
+      </div>
+      <a href="{% url 'deposit' %}" class="btn btn-primary-gradient">
+        <i class="bi bi-plus-lg me-2"></i>Nạp tiền
+      </a>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-card-icon bg-blue"><i class="bi bi-coin"></i></div>
+          <div class="stat-card-val">{{ coins|floatformat:2 }}</div>
+          <div class="stat-card-label">Số dư xu</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-card-icon bg-green"><i class="bi bi-arrow-down-circle"></i></div>
+          <div class="stat-card-val">{{ request.user.deposits.count }}</div>
+          <div class="stat-card-label">Tổng giao dịch nạp</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-card-icon bg-purple"><i class="bi bi-shield-check"></i></div>
+          <div class="stat-card-val">
+            {% if request.user.is_email_verified %}
+              <span class="badge-verified">Đã xác thực</span>
+            {% else %}
+              <a href="{% url 'verify_otp' %}" class="badge-unverified">Chưa xác thực</a>
+            {% endif %}
+          </div>
+          <div class="stat-card-label">Trạng thái Email</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+          <div class="stat-card-icon bg-orange"><i class="bi bi-key"></i></div>
+          <div class="stat-card-val font-mono text-sm">{{ request.user.memo_code }}</div>
+          <div class="stat-card-label">Mã nạp tiền của bạn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="dashboard-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="card-title-dark mb-0">Giao dịch gần đây</h5>
+        <a href="{% url 'deposit' %}" class="btn btn-sm btn-outline-accent">Xem tất cả</a>
+      </div>
+      {% if recent_txs %}
+      <div class="table-responsive">
+        <table class="table-dark-custom">
+          <thead>
+            <tr>
+              <th>TxHash</th>
+              <th>Số USDT</th>
+              <th>Xu nhận</th>
+              <th>Trạng thái</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in recent_txs %}
+            <tr>
+              <td class="font-mono text-muted">
+                {{ tx.tx_hash|slice:":14" }}...
+                <button class="btn-copy" onclick="copyText('{{ tx.tx_hash }}')" title="Copy TxHash">
+                  <i class="bi bi-copy"></i>
+                </button>
+              </td>
+              <td class="text-accent fw-600">{{ tx.amount_usdt }} USDT</td>
+              <td class="text-success fw-600">+{{ tx.coins_credited }}</td>
+              <td>
+                <span class="status-badge status-{{ tx.status|lower }}">{{ tx.get_status_display }}</span>
+              </td>
+              <td class="text-muted small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Chưa có giao dịch nào. <a href="{% url 'deposit' %}" class="text-accent">Nạp tiền ngay</a></p>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+{% endblock %}

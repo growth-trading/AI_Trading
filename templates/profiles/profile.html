@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}Hồ sơ — AITrading{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      {% if request.user.avatar %}
+        <img src="{{ request.user.avatar.url }}" class="sidebar-avatar" alt="avatar" />
+      {% else %}
+        <div class="sidebar-avatar-placeholder"><i class="bi bi-person-fill"></i></div>
+      {% endif %}
+      <div>
+        <div class="sidebar-username">{{ request.user.username }}</div>
+        <div class="sidebar-email">{{ request.user.email }}</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      <a href="{% url 'deposit' %}" class="sidebar-link"><i class="bi bi-wallet2"></i><span>Nạp tiền</span></a>
+      <a href="{% url 'trading' %}" class="sidebar-link"><i class="bi bi-robot"></i><span>AI Trading</span></a>
+      <a href="{% url 'profile' %}" class="sidebar-link active"><i class="bi bi-person"></i><span>Hồ sơ</span></a>
+    </nav>
+    <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span>Đăng xuất</span></a>
+  </aside>
+
+  <main class="dashboard-main">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Hồ sơ cá nhân</h1>
+    </div>
+
+    <div class="row g-4">
+      <!-- Avatar Card -->
+      <div class="col-lg-4">
+        <div class="dashboard-card text-center">
+          <div class="profile-avatar-wrap mb-3">
+            {% if request.user.avatar %}
+              <img src="{{ request.user.avatar.url }}" class="profile-avatar" id="avatarPreview" />
+            {% else %}
+              <div class="profile-avatar-placeholder" id="avatarPreview">
+                <i class="bi bi-person-fill"></i>
+              </div>
+            {% endif %}
+            <label for="id_avatar" class="avatar-edit-btn" title="Đổi ảnh">
+              <i class="bi bi-camera"></i>
+            </label>
+          </div>
+          <h5 class="fw-700 text-white mb-0">{{ request.user.username }}</h5>
+          <p class="text-muted small mb-3">{{ request.user.email }}</p>
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <div class="profile-stat-val text-accent">{{ request.user.coins|floatformat:2 }}</div>
+              <div class="profile-stat-label">Xu</div>
+            </div>
+            <div class="profile-stat-divider"></div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">{{ all_txs.count }}</div>
+              <div class="profile-stat-label">Giao dịch</div>
+            </div>
+            <div class="profile-stat-divider"></div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">
+                {% if request.user.is_email_verified %}
+                  <i class="bi bi-check-circle-fill text-success"></i>
+                {% else %}
+                  <i class="bi bi-x-circle-fill text-danger"></i>
+                {% endif %}
+              </div>
+              <div class="profile-stat-label">Email</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Form -->
+      <div class="col-lg-8">
+        <div class="dashboard-card">
+          <h5 class="card-title-dark mb-4">Chỉnh sửa thông tin</h5>
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label-dark">Họ</label>
+                {{ form.last_name }}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-dark">Tên</label>
+                {{ form.first_name }}
+              </div>
+              <div class="col-12">
+                <label class="form-label-dark">Email</label>
+                {{ form.email }}
+              </div>
+              <div class="col-12 d-none">
+                {{ form.avatar }}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary-gradient mt-4">
+              <i class="bi bi-check-lg me-2"></i>Lưu thay đổi
+            </button>
+          </form>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="dashboard-card mt-4">
+          <h5 class="card-title-dark mb-3">Toàn bộ giao dịch</h5>
+          {% if all_txs %}
+          <div class="table-responsive">
+            <table class="table-dark-custom">
+              <thead>
+                <tr><th>TxHash</th><th>USDT</th><th>Xu</th><th>Trạng thái</th><th>Ngày</th></tr>
+              </thead>
+              <tbody>
+                {% for tx in all_txs %}
+                <tr>
+                  <td class="font-mono text-muted small">{{ tx.tx_hash|slice:":12" }}...</td>
+                  <td class="text-accent">{{ tx.amount_usdt }}</td>
+                  <td class="text-success">+{{ tx.coins_credited }}</td>
+                  <td><span class="status-badge status-{{ tx.status|lower }}">{{ tx.get_status_display }}</span></td>
+                  <td class="text-muted small">{{ tx.created_at|date:"d/m/Y" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state"><i class="bi bi-inbox"></i><p>Chưa có giao dịch nào.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('id_avatar').addEventListener('change', function(e) {
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const preview = document.getElementById('avatarPreview');
+    if (preview.tagName === 'IMG') {
+      preview.src = ev.target.result;
+    } else {
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      img.className = 'profile-avatar';
+      img.id = 'avatarPreview';
+      preview.replaceWith(img);
+    }
+  };
+  reader.readAsDataURL(e.target.files[0]);
+  this.form.submit();
+});
+</script>
+{% endblock %}

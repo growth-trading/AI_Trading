@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Inter, Arial, sans-serif; background: #0D0D0D; color: #F1F5F9; margin: 0; padding: 20px; }
+    .container { max-width: 480px; margin: 0 auto; background: #1A1A2E; border-radius: 16px; border: 1px solid #1E293B; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #3B82F6, #6366F1); padding: 32px; text-align: center; }
+    .header h1 { margin: 0; font-size: 1.5rem; color: #fff; }
+    .body { padding: 32px; text-align: center; }
+    .otp-box { background: #0D0D0D; border: 2px solid #3B82F6; border-radius: 12px; padding: 24px; margin: 24px 0; }
+    .otp-code { font-size: 2.5rem; font-weight: 800; letter-spacing: 0.5rem; color: #3B82F6; }
+    .note { color: #94A3B8; font-size: 0.875rem; }
+    .footer { padding: 16px 32px; border-top: 1px solid #1E293B; text-align: center; color: #94A3B8; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🤖 AITrading</h1>
+    </div>
+    <div class="body">
+      <h2>Mã xác thực của bạn</h2>
+      <p>Xin chào <strong>{{ user.username }}</strong>, đây là mã OTP để xác thực tài khoản:</p>
+      <div class="otp-box">
+        <div class="otp-code">{{ otp }}</div>
+      </div>
+      <p class="note">Mã có hiệu lực trong <strong>10 phút</strong>. Không chia sẻ mã này với bất kỳ ai.</p>
+    </div>
+    <div class="footer">© 2026 AITrading. Nếu bạn không đăng ký, hãy bỏ qua email này.</div>
+  </div>
+</body>
+</html>

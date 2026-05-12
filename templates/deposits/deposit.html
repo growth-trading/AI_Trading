@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block title %}Nạp tiền — AITrading{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      {% if request.user.avatar %}
+        <img src="{{ request.user.avatar.url }}" class="sidebar-avatar" alt="avatar" />
+      {% else %}
+        <div class="sidebar-avatar-placeholder"><i class="bi bi-person-fill"></i></div>
+      {% endif %}
+      <div>
+        <div class="sidebar-username">{{ request.user.username }}</div>
+        <div class="sidebar-email">{{ request.user.email }}</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      <a href="{% url 'deposit' %}" class="sidebar-link active"><i class="bi bi-wallet2"></i><span>Nạp tiền</span></a>
+      <a href="{% url 'trading' %}" class="sidebar-link"><i class="bi bi-robot"></i><span>AI Trading</span></a>
+      <a href="{% url 'profile' %}" class="sidebar-link"><i class="bi bi-person"></i><span>Hồ sơ</span></a>
+    </nav>
+    <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span>Đăng xuất</span></a>
+  </aside>
+
+  <main class="dashboard-main">
+    <div class="dashboard-header">
+      <div>
+        <h1 class="dashboard-title">Nạp tiền USDT</h1>
+        <p class="dashboard-sub">Chuyển USDT qua MetaMask — hệ thống tự động xác nhận và cộng xu.</p>
+      </div>
+      <div class="coins-display">
+        <i class="bi bi-coin text-warning me-2"></i>
+        <strong>{{ request.user.coins|floatformat:2 }}</strong> xu
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Wallet Info Card -->
+      <div class="col-lg-6">
+        <div class="dashboard-card h-100">
+          <h5 class="card-title-dark mb-4">
+            <i class="bi bi-wallet2 text-accent me-2"></i>Thông tin ví nhận
+          </h5>
+
+          <div class="network-badge mb-3">
+            <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" width="20" height="20" class="me-2" />
+            BSC (BEP-20) — USDT
+          </div>
+
+          <div class="wallet-field mb-3">
+            <label class="wallet-field-label">Địa chỉ ví Admin</label>
+            <div class="wallet-address-box">
+              <span id="adminWallet" class="font-mono">{{ admin_wallet }}</span>
+              <button class="btn-copy-inline" onclick="copyText('{{ admin_wallet }}')">
+                <i class="bi bi-copy"></i> Sao chép
+              </button>
+            </div>
+          </div>
+
+          <div class="wallet-field mb-4">
+            <label class="wallet-field-label">Mã nạp tiền của bạn (Memo)</label>
+            <div class="wallet-address-box accent-border">
+              <span class="font-mono text-accent fw-700">{{ memo_code }}</span>
+              <button class="btn-copy-inline" onclick="copyText('{{ memo_code }}')">
+                <i class="bi bi-copy"></i> Sao chép
+              </button>
+            </div>
+            <p class="help-text mt-2">
+              <i class="bi bi-info-circle text-accent me-1"></i>
+              Ghi mã này vào trường <strong>Memo/Note</strong> khi chuyển tiền để hệ thống tự động nhận diện.
+            </p>
+          </div>
+
+          <div class="rate-info">
+            <i class="bi bi-arrow-left-right text-accent me-2"></i>
+            Tỉ lệ: <strong>1 USDT = {{ usdt_to_coins }} xu</strong>
+          </div>
+
+          <!-- MetaMask Button -->
+          <div class="mt-4">
+            <button id="connectWalletBtn" class="btn btn-metamask w-100" onclick="connectMetaMask()">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" width="24" class="me-2" />
+              Kết nối MetaMask
+            </button>
+            <div id="walletAddress" class="wallet-connected d-none mt-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit TxHash Card -->
+      <div class="col-lg-6">
+        <div class="dashboard-card h-100">
+          <h5 class="card-title-dark mb-4">
+            <i class="bi bi-check2-circle text-accent me-2"></i>Xác nhận giao dịch
+          </h5>
+
+          <div class="steps-mini mb-4">
+            <div class="step-mini"><span class="step-mini-num">1</span> Chuyển USDT đến ví Admin</div>
+            <div class="step-mini"><span class="step-mini-num">2</span> Sao chép Transaction Hash</div>
+            <div class="step-mini"><span class="step-mini-num">3</span> Dán TxHash vào bên dưới</div>
+          </div>
+
+          <form method="post" action="{% url 'submit_txhash' %}" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label-dark">Transaction Hash (TxHash)</label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-hash input-icon"></i>
+                <input type="text" name="tx_hash" class="form-control"
+                       placeholder="0x..." maxlength="100" required />
+              </div>
+              <p class="help-text mt-1">Tìm TxHash trong MetaMask > Activity > Chi tiết giao dịch</p>
+            </div>
+            <button type="submit" class="btn btn-primary-gradient w-100 btn-lg">
+              <i class="bi bi-search me-2"></i>Xác minh & Nạp tiền
+            </button>
+          </form>
+
+          <div class="info-box mt-4">
+            <i class="bi bi-shield-check text-success me-2"></i>
+            <div>
+              <strong>Bảo mật tuyệt đối</strong><br>
+              <span class="text-muted small">Hệ thống kiểm tra TxHash trực tiếp qua BscScan API. Mỗi TxHash chỉ được xử lý một lần.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="dashboard-card mt-4">
+      <h5 class="card-title-dark mb-3">Lịch sử nạp tiền</h5>
+      {% if recent_txs %}
+      <div class="table-responsive">
+        <table class="table-dark-custom">
+          <thead>
+            <tr>
+              <th>TxHash</th>
+              <th>USDT</th>
+              <th>Xu nhận</th>
+              <th>Trạng thái</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in recent_txs %}
+            <tr>
+              <td class="font-mono text-muted">
+                {{ tx.tx_hash|slice:":14" }}...
+                <button class="btn-copy" onclick="copyText('{{ tx.tx_hash }}')"><i class="bi bi-copy"></i></button>
+              </td>
+              <td class="text-accent fw-600">{{ tx.amount_usdt }}</td>
+              <td class="text-success fw-600">+{{ tx.coins_credited }}</td>
+              <td><span class="status-badge status-{{ tx.status|lower }}">{{ tx.get_status_display }}</span></td>
+              <td class="text-muted small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-wallet"></i>
+        <p>Chưa có giao dịch nào. Thực hiện nạp tiền đầu tiên của bạn!</p>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/web3_connect.js' %}"></script>
+{% endblock %}
