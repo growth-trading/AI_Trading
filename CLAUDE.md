@@ -35,7 +35,7 @@ python manage.py collectstatic
 
 - **Backend**: Django 4.2, Python 3.11+, `python-decouple` (`.env`)
 - **Database**: SQLite (dev), `psycopg2-binary` có sẵn cho PostgreSQL
-- **Frontend**: Django Templates + Bootstrap 5, Web3.js (MetaMask)
+- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2 (floating controls), Web3.js (MetaMask)
 - **Tác vụ nền**: `django-apscheduler` — scheduler khởi động trong `DepositsConfig.ready()`, không dùng Celery
 - **Email**: Django SMTP (Gmail)
 - **Blockchain**: BscScan API (BSC/BEP-20 USDT)
@@ -63,7 +63,8 @@ Kế thừa `AbstractUser`, thêm:
 
 ### OTP Email Flow
 1. Đăng ký → `user.generate_otp()` → gửi SMTP → lưu `user.pk` vào session `pending_verify_user_id`
-2. `/accounts/verify/` → `user.is_otp_valid(code)` → set `is_email_verified=True` → login
+2. `/accounts/verify/` → `user.is_otp_valid(code)` → set `is_email_verified=True`, clear `otp_code`/`otp_created_at` → login
+3. `login_view`: sau `authenticate()` thành công, kiểm tra `is_email_verified` — nếu False → redirect `verify_otp`
 
 ### Luồng nạp tiền (`deposits/`)
 
@@ -76,13 +77,17 @@ Kế thừa `AbstractUser`, thêm:
 1. **Tự động (background scan)** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây:
    - Gọi BscScan API `tokentx` từ `last_scanned_block + 1`
    - Decode memo từ `input` hex (`UID-XXXX`) → map sang user qua `CustomUser.objects.get(pk=uid)`
-   - Cộng coins: dùng `filter().update()` (atomic, tránh race condition)
+   - Cộng coins: `F('coins') + coins_credited` (atomic DB expression, tránh race condition)
    - Cập nhật `WalletScanState.last_scanned_block`
 
 2. **Thủ công (submit TxHash)** — `deposits/views.py::submit_txhash_view()`:
-   - User nhập TxHash → `verify_txhash()` tra BscScan → tạo `DepositTransaction` + cộng coins
+   - User nhập TxHash → `verify_txhash()` tra BscScan → trả `{tx_hash, amount_usdt, memo, ...}`
+   - **Kiểm tra memo**: nếu memo != `request.user.memo_code` → từ chối (ngăn TxHash theft)
+   - Cộng coins bằng `F('coins') + coins_credited`
 
-**Scheduler khởi động:** `deposits/apps.py::DepositsConfig.ready()` gọi `tasks.start_scheduler()` một lần duy nhất khi Django khởi động. Guard `_scheduler_started` ngăn khởi động nhiều lần.
+**CRITICAL — cộng coins:** luôn dùng `F('coins') + amount`, không dùng `user.coins + amount` (race condition).
+
+**Scheduler:** `DepositsConfig.ready()` chỉ chạy khi `RUN_MAIN=true` (dev `runserver`) hoặc `DJANGO_RUN_SCHEDULER=1` (production). Không chạy khi `migrate`, `test`, v.v.
 
 **Tỷ lệ quy đổi:** `USDT_TO_COINS_RATE` (int, mặc định 1) — `coins_credited = amount_usdt * USDT_TO_COINS_RATE`
 
@@ -94,16 +99,23 @@ Kế thừa `AbstractUser`, thêm:
 /deposit/                   → deposits.deposit_view, submit_txhash_view, check_deposit_status
 /trading/                   → trading.trading_view
 /profile/                   → profiles.profile_view
+<bất kỳ URL nào khác>       → catch-all → page_not_found → templates/404.html
 ```
 
+**Catch-all 404**: `re_path(r'^.*$', lambda r, **kw: page_not_found(r, None))` đặt cuối `urlpatterns` trong `aitrading/urls.py`. Hoạt động kể cả khi `DEBUG=True`. Media files prepend trước khi `DEBUG=True` để không bị chặn bởi catch-all.
+
 ### Quyền truy cập
-`deposit_view` kiểm tra `request.user.is_email_verified` trước khi hiển thị. Các view nội bộ dùng `@login_required`.
+- `trading_view` (`trading/views.py`) — redirect về `register` nếu chưa đăng nhập
+- `deposit_view` kiểm tra `request.user.is_email_verified` trước khi hiển thị
+- `login_view` chặn user chưa verify email — redirect `verify_otp`
+- Các view nội bộ dùng `@login_required`
 
 ## Biến môi trường (`.env`)
 
 ```
 SECRET_KEY=
 DEBUG=True
+ALLOWED_HOSTS=*                         # production: yourdomain.com,www.yourdomain.com
 EMAIL_HOST=smtp.gmail.com
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
@@ -112,7 +124,34 @@ USDT_CONTRACT_BSC=0x55d398326f99059fF775485246999027B3197955
 BSCSCAN_API_KEY=
 USDT_TO_COINS_RATE=1
 WALLET_SCAN_INTERVAL_SECONDS=60
+DJANGO_RUN_SCHEDULER=0                  # set 1 in production to start wallet scanner
 ```
+
+## Theme & i18n System
+
+### Dark / Light Theme
+- CSS custom properties trên `:root`; override bằng `[data-theme="light"]` trên `<html>`
+- **Anti-flash**: inline script trong `<head>` đọc `localStorage('ait-theme')` và set `data-theme` trước khi CSS render
+- `applyTheme(theme)` trong `static/js/main.js` — cập nhật attribute, localStorage, icon `#themeIcon` (FA), label `#themeLabel`
+
+### Đa ngôn ngữ VI / EN (client-side)
+- Không dùng Django i18n. Text đánh dấu bằng `data-i18n="key"` trên element HTML
+- Placeholder input: `data-i18n-placeholder="key"` — `applyLang` gán `el.setAttribute('placeholder', ...)`
+- `const i18n = { vi: {...}, en: {...} }` trong `static/js/main.js` — ~120+ keys, nhóm theo prefix:
+  - `nav.*`, `footer.*` — navbar/footer (base.html)
+  - `hero.*`, `stat.*`, `feat*`, `how.*`, `cta.*` — landing page
+  - `auth.login.*`, `auth.register.*`, `auth.label.*`, `auth.otp.*`, `auth.btn.*` — auth forms
+  - `dep.*` — trang nạp tiền; `prof.*` — hồ sơ; `dash.*` — dashboard
+  - `com.th.*`, `com.coins_unit`, `com.no_tx` — dùng chung (table headers, đơn vị)
+  - `err404.*` — trang 404
+- `applyLang(lang)` query `[data-i18n]` → `textContent`; query `[data-i18n-placeholder]` → `placeholder`
+- **Button có icon**: đặt `data-i18n` trên `<span>` bên trong, không đặt trực tiếp lên `<button>` (textContent xóa mất icon `<i>`)
+- Khi thêm text mới: thêm key vào cả `i18n.vi` và `i18n.en`, gán attribute vào HTML
+
+### Floating Controls (theme + lang toggle)
+- `position: fixed; bottom: 28px; right: 24px`, class `.floating-controls` / `.floating-btn`
+- Icon: Font Awesome `fa-solid fa-moon` / `fa-solid fa-sun`; cờ quốc kỳ: emoji 🇻🇳 / 🇺🇸
+- **DOM order critical**: `<div class="floating-controls">` phải đặt **trước** `<script>` trong base.html — nếu đặt sau script thì `getElementById` trả `null` và event listener không gắn được
 
 ## Thiết kế & UI/UX
 

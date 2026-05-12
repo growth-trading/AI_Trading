@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -8,6 +9,8 @@ from django.conf import settings
 from .models import CustomUser
 from .forms import RegisterForm, LoginForm, OTPForm
 from deposits.models import DepositTransaction
+
+logger = logging.getLogger(__name__)
 
 
 def register_view(request):
@@ -35,6 +38,10 @@ def login_view(request):
             password=form.cleaned_data['password'],
         )
         if user:
+            if not user.is_email_verified:
+                request.session['pending_verify_user_id'] = user.pk
+                messages.warning(request, 'Vui lòng xác thực email trước khi đăng nhập.')
+                return redirect('verify_otp')
             login(request, user)
             return redirect(request.GET.get('next', 'dashboard'))
         messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
@@ -65,7 +72,8 @@ def verify_otp_view(request):
         if user.is_otp_valid(form.cleaned_data['otp']):
             user.is_email_verified = True
             user.otp_code = ''
-            user.save(update_fields=['is_email_verified', 'otp_code'])
+            user.otp_created_at = None
+            user.save(update_fields=['is_email_verified', 'otp_code', 'otp_created_at'])
             del request.session['pending_verify_user_id']
             login(request, user)
             messages.success(request, 'Xác thực email thành công! Chào mừng bạn.')
@@ -112,5 +120,5 @@ def _send_otp_email(user, otp):
             html_message=html_message,
             fail_silently=False,
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error('Failed to send OTP email to %s: %s', user.email, e)

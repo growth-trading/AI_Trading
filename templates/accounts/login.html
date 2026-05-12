@@ -12,13 +12,13 @@
             <i class="bi bi-cpu-fill text-accent"></i>
             <span>AITrading</span>
           </div>
-          <h2 class="auth-title">Chào mừng trở lại</h2>
-          <p class="auth-subtitle">Đăng nhập để truy cập dashboard và bot giao dịch.</p>
+          <h2 class="auth-title" data-i18n="auth.login.title">Chào mừng trở lại</h2>
+          <p class="auth-subtitle" data-i18n="auth.login.sub">Đăng nhập để sử dụng tất cả các dịch vụ của AITrading</p>
 
           <form method="post" novalidate>
             {% csrf_token %}
             <div class="mb-3">
-              <label class="form-label-dark">Tên đăng nhập</label>
+              <label class="form-label-dark" data-i18n="auth.label.username">Tên đăng nhập</label>
               <div class="input-icon-wrap">
                 <i class="bi bi-person input-icon"></i>
                 {{ form.username }}
@@ -28,7 +28,7 @@
               {% endif %}
             </div>
             <div class="mb-4">
-              <label class="form-label-dark">Mật khẩu</label>
+              <label class="form-label-dark" data-i18n="auth.label.password">Mật khẩu</label>
               <div class="input-icon-wrap">
                 <i class="bi bi-lock input-icon"></i>
                 {{ form.password }}
@@ -38,14 +38,14 @@
               {% endif %}
             </div>
             <button type="submit" class="btn btn-primary-gradient w-100 btn-lg">
-              <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+              <i class="bi bi-box-arrow-in-right me-2"></i><span data-i18n="auth.btn.login">Đăng nhập</span>
             </button>
           </form>
 
-          <div class="auth-divider"><span>hoặc</span></div>
+          <div class="auth-divider"><span data-i18n="auth.or">hoặc</span></div>
           <p class="auth-switch">
-            Chưa có tài khoản?
-            <a href="{% url 'register' %}" class="text-accent fw-600">Đăng ký miễn phí</a>
+            <span data-i18n="auth.no_account">Chưa có tài khoản?</span>
+            <a href="{% url 'register' %}" class="text-accent fw-600" data-i18n="auth.signup_free">Đăng ký miễn phí</a>
           </p>
         </div>
       </div>

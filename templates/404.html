@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}404 — Không tìm thấy trang{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-bg-blur error-bg-blur-1"></div>
+  <div class="error-bg-blur error-bg-blur-2"></div>
+
+  <div class="container position-relative">
+
+    <!-- Warning banner -->
+    <div class="error-warning-banner animate-on-scroll">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong data-i18n="err404.warn_label">Cảnh báo:</strong>&nbsp;<span data-i18n="err404.warn_text">Trang bạn truy cập không tồn tại trên hệ thống.</span>
+    </div>
+
+    <!-- Main content -->
+    <div class="text-center">
+      <div class="error-icon-wrap animate-on-scroll">
+        <i class="bi bi-shield-exclamation error-shield-icon"></i>
+      </div>
+
+      <div class="error-code animate-on-scroll">404</div>
+      <h1 class="error-title animate-on-scroll" data-i18n="err404.title">Không tìm thấy trang</h1>
+
+      <p class="error-subtitle animate-on-scroll">
+        <span data-i18n="err404.path_pre">Đường dẫn</span>&nbsp;<code class="error-path">{{ request_path }}</code>&nbsp;<span data-i18n="err404.path_suf">không tồn tại hoặc đã bị xóa.</span>
+      </p>
+
+      <!-- Warning detail card -->
+      <div class="error-detail-card animate-on-scroll">
+        <div class="error-detail-row">
+          <i class="bi bi-x-circle-fill text-danger me-2"></i>
+          <span data-i18n="err404.detail1">URL không khớp với bất kỳ trang nào trong hệ thống</span>
+        </div>
+        <div class="error-detail-row">
+          <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+          <span data-i18n="err404.detail2">Đường dẫn có thể đã thay đổi hoặc bị xóa</span>
+        </div>
+        <div class="error-detail-row">
+          <i class="bi bi-info-circle-fill text-accent me-2"></i>
+          <span data-i18n="err404.detail3">Kiểm tra lại chính tả hoặc quay về trang chủ</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="error-actions animate-on-scroll">
+        <a href="{% url 'landing' %}" class="btn btn-primary-gradient btn-lg">
+          <i class="bi bi-house-fill me-2"></i><span data-i18n="err404.btn_home">Về trang chủ</span>
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-accent btn-lg">
+          <i class="bi bi-grid me-2"></i><span data-i18n="nav.dashboard">Dashboard</span>
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn btn-outline-accent btn-lg">
+          <i class="bi bi-box-arrow-in-right me-2"></i><span data-i18n="nav.login">Đăng nhập</span>
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- Quick links -->
+      <div class="error-links animate-on-scroll">
+        <span class="text-muted small me-1" data-i18n="err404.suggest">Trang gợi ý:</span>
+        <a href="{% url 'trading' %}" class="error-link" data-i18n="nav.ai-trading">AI Trading</a>
+        <span class="text-muted">·</span>
+        <a href="{% url 'deposit' %}" class="error-link" data-i18n="nav.deposit">Nạp tiền</a>
+        {% if user.is_authenticated %}
+        <span class="text-muted">·</span>
+        <a href="{% url 'profile' %}" class="error-link" data-i18n="nav.profile">Hồ sơ</a>
+        {% else %}
+        <span class="text-muted">·</span>
+        <a href="{% url 'register' %}" class="error-link" data-i18n="nav.register">Đăng ký</a>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

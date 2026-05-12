@@ -1,10 +1,10 @@
-import json
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
+from django.db.models import F
 from django.conf import settings
 from django.utils import timezone
 from .models import DepositTransaction
@@ -47,6 +47,12 @@ def submit_txhash_view(request):
                                  'Hãy đảm bảo bạn đã chuyển USDT đến đúng địa chỉ ví.')
         return redirect('deposit')
 
+    tx_memo = tx_info.get('memo', '')
+    if tx_memo and tx_memo != request.user.memo_code:
+        messages.error(request, 'Giao dịch này không thuộc về tài khoản của bạn. '
+                                 'Hãy chắc chắn bạn đã ghi đúng mã memo khi chuyển.')
+        return redirect('deposit')
+
     coins_to_credit = tx_info['amount_usdt'] * settings.USDT_TO_COINS_RATE
 
     with transaction.atomic():
@@ -60,7 +66,7 @@ def submit_txhash_view(request):
             confirmed_at=timezone.now(),
         )
         request.user.__class__.objects.filter(pk=request.user.pk).update(
-            coins=request.user.coins + coins_to_credit
+            coins=F('coins') + coins_to_credit
         )
 
     messages.success(

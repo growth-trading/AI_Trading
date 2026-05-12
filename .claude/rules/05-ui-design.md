@@ -1,5 +1,5 @@
 ---
-description: Hướng dẫn thiết kế UI/UX dark-theme — áp dụng khi làm việc với templates/ và static/
+description: UI/UX dark-theme, theme system (dark/light), i18n VI/EN, floating controls — áp dụng khi làm việc với templates/ và static/
 globs:
   - templates/**
   - static/**
@@ -8,6 +8,77 @@ globs:
 ## Phong cách tổng thể
 
 Dark-theme SaaS hiện đại — tham khảo `Design.jpg`. Giao diện tối màu, typography lớn, bố cục thoáng, cảm giác cao cấp. Ưu tiên whitespace.
+
+## Icon Libraries
+
+- **Bootstrap Icons 1.11** — dùng cho toàn bộ UI (navbar, buttons, badges, v.v.): class `bi bi-*`
+- **Font Awesome 6.7.2** — dùng cho floating controls: class `fa-solid fa-*`
+  - Moon (dark mode): `fa-solid fa-moon`
+  - Sun (light mode): `fa-solid fa-sun`
+
+## Theme System (Dark / Light)
+
+Toàn bộ màu sắc dùng CSS custom properties trên `:root`. Light theme override bằng `[data-theme="light"]` trên `<html>`.
+
+- **Anti-flash script** — inline trong `<head>` trước khi CSS load, đọc `localStorage('ait-theme')` và gán `data-theme` ngay lập tức, tránh flash màu sai khi reload trang.
+- **Lưu trữ**: `localStorage.setItem('ait-theme', theme)` — key `ait-theme`, giá trị `'dark'` hoặc `'light'`
+- **Hàm JS**: `applyTheme(theme)` trong `static/js/main.js` — cập nhật `data-theme`, localStorage, icon `#themeIcon`, label `#themeLabel`
+
+```css
+/* Dark (default) dùng :root */
+/* Light override */
+[data-theme="light"] { --bg-main: #F8FAFC; --bg-card: #FFFFFF; --text-main: #0F172A; ... }
+[data-theme="light"] #mainNav { background: rgba(248,250,252,0.88); }
+```
+
+## i18n System (Tiếng Việt / English)
+
+Không dùng Django i18n framework. Toàn bộ xử lý phía client.
+
+- **Đánh dấu text** bằng attribute `data-i18n="key"` trên phần tử HTML
+- **Placeholder input**: dùng `data-i18n-placeholder="key"` — `applyLang` sẽ gán `el.setAttribute('placeholder', ...)`
+- **Dictionary**: `const i18n = { vi: {...}, en: {...} }` trong `static/js/main.js` — ~120+ keys, nhóm theo prefix:
+
+| Prefix | Trang |
+|--------|-------|
+| `nav.*`, `footer.*` | base.html (navbar, footer) |
+| `hero.*`, `stat.*`, `feat*`, `how.*`, `step*`, `cta.*` | landing page |
+| `auth.login.*`, `auth.register.*`, `auth.label.*`, `auth.otp.*`, `auth.btn.*`, `auth.or`, ... | login / register / verify OTP |
+| `dep.*` | trang nạp tiền |
+| `prof.*` | trang hồ sơ |
+| `dash.*` | dashboard |
+| `com.th.*`, `com.coins_unit`, `com.no_tx` | dùng chung (table headers, đơn vị) |
+| `err404.*` | trang 404 |
+
+- **Hàm JS**: `applyLang(lang)` — query `[data-i18n]` → set `textContent`; query `[data-i18n-placeholder]` → set `placeholder`; cập nhật `data-lang` và localStorage
+- **Lưu trữ**: `localStorage.setItem('ait-lang', lang)` — key `ait-lang`, giá trị `'vi'` hoặc `'en'`
+- **Thêm key mới**: thêm vào cả `i18n.vi` và `i18n.en`, gán `data-i18n="key"` vào HTML
+- **Button có icon**: đặt `data-i18n` trên `<span>` bọc text bên trong, không đặt lên thẻ `<button>` (vì `textContent` sẽ xóa mất icon `<i>`)
+
+## Floating Controls (bottom-right)
+
+Hai nút cố định góc dưới phải (`position: fixed; bottom: 28px; right: 24px`), class `.floating-controls` / `.floating-btn`.
+
+```html
+<div class="floating-controls">
+  <button type="button" class="floating-btn" id="themeToggle">
+    <i class="fa-solid fa-moon" id="themeIcon"></i>
+    <span id="themeLabel">Dark</span>
+  </button>
+  <button type="button" class="floating-btn" id="langToggle">
+    <span class="fab-flag" id="langFlag">🇻🇳</span>   <!-- 🇺🇸 khi EN -->
+  </button>
+</div>
+```
+
+**Hiệu ứng CSS**:
+- Entrance: `fab-enter` animation trượt lên từ dưới khi page load
+- Hover: `translateY(-5px) scale(1.07)` + accent glow `box-shadow`
+- Click: ripple lan rộng từ tâm (`::before` pseudo-element)
+- Theme button: shimmer sweep mỗi 4 giây (`fab-shimmer` keyframe)
+- Lang button: pulse glow nhịp thở mỗi 3 giây (`fab-pulse` keyframe)
+
+**Lưu ý quan trọng**: `<div class="floating-controls">` **phải đặt trước** `<script src="main.js">` trong base.html (xem `03-architecture.md`).
 
 ## Bảng màu
 

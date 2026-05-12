@@ -32,7 +32,7 @@ Chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây qua `django-apscheduler`:
 5. _resolve_user_from_memo(memo) → CustomUser.objects.get(pk=uid)
 6. transaction.atomic():
    - DepositTransaction.objects.create(status=COMPLETED)
-   - filter().update(coins=coins+coins_credited)   ← atomic, không dùng select_for_update
+   - filter().update(coins=F('coins') + coins_credited)   ← atomic F() expression
 7. Cập nhật WalletScanState.last_scanned_block
 ```
 
@@ -41,17 +41,27 @@ Chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây qua `django-apscheduler`:
 ```
 1. User POST tx_hash (len >= 60)
 2. Kiểm tra tx_hash chưa tồn tại trong DB
-3. verify_txhash(tx_hash) → BscScan lookup → dict hoặc None
-4. transaction.atomic():
+3. verify_txhash(tx_hash) → BscScan lookup → dict{tx_hash, amount_usdt, memo, ...} hoặc None
+4. Nếu memo có giá trị: kiểm tra memo == request.user.memo_code → reject nếu không khớp
+5. transaction.atomic():
    - DepositTransaction.objects.create(user=request.user, status=COMPLETED)
-   - filter().update(coins=coins+coins_credited)
+   - filter().update(coins=F('coins') + coins_credited)   ← atomic F() expression
 ```
+
+**Quan trọng:**
+- **Luôn dùng `F('coins') + amount`** khi cộng coins — không dùng `user.coins + amount` (race condition)
+- `verify_txhash` trả về `memo` được decode từ `input` hex của tx → dùng để xác thực ownership
 
 ## Scheduler (`deposits/apps.py`)
 
-`DepositsConfig.ready()` gọi `tasks.start_scheduler()` một lần khi Django khởi động.  
-Guard `_scheduler_started` (module-level bool) ngăn khởi động nhiều lần.  
+`DepositsConfig.ready()` chỉ khởi động scheduler khi:
+- **Dev**: `RUN_MAIN=true` (Django autoreloader child process khi `runserver`)
+- **Production**: `DJANGO_RUN_SCHEDULER=1` (set trong env)
+
+Guard `_scheduler_started` (module-level bool) ngăn khởi động nhiều lần trong cùng process.  
 Scheduler dùng `DjangoJobStore` — jobs được lưu vào DB qua `django-apscheduler`.
+
+**Không chạy** khi: `migrate`, `test`, `shell`, `collectstatic`, v.v.
 
 ## Tỷ lệ quy đổi
 

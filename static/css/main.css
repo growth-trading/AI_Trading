@@ -1104,3 +1104,172 @@ body {
   .hero-actions { flex-direction: column; align-items: center; }
   .stat-card-val { font-size: 1.3rem; }
 }
+
+/* ---- 404 ERROR PAGE ---- */
+
+/* Override scroll animation — 404 content must be visible immediately */
+.error-page .animate-on-scroll {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.error-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 80px 0 60px;
+}
+
+.error-bg-blur {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+.error-bg-blur-1 {
+  width: 600px; height: 600px;
+  background: rgba(239,68,68,0.06);
+  top: -100px; left: -150px;
+}
+.error-bg-blur-2 {
+  width: 400px; height: 400px;
+  background: rgba(245,158,11,0.06);
+  bottom: -50px; right: -100px;
+}
+
+/* Warning banner */
+.error-warning-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #FCA5A5;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  margin: 0 auto 2.5rem;
+  max-width: 600px;
+  animation: error-pulse-border 2.5s ease-in-out infinite;
+}
+@keyframes error-pulse-border {
+  0%, 100% { border-color: rgba(239,68,68,0.3); box-shadow: none; }
+  50%       { border-color: rgba(239,68,68,0.6); box-shadow: 0 0 16px rgba(239,68,68,0.15); }
+}
+
+/* Shield icon */
+.error-icon-wrap {
+  margin-bottom: 0.5rem;
+}
+.error-shield-icon {
+  font-size: 4rem;
+  color: var(--warning);
+  filter: drop-shadow(0 0 20px rgba(245,158,11,0.35));
+  animation: error-icon-float 3s ease-in-out infinite;
+}
+@keyframes error-icon-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-8px) scale(1); }
+}
+
+/* 404 number */
+.error-code {
+  font-size: clamp(5rem, 18vw, 10rem);
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--danger), var(--warning));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.25rem;
+}
+
+.error-title {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+}
+
+.error-subtitle {
+  font-size: 1rem;
+  color: var(--text-sub);
+  max-width: 500px;
+  margin: 0 auto 1.75rem;
+}
+
+.error-path {
+  background: var(--bg-card-2);
+  color: var(--warning);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 0.875em;
+  word-break: break-all;
+}
+
+/* Detail card */
+.error-detail-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.75rem;
+  max-width: 480px;
+  margin: 0 auto 2rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.error-detail-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--text-sub);
+}
+
+/* Actions */
+.error-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+/* Quick links */
+.error-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.error-link {
+  color: var(--text-sub);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.error-link:hover { color: var(--accent); }
+
+/* Light theme */
+[data-theme="light"] .error-warning-banner { background: rgba(239,68,68,0.07); color: #B91C1C; border-color: rgba(239,68,68,0.25); }
+[data-theme="light"] .error-path           { background: #FEF2F2; color: #B45309; border-color: #FCD34D; }
+[data-theme="light"] .error-detail-card    { background: #FFFFFF; border-color: #E2E8F0; }
+[data-theme="light"] .error-detail-row     { color: #475569; }
+[data-theme="light"] .error-link           { color: #64748B; }
+
+@media (max-width: 576px) {
+  .error-actions { flex-direction: column; align-items: center; }
+  .error-detail-card { padding: 1rem 1.25rem; }
+}

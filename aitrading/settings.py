@@ -5,7 +5,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-me')
 DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = ['*']
+# In production: set ALLOWED_HOSTS in .env, e.g. ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+_allowed_hosts = config('ALLOWED_HOSTS', default='*')
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',')]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -100,3 +102,7 @@ WALLET_SCAN_INTERVAL_SECONDS = config('WALLET_SCAN_INTERVAL_SECONDS', default=60
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 25
+
+# Set to '1' in production to start the wallet scanner scheduler on app startup.
+# In development, the scheduler starts automatically when using `runserver`.
+DJANGO_RUN_SCHEDULER = config('DJANGO_RUN_SCHEDULER', default='0')

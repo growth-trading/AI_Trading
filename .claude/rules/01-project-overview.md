@@ -11,7 +11,7 @@ alwaysApply: true
 
 - **Backend**: Django 4.2, Python 3.11+, `python-decouple` (`.env`)
 - **Database**: SQLite (dev), `psycopg2-binary` có sẵn cho PostgreSQL
-- **Frontend**: Django Templates + Bootstrap 5, Web3.js (MetaMask)
+- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2 (floating controls), Web3.js (MetaMask)
 - **Tác vụ nền**: `django-apscheduler` — scheduler khởi động trong `DepositsConfig.ready()`, không dùng Celery
 - **Email**: Django SMTP (Gmail)
 - **Blockchain**: BscScan API (BSC/BEP-20 USDT)
@@ -21,6 +21,7 @@ alwaysApply: true
 ```
 SECRET_KEY=
 DEBUG=True
+ALLOWED_HOSTS=*                         # production: yourdomain.com,www.yourdomain.com
 EMAIL_HOST=smtp.gmail.com
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
@@ -29,4 +30,5 @@ USDT_CONTRACT_BSC=0x55d398326f99059fF775485246999027B3197955
 BSCSCAN_API_KEY=
 USDT_TO_COINS_RATE=1
 WALLET_SCAN_INTERVAL_SECONDS=60
+DJANGO_RUN_SCHEDULER=0                  # set 1 in production to start wallet scanner
 ```

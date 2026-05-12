@@ -17,16 +17,16 @@
     </div>
     <nav class="sidebar-nav">
       <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
-      <a href="{% url 'deposit' %}" class="sidebar-link"><i class="bi bi-wallet2"></i><span>Nạp tiền</span></a>
+      <a href="{% url 'deposit' %}" class="sidebar-link"><i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span></a>
       <a href="{% url 'trading' %}" class="sidebar-link"><i class="bi bi-robot"></i><span>AI Trading</span></a>
-      <a href="{% url 'profile' %}" class="sidebar-link active"><i class="bi bi-person"></i><span>Hồ sơ</span></a>
+      <a href="{% url 'profile' %}" class="sidebar-link active"><i class="bi bi-person"></i><span data-i18n="nav.profile">Hồ sơ</span></a>
     </nav>
-    <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span>Đăng xuất</span></a>
+    <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span></a>
   </aside>
 
   <main class="dashboard-main">
     <div class="dashboard-header">
-      <h1 class="dashboard-title">Hồ sơ cá nhân</h1>
+      <h1 class="dashboard-title" data-i18n="prof.title">Hồ sơ cá nhân</h1>
     </div>
 
     <div class="row g-4">
@@ -50,12 +50,12 @@
           <div class="profile-stats">
             <div class="profile-stat">
               <div class="profile-stat-val text-accent">{{ request.user.coins|floatformat:2 }}</div>
-              <div class="profile-stat-label">Xu</div>
+              <div class="profile-stat-label" data-i18n="prof.stat.coins">Xu</div>
             </div>
             <div class="profile-stat-divider"></div>
             <div class="profile-stat">
               <div class="profile-stat-val">{{ all_txs.count }}</div>
-              <div class="profile-stat-label">Giao dịch</div>
+              <div class="profile-stat-label" data-i18n="prof.stat.txs">Giao dịch</div>
             </div>
             <div class="profile-stat-divider"></div>
             <div class="profile-stat">
@@ -75,40 +75,42 @@
       <!-- Edit Form -->
       <div class="col-lg-8">
         <div class="dashboard-card">
-          <h5 class="card-title-dark mb-4">Chỉnh sửa thông tin</h5>
+          <h5 class="card-title-dark mb-4" data-i18n="prof.edit.title">Chỉnh sửa thông tin</h5>
           <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             <div class="row g-3">
               <div class="col-sm-6">
-                <label class="form-label-dark">Họ</label>
+                <label class="form-label-dark" data-i18n="prof.label.last">Họ</label>
                 {{ form.last_name }}
               </div>
               <div class="col-sm-6">
-                <label class="form-label-dark">Tên</label>
+                <label class="form-label-dark" data-i18n="prof.label.first">Tên</label>
                 {{ form.first_name }}
-              </div>
-              <div class="col-12">
-                <label class="form-label-dark">Email</label>
-                {{ form.email }}
               </div>
               <div class="col-12 d-none">
                 {{ form.avatar }}
               </div>
             </div>
             <button type="submit" class="btn btn-primary-gradient mt-4">
-              <i class="bi bi-check-lg me-2"></i>Lưu thay đổi
+              <i class="bi bi-check-lg me-2"></i><span data-i18n="prof.btn.save">Lưu thay đổi</span>
             </button>
           </form>
         </div>
 
         <!-- Transaction History -->
         <div class="dashboard-card mt-4">
-          <h5 class="card-title-dark mb-3">Toàn bộ giao dịch</h5>
+          <h5 class="card-title-dark mb-3" data-i18n="prof.tx.title">Toàn bộ giao dịch</h5>
           {% if all_txs %}
           <div class="table-responsive">
             <table class="table-dark-custom">
               <thead>
-                <tr><th>TxHash</th><th>USDT</th><th>Xu</th><th>Trạng thái</th><th>Ngày</th></tr>
+                <tr>
+                  <th>TxHash</th>
+                  <th>USDT</th>
+                  <th data-i18n="com.th.coins">Xu</th>
+                  <th data-i18n="com.th.status">Trạng thái</th>
+                  <th data-i18n="com.th.date">Ngày</th>
+                </tr>
               </thead>
               <tbody>
                 {% for tx in all_txs %}
@@ -124,7 +126,7 @@
             </table>
           </div>
           {% else %}
-          <div class="empty-state"><i class="bi bi-inbox"></i><p>Chưa có giao dịch nào.</p></div>
+          <div class="empty-state"><i class="bi bi-inbox"></i><p data-i18n="com.no_tx">Chưa có giao dịch nào.</p></div>
           {% endif %}
         </div>
       </div>

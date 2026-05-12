@@ -92,14 +92,6 @@ document.querySelectorAll('.alert-toast').forEach(el => {
   setTimeout(() => el.remove(), 5000);
 });
 
-// Nav coins live update via polling (dashboard)
-function refreshCoins() {
-  const el = document.getElementById('nav-coins-val');
-  if (!el) return;
-  fetch('/dashboard/', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .catch(() => {});
-}
-
 /* =============================================
    THEME & LANGUAGE SYSTEM
    ============================================= */
@@ -112,7 +104,7 @@ const i18n = {
     'nav.deposit':     'Nạp tiền',
     'nav.coins':       'xu',
     'nav.login':       'Đăng nhập',
-    'nav.signup':      'Bắt đầu miễn phí',
+    'nav.signup':      'Đăng ký ngay',
     'nav.register':    'Đăng ký',
     'nav.dashboard':   'Dashboard',
     'nav.profile':     'Hồ sơ',
@@ -127,7 +119,7 @@ const i18n = {
     'hero.badge':          'Nền tảng AI Trading hàng đầu Việt Nam',
     'hero.title1':         'Tối ưu lợi nhuận với',
     'hero.subtitle':       'Thuật toán AI tiên tiến phân tích thị trường 24/7. Backtest chiến lược tự động. Nạp USDT — kích hoạt bot — hưởng lợi nhuận ổn định.',
-    'hero.cta1':           'Bắt đầu miễn phí',
+    'hero.cta1':           'Đăng ký ngay',
     'hero.cta2':           'Xem Demo',
     'hero.mockup.coins':   'Số dư xu',
     'hero.mockup.profit':  'Lợi nhuận tháng',
@@ -171,6 +163,90 @@ const i18n = {
     'cta.subtitle': 'Tham gia cùng 500+ traders đang tin dùng AITrading để tối ưu lợi nhuận mỗi ngày.',
     'cta.btn1':     'Đăng ký ngay',
     'cta.btn2':     'Tìm hiểu thêm',
+    /* auth — login */
+    'auth.login.title':   'Chào mừng trở lại',
+    'auth.login.sub':     'Đăng nhập để sử dụng tất cả các dịch vụ của AITrading',
+    'auth.btn.login':     'Đăng nhập',
+    'auth.or':            'hoặc',
+    'auth.no_account':    'Chưa có tài khoản?',
+    'auth.signup_free':   'Đăng ký miễn phí',
+    /* auth — register */
+    'auth.register.title': 'Tạo tài khoản miễn phí',
+    'auth.register.sub':   'Bắt đầu giao dịch thông minh ngay hôm nay.',
+    'auth.btn.create':     'Tạo tài khoản',
+    'auth.has_account':    'Đã có tài khoản?',
+    /* auth — shared labels */
+    'auth.label.username':   'Tên đăng nhập',
+    'auth.label.password':   'Mật khẩu',
+    'auth.label.confirm_pw': 'Xác nhận mật khẩu',
+    /* auth — OTP */
+    'auth.otp.title':   'Xác thực Email',
+    'auth.otp.sent':    'Chúng tôi đã gửi mã 6 chữ số đến',
+    'auth.otp.btn':     'Xác nhận mã OTP',
+    'auth.otp.no_code': 'Không nhận được mã?',
+    'auth.otp.resend':  'Gửi lại',
+    'auth.otp.expires': 'Mã có hiệu lực trong',
+    'auth.otp.minutes': 'phút',
+    /* deposit */
+    'dep.title':           'Nạp tiền USDT',
+    'dep.sub':             'Chuyển USDT qua MetaMask — hệ thống tự động xác nhận và cộng xu.',
+    'dep.wallet.title':    'Thông tin ví nhận',
+    'dep.wallet.addr':     'Địa chỉ ví Admin',
+    'dep.copy':            'Sao chép',
+    'dep.memo.label':      'Mã nạp tiền của bạn (Memo)',
+    'dep.memo.help':       'Ghi mã này vào trường Memo/Note khi chuyển tiền để hệ thống tự động nhận diện.',
+    'dep.rate':            'Tỉ lệ:',
+    'dep.metamask':        'Kết nối MetaMask',
+    'dep.tx.title':        'Xác nhận giao dịch',
+    'dep.step1':           'Chuyển USDT đến ví Admin',
+    'dep.step2':           'Sao chép Transaction Hash',
+    'dep.step3':           'Dán TxHash vào bên dưới',
+    'dep.tx.help':         'Tìm TxHash trong MetaMask > Activity > Chi tiết giao dịch',
+    'dep.btn.verify':      'Xác minh & Nạp tiền',
+    'dep.security.title':  'Bảo mật tuyệt đối',
+    'dep.security.desc':   'Hệ thống kiểm tra TxHash trực tiếp qua BscScan API. Mỗi TxHash chỉ được xử lý một lần.',
+    'dep.history':         'Lịch sử nạp tiền',
+    'dep.empty':           'Chưa có giao dịch nào. Thực hiện nạp tiền đầu tiên của bạn!',
+    /* profile */
+    'prof.title':       'Hồ sơ cá nhân',
+    'prof.stat.coins':  'Xu',
+    'prof.stat.txs':    'Giao dịch',
+    'prof.edit.title':  'Chỉnh sửa thông tin',
+    'prof.label.last':  'Họ',
+    'prof.label.first': 'Tên',
+    'prof.label.email': 'Email',
+    'prof.btn.save':    'Lưu thay đổi',
+    'prof.tx.title':    'Toàn bộ giao dịch',
+    /* dashboard */
+    'dash.welcome':    'Chào mừng trở lại,',
+    'dash.stat.coins': 'Số dư xu',
+    'dash.stat.txs':   'Tổng giao dịch nạp',
+    'dash.stat.email': 'Trạng thái Email',
+    'dash.stat.memo':  'Mã nạp tiền của bạn',
+    'dash.verified':   'Đã xác thực',
+    'dash.unverified': 'Chưa xác thực',
+    'dash.recent':     'Giao dịch gần đây',
+    'dash.view_all':   'Xem tất cả',
+    'dash.th.usdt':    'Số USDT',
+    'dash.deposit_now':'Nạp tiền ngay',
+    /* common */
+    'com.coins_unit': 'xu',
+    'com.th.coins':   'Xu nhận',
+    'com.th.status':  'Trạng thái',
+    'com.th.time':    'Thời gian',
+    'com.th.date':    'Ngày',
+    'com.no_tx':      'Chưa có giao dịch nào.',
+    /* 404 page */
+    'err404.warn_label': 'Cảnh báo:',
+    'err404.warn_text':  'Trang bạn truy cập không tồn tại trên hệ thống.',
+    'err404.title':      'Không tìm thấy trang',
+    'err404.path_pre':   'Đường dẫn',
+    'err404.path_suf':   'không tồn tại hoặc đã bị xóa.',
+    'err404.detail1':    'URL không khớp với bất kỳ trang nào trong hệ thống',
+    'err404.detail2':    'Đường dẫn có thể đã thay đổi hoặc bị xóa',
+    'err404.detail3':    'Kiểm tra lại chính tả hoặc quay về trang chủ',
+    'err404.btn_home':   'Về trang chủ',
+    'err404.suggest':    'Trang gợi ý:',
     /* misc */
     'copied': 'Đã sao chép!',
   },
@@ -181,7 +257,7 @@ const i18n = {
     'nav.deposit':     'Deposit',
     'nav.coins':       'coins',
     'nav.login':       'Login',
-    'nav.signup':      'Get Started Free',
+    'nav.signup':      'Let Register',
     'nav.register':    'Register',
     'nav.dashboard':   'Dashboard',
     'nav.profile':     'Profile',
@@ -196,7 +272,7 @@ const i18n = {
     'hero.badge':          "Vietnam's #1 AI Trading Platform",
     'hero.title1':         'Maximize your profits with',
     'hero.subtitle':       'Advanced AI algorithms analyze markets 24/7. Automated strategy backtesting. Deposit USDT — activate bot — earn steady profits.',
-    'hero.cta1':           'Get Started Free',
+    'hero.cta1':           'Let Register',
     'hero.cta2':           'View Demo',
     'hero.mockup.coins':   'Coin Balance',
     'hero.mockup.profit':  'Monthly Profit',
@@ -240,6 +316,90 @@ const i18n = {
     'cta.subtitle': 'Join 500+ traders who trust AITrading to maximize their daily profits.',
     'cta.btn1':     'Sign Up Now',
     'cta.btn2':     'Learn More',
+    /* auth — login */
+    'auth.login.title':   'Welcome Back',
+    'auth.login.sub':     'Sign in to use all AITrading services',
+    'auth.btn.login':     'Login',
+    'auth.or':            'or',
+    'auth.no_account':    "Don't have an account?",
+    'auth.signup_free':   'Register Free',
+    /* auth — register */
+    'auth.register.title': 'Create Free Account',
+    'auth.register.sub':   'Start smart trading today.',
+    'auth.btn.create':     'Create Account',
+    'auth.has_account':    'Already have an account?',
+    /* auth — shared labels */
+    'auth.label.username':   'Username',
+    'auth.label.password':   'Password',
+    'auth.label.confirm_pw': 'Confirm Password',
+    /* auth — OTP */
+    'auth.otp.title':   'Email Verification',
+    'auth.otp.sent':    'We sent a 6-digit code to',
+    'auth.otp.btn':     'Verify OTP Code',
+    'auth.otp.no_code': "Didn't receive the code?",
+    'auth.otp.resend':  'Resend',
+    'auth.otp.expires': 'Code valid for',
+    'auth.otp.minutes': 'minutes',
+    /* deposit */
+    'dep.title':           'Deposit USDT',
+    'dep.sub':             'Transfer USDT via MetaMask — system auto-confirms and credits coins.',
+    'dep.wallet.title':    'Receiving Wallet',
+    'dep.wallet.addr':     'Admin Wallet Address',
+    'dep.copy':            'Copy',
+    'dep.memo.label':      'Your Deposit Code (Memo)',
+    'dep.memo.help':       'Enter this code in the Memo/Note field when transferring so the system auto-detects it.',
+    'dep.rate':            'Rate:',
+    'dep.metamask':        'Connect MetaMask',
+    'dep.tx.title':        'Confirm Transaction',
+    'dep.step1':           'Transfer USDT to Admin Wallet',
+    'dep.step2':           'Copy Transaction Hash',
+    'dep.step3':           'Paste TxHash below',
+    'dep.tx.help':         'Find TxHash in MetaMask > Activity > Transaction Details',
+    'dep.btn.verify':      'Verify & Deposit',
+    'dep.security.title':  'Absolute Security',
+    'dep.security.desc':   'System verifies TxHash via BscScan API. Each TxHash is processed only once.',
+    'dep.history':         'Deposit History',
+    'dep.empty':           'No transactions yet. Make your first deposit!',
+    /* profile */
+    'prof.title':       'Personal Profile',
+    'prof.stat.coins':  'Coins',
+    'prof.stat.txs':    'Transactions',
+    'prof.edit.title':  'Edit Information',
+    'prof.label.last':  'Last Name',
+    'prof.label.first': 'First Name',
+    'prof.label.email': 'Email',
+    'prof.btn.save':    'Save Changes',
+    'prof.tx.title':    'All Transactions',
+    /* dashboard */
+    'dash.welcome':    'Welcome back,',
+    'dash.stat.coins': 'Coin Balance',
+    'dash.stat.txs':   'Total Deposits',
+    'dash.stat.email': 'Email Status',
+    'dash.stat.memo':  'Your Deposit Code',
+    'dash.verified':   'Verified',
+    'dash.unverified': 'Unverified',
+    'dash.recent':     'Recent Transactions',
+    'dash.view_all':   'View All',
+    'dash.th.usdt':    'USDT Amount',
+    'dash.deposit_now':'Deposit Now',
+    /* common */
+    'com.coins_unit': 'coins',
+    'com.th.coins':   'Coins',
+    'com.th.status':  'Status',
+    'com.th.time':    'Time',
+    'com.th.date':    'Date',
+    'com.no_tx':      'No transactions yet.',
+    /* 404 page */
+    'err404.warn_label': 'Warning:',
+    'err404.warn_text':  'The page you visited does not exist in the system.',
+    'err404.title':      'Page Not Found',
+    'err404.path_pre':   'The path',
+    'err404.path_suf':   'does not exist or has been removed.',
+    'err404.detail1':    'URL does not match any page in the system',
+    'err404.detail2':    'The path may have changed or been deleted',
+    'err404.detail3':    'Check the spelling or return to the home page',
+    'err404.btn_home':   'Go Home',
+    'err404.suggest':    'Suggested pages:',
     /* misc */
     'copied': 'Copied!',
   },
@@ -255,6 +415,10 @@ function applyLang(lang) {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (dict[key] !== undefined) el.textContent = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (dict[key] !== undefined) el.setAttribute('placeholder', dict[key]);
   });
 
   const flag = document.getElementById('langFlag');

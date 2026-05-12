@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import F
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,7 @@ def scan_admin_wallet():
             )
             if user:
                 user.__class__.objects.filter(pk=user.pk).update(
-                    coins=user.__class__._default_manager.filter(pk=user.pk).values('coins')[0]['coins'] + dep.coins_credited
+                    coins=F('coins') + dep.coins_credited
                 )
 
         max_block = max(max_block, block_number)
@@ -129,6 +130,7 @@ def verify_txhash(tx_hash: str):
             'amount_usdt': amount,
             'block_number': int(tx.get('blockNumber', 0)),
             'from_address': tx.get('from'),
+            'memo': _decode_memo(tx.get('input', '')),
         }
     return None
 

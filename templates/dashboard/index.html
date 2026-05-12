@@ -21,17 +21,17 @@
         <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
       </a>
       <a href="{% url 'deposit' %}" class="sidebar-link">
-        <i class="bi bi-wallet2"></i><span>Nạp tiền</span>
+        <i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span>
       </a>
       <a href="{% url 'trading' %}" class="sidebar-link">
         <i class="bi bi-robot"></i><span>AI Trading</span>
       </a>
       <a href="{% url 'profile' %}" class="sidebar-link">
-        <i class="bi bi-person"></i><span>Hồ sơ</span>
+        <i class="bi bi-person"></i><span data-i18n="nav.profile">Hồ sơ</span>
       </a>
     </nav>
     <a href="{% url 'logout' %}" class="sidebar-logout">
-      <i class="bi bi-box-arrow-right"></i><span>Đăng xuất</span>
+      <i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span>
     </a>
   </aside>
 
@@ -40,10 +40,12 @@
     <div class="dashboard-header">
       <div>
         <h1 class="dashboard-title">Dashboard</h1>
-        <p class="dashboard-sub">Chào mừng trở lại, <span class="text-accent">{{ request.user.username }}</span>!</p>
+        <p class="dashboard-sub">
+          <span data-i18n="dash.welcome">Chào mừng trở lại,</span> <span class="text-accent">{{ request.user.username }}</span>!
+        </p>
       </div>
       <a href="{% url 'deposit' %}" class="btn btn-primary-gradient">
-        <i class="bi bi-plus-lg me-2"></i>Nạp tiền
+        <i class="bi bi-plus-lg me-2"></i><span data-i18n="nav.deposit">Nạp tiền</span>
       </a>
     </div>
 
@@ -53,14 +55,14 @@
         <div class="stat-card">
           <div class="stat-card-icon bg-blue"><i class="bi bi-coin"></i></div>
           <div class="stat-card-val">{{ coins|floatformat:2 }}</div>
-          <div class="stat-card-label">Số dư xu</div>
+          <div class="stat-card-label" data-i18n="dash.stat.coins">Số dư xu</div>
         </div>
       </div>
       <div class="col-sm-6 col-xl-3">
         <div class="stat-card">
           <div class="stat-card-icon bg-green"><i class="bi bi-arrow-down-circle"></i></div>
           <div class="stat-card-val">{{ request.user.deposits.count }}</div>
-          <div class="stat-card-label">Tổng giao dịch nạp</div>
+          <div class="stat-card-label" data-i18n="dash.stat.txs">Tổng giao dịch nạp</div>
         </div>
       </div>
       <div class="col-sm-6 col-xl-3">
@@ -68,19 +70,19 @@
           <div class="stat-card-icon bg-purple"><i class="bi bi-shield-check"></i></div>
           <div class="stat-card-val">
             {% if request.user.is_email_verified %}
-              <span class="badge-verified">Đã xác thực</span>
+              <span class="badge-verified" data-i18n="dash.verified">Đã xác thực</span>
             {% else %}
-              <a href="{% url 'verify_otp' %}" class="badge-unverified">Chưa xác thực</a>
+              <a href="{% url 'verify_otp' %}" class="badge-unverified" data-i18n="dash.unverified">Chưa xác thực</a>
             {% endif %}
           </div>
-          <div class="stat-card-label">Trạng thái Email</div>
+          <div class="stat-card-label" data-i18n="dash.stat.email">Trạng thái Email</div>
         </div>
       </div>
       <div class="col-sm-6 col-xl-3">
         <div class="stat-card">
           <div class="stat-card-icon bg-orange"><i class="bi bi-key"></i></div>
           <div class="stat-card-val font-mono text-sm">{{ request.user.memo_code }}</div>
-          <div class="stat-card-label">Mã nạp tiền của bạn</div>
+          <div class="stat-card-label" data-i18n="dash.stat.memo">Mã nạp tiền của bạn</div>
         </div>
       </div>
     </div>
@@ -88,8 +90,8 @@
     <!-- Recent Transactions -->
     <div class="dashboard-card">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="card-title-dark mb-0">Giao dịch gần đây</h5>
-        <a href="{% url 'deposit' %}" class="btn btn-sm btn-outline-accent">Xem tất cả</a>
+        <h5 class="card-title-dark mb-0" data-i18n="dash.recent">Giao dịch gần đây</h5>
+        <a href="{% url 'deposit' %}" class="btn btn-sm btn-outline-accent" data-i18n="dash.view_all">Xem tất cả</a>
       </div>
       {% if recent_txs %}
       <div class="table-responsive">
@@ -97,10 +99,10 @@
           <thead>
             <tr>
               <th>TxHash</th>
-              <th>Số USDT</th>
-              <th>Xu nhận</th>
-              <th>Trạng thái</th>
-              <th>Thời gian</th>
+              <th data-i18n="dash.th.usdt">Số USDT</th>
+              <th data-i18n="com.th.coins">Xu nhận</th>
+              <th data-i18n="com.th.status">Trạng thái</th>
+              <th data-i18n="com.th.time">Thời gian</th>
             </tr>
           </thead>
           <tbody>
@@ -126,7 +128,7 @@
       {% else %}
       <div class="empty-state">
         <i class="bi bi-inbox"></i>
-        <p>Chưa có giao dịch nào. <a href="{% url 'deposit' %}" class="text-accent">Nạp tiền ngay</a></p>
+        <p><span data-i18n="com.no_tx">Chưa có giao dịch nào.</span> <a href="{% url 'deposit' %}" class="text-accent" data-i18n="dash.deposit_now">Nạp tiền ngay</a></p>
       </div>
       {% endif %}
     </div>
