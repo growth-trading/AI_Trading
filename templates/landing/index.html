@@ -11,22 +11,22 @@
       <div class="col-lg-9">
         <div class="hero-badge animate-fadeInUp">
           <i class="bi bi-lightning-charge-fill me-1"></i>
-          Nền tảng AI Trading hàng đầu Việt Nam
+          <span data-i18n="hero.badge">Nền tảng AI Trading hàng đầu Việt Nam</span>
         </div>
         <h1 class="hero-title animate-fadeInUp delay-1">
-          Tối ưu lợi nhuận với<br>
-          <span class="gradient-text">AI Trading Bot</span>
+          <span data-i18n="hero.title1">Tối ưu lợi nhuận với</span><br>
+          <span class="gradient-text">AI Trading</span>
         </h1>
-        <p class="hero-subtitle animate-fadeInUp delay-2">
+        <p class="hero-subtitle animate-fadeInUp delay-2" data-i18n="hero.subtitle">
           Thuật toán AI tiên tiến phân tích thị trường 24/7. Backtest chiến lược tự động.
           Nạp USDT — kích hoạt bot — hưởng lợi nhuận ổn định.
         </p>
         <div class="hero-actions animate-fadeInUp delay-3">
           <a href="{% url 'register' %}" class="btn btn-primary-gradient btn-lg">
-            <i class="bi bi-rocket-takeoff me-2"></i>Bắt đầu miễn phí
+            <i class="bi bi-rocket-takeoff me-2"></i><span data-i18n="hero.cta1">Bắt đầu miễn phí</span>
           </a>
           <a href="{% url 'trading' %}" class="btn btn-outline-light-custom btn-lg">
-            <i class="bi bi-play-circle me-2"></i>Xem Demo
+            <i class="bi bi-play-circle me-2"></i><span data-i18n="hero.cta2">Xem Demo</span>
           </a>
         </div>
       </div>
@@ -43,19 +43,19 @@
           <div class="row g-3">
             <div class="col-4">
               <div class="mockup-stat">
-                <div class="mockup-stat-label">Số dư xu</div>
+                <div class="mockup-stat-label" data-i18n="hero.mockup.coins">Số dư xu</div>
                 <div class="mockup-stat-val text-accent">2,450.00</div>
               </div>
             </div>
             <div class="col-4">
               <div class="mockup-stat">
-                <div class="mockup-stat-label">Lợi nhuận tháng</div>
+                <div class="mockup-stat-label" data-i18n="hero.mockup.profit">Lợi nhuận tháng</div>
                 <div class="mockup-stat-val text-success">+18.5%</div>
               </div>
             </div>
             <div class="col-4">
               <div class="mockup-stat">
-                <div class="mockup-stat-label">Bot đang chạy</div>
+                <div class="mockup-stat-label" data-i18n="hero.mockup.bots">Bot đang chạy</div>
                 <div class="mockup-stat-val text-warning">3 Active</div>
               </div>
             </div>
@@ -87,25 +87,25 @@
       <div class="col-6 col-md-3">
         <div class="stat-item" data-count="1000000" data-prefix="$" data-suffix="+">
           <div class="stat-number">$0</div>
-          <div class="stat-label">Giao dịch xử lý</div>
+          <div class="stat-label" data-i18n="stat.vol">Giao dịch xử lý</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="stat-item" data-count="98.5" data-suffix="%">
           <div class="stat-number">0%</div>
-          <div class="stat-label">Tỉ lệ thành công</div>
+          <div class="stat-label" data-i18n="stat.success">Tỉ lệ thành công</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="stat-item" data-count="500" data-suffix="+">
           <div class="stat-number">0+</div>
-          <div class="stat-label">Người dùng tin dùng</div>
+          <div class="stat-label" data-i18n="stat.users">Người dùng tin dùng</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="stat-item">
           <div class="stat-number">24/7</div>
-          <div class="stat-label">Hoạt động liên tục</div>
+          <div class="stat-label" data-i18n="stat.uptime">Hoạt động liên tục</div>
         </div>
       </div>
     </div>
@@ -116,45 +116,45 @@
 <section class="features-section">
   <div class="container">
     <div class="section-header text-center">
-      <span class="section-badge">Tính năng</span>
-      <h2 class="section-title">Tại sao chọn AITrading?</h2>
-      <p class="section-subtitle">Công nghệ AI tối tân kết hợp với chiến lược giao dịch đã được kiểm chứng</p>
+      <span class="section-badge" data-i18n="feat.badge">Tính năng</span>
+      <h2 class="section-title" data-i18n="feat.title">Tại sao chọn AITrading?</h2>
+      <p class="section-subtitle" data-i18n="feat.subtitle">Công nghệ AI tối tân kết hợp với chiến lược giao dịch đã được kiểm chứng</p>
     </div>
     <div class="row g-4 mt-2">
       <div class="col-md-4">
         <div class="feature-card animate-on-scroll">
           <div class="feature-icon"><i class="bi bi-cpu"></i></div>
-          <h4 class="feature-title">Thuật toán AI tiên tiến</h4>
-          <p class="feature-desc">Mô hình học máy phân tích hàng nghìn tín hiệu thị trường theo thời gian thực. Tự động nhận dạng xu hướng XAUUSD, Forex, Crypto.</p>
+          <h4 class="feature-title" data-i18n="feat1.title">Thuật toán AI tiên tiến</h4>
+          <p class="feature-desc" data-i18n="feat1.desc">Mô hình học máy phân tích hàng nghìn tín hiệu thị trường theo thời gian thực. Tự động nhận dạng xu hướng XAUUSD, Forex, Crypto.</p>
           <ul class="feature-list">
-            <li><i class="bi bi-check2 text-accent"></i> Phân tích 50+ chỉ báo kỹ thuật</li>
-            <li><i class="bi bi-check2 text-accent"></i> Dự báo xu hướng 15 phút — 4 giờ</li>
-            <li><i class="bi bi-check2 text-accent"></i> Cập nhật mô hình mỗi tuần</li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat1.li1">Phân tích 50+ chỉ báo kỹ thuật</span></li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat1.li2">Dự báo xu hướng 15 phút — 4 giờ</span></li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat1.li3">Cập nhật mô hình mỗi tuần</span></li>
           </ul>
         </div>
       </div>
       <div class="col-md-4">
         <div class="feature-card feature-card-highlight animate-on-scroll">
-          <div class="feature-badge-top">Phổ biến nhất</div>
+          <div class="feature-badge-top" data-i18n="feat.popular">Phổ biến nhất</div>
           <div class="feature-icon"><i class="bi bi-bar-chart-line"></i></div>
-          <h4 class="feature-title">Backtest tự động</h4>
-          <p class="feature-desc">Kiểm thử chiến lược với dữ liệu lịch sử 5 năm trước khi triển khai thực tế. Báo cáo Sharpe Ratio, Drawdown, Win Rate chi tiết.</p>
+          <h4 class="feature-title" data-i18n="feat2.title">Backtest tự động</h4>
+          <p class="feature-desc" data-i18n="feat2.desc">Kiểm thử chiến lược với dữ liệu lịch sử 5 năm trước khi triển khai thực tế. Báo cáo Sharpe Ratio, Drawdown, Win Rate chi tiết.</p>
           <ul class="feature-list">
-            <li><i class="bi bi-check2 text-accent"></i> Dữ liệu lịch sử 5 năm</li>
-            <li><i class="bi bi-check2 text-accent"></i> Báo cáo PDF tự động</li>
-            <li><i class="bi bi-check2 text-accent"></i> So sánh đa chiến lược</li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat2.li1">Dữ liệu lịch sử 5 năm</span></li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat2.li2">Báo cáo PDF tự động</span></li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat2.li3">So sánh đa chiến lược</span></li>
           </ul>
         </div>
       </div>
       <div class="col-md-4">
         <div class="feature-card animate-on-scroll">
           <div class="feature-icon"><i class="bi bi-diagram-3"></i></div>
-          <h4 class="feature-title">Commission Farming</h4>
-          <p class="feature-desc">Tối ưu hóa Rebate (Back Com) khi chạy bot khối lượng lớn trên Exness & GTC. Hệ thống tự động tính toán và báo cáo hoa hồng theo ngày.</p>
+          <h4 class="feature-title" data-i18n="feat3.title">Commission Farming</h4>
+          <p class="feature-desc" data-i18n="feat3.desc">Tối ưu hóa Rebate (Back Com) khi chạy bot khối lượng lớn trên Exness & GTC. Hệ thống tự động tính toán và báo cáo hoa hồng theo ngày.</p>
           <ul class="feature-list">
-            <li><i class="bi bi-check2 text-accent"></i> Kết nối Exness / GTC</li>
-            <li><i class="bi bi-check2 text-accent"></i> Tối ưu rebate tự động</li>
-            <li><i class="bi bi-check2 text-accent"></i> Báo cáo hoa hồng hàng ngày</li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat3.li1">Kết nối Exness / GTC</span></li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat3.li2">Tối ưu rebate tự động</span></li>
+            <li><i class="bi bi-check2 text-accent"></i> <span data-i18n="feat3.li3">Báo cáo hoa hồng hàng ngày</span></li>
           </ul>
         </div>
       </div>
@@ -166,32 +166,32 @@
 <section class="how-section">
   <div class="container">
     <div class="section-header text-center">
-      <span class="section-badge">Quy trình</span>
-      <h2 class="section-title">Bắt đầu trong 3 bước đơn giản</h2>
+      <span class="section-badge" data-i18n="how.badge">Quy trình</span>
+      <h2 class="section-title" data-i18n="how.title">Bắt đầu trong 3 bước đơn giản</h2>
     </div>
     <div class="row g-4 mt-2 align-items-center">
       <div class="col-md-4">
         <div class="step-card animate-on-scroll">
           <div class="step-number">01</div>
           <div class="step-icon"><i class="bi bi-person-plus"></i></div>
-          <h5 class="step-title">Tạo tài khoản</h5>
-          <p class="step-desc">Đăng ký miễn phí, xác thực email OTP, kích hoạt ngay lập tức.</p>
+          <h5 class="step-title" data-i18n="step1.title">Tạo tài khoản</h5>
+          <p class="step-desc" data-i18n="step1.desc">Đăng ký miễn phí, xác thực email OTP, kích hoạt ngay lập tức.</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="step-card animate-on-scroll">
           <div class="step-number">02</div>
           <div class="step-icon"><i class="bi bi-wallet2"></i></div>
-          <h5 class="step-title">Nạp USDT</h5>
-          <p class="step-desc">Chuyển USDT từ MetaMask đến ví Admin. Hệ thống tự động xác nhận và cộng xu.</p>
+          <h5 class="step-title" data-i18n="step2.title">Nạp USDT</h5>
+          <p class="step-desc" data-i18n="step2.desc">Chuyển USDT từ MetaMask đến ví Admin. Hệ thống tự động xác nhận và cộng xu.</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="step-card animate-on-scroll">
           <div class="step-number">03</div>
           <div class="step-icon"><i class="bi bi-robot"></i></div>
-          <h5 class="step-title">Kích hoạt Bot</h5>
-          <p class="step-desc">Chọn chiến lược, kết nối tài khoản Exness/GTC, bot tự động giao dịch 24/7.</p>
+          <h5 class="step-title" data-i18n="step3.title">Kích hoạt Bot</h5>
+          <p class="step-desc" data-i18n="step3.desc">Chọn chiến lược, kết nối tài khoản Exness/GTC, bot tự động giao dịch 24/7.</p>
         </div>
       </div>
     </div>
@@ -205,15 +205,15 @@
       <div class="cta-bg-blur"></div>
       <div class="row align-items-center position-relative">
         <div class="col-lg-7">
-          <h2 class="cta-title">Bắt đầu giao dịch thông minh hôm nay</h2>
-          <p class="cta-subtitle">Tham gia cùng 500+ traders đang tin dùng AITrading để tối ưu lợi nhuận mỗi ngày.</p>
+          <h2 class="cta-title" data-i18n="cta.title">Bắt đầu giao dịch thông minh hôm nay</h2>
+          <p class="cta-subtitle" data-i18n="cta.subtitle">Tham gia cùng 500+ traders đang tin dùng AITrading để tối ưu lợi nhuận mỗi ngày.</p>
         </div>
         <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
           <a href="{% url 'register' %}" class="btn btn-white-gradient btn-lg me-2">
-            <i class="bi bi-rocket-takeoff me-2"></i>Đăng ký ngay
+            <i class="bi bi-rocket-takeoff me-2"></i><span data-i18n="cta.btn1">Đăng ký ngay</span>
           </a>
           <a href="{% url 'trading' %}" class="btn btn-outline-white btn-lg">
-            Tìm hiểu thêm
+            <span data-i18n="cta.btn2">Tìm hiểu thêm</span>
           </a>
         </div>
       </div>

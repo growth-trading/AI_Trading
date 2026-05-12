@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 
 def landing(request):
@@ -6,4 +6,6 @@ def landing(request):
 
 
 def trading_view(request):
+    if not request.user.is_authenticated:
+        return redirect('register')
     return render(request, 'trading/index.html')
