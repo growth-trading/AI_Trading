@@ -16,10 +16,9 @@
       </div>
     </div>
     <nav class="sidebar-nav">
-      <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
       <a href="{% url 'deposit' %}" class="sidebar-link active"><i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span></a>
-      <a href="{% url 'trading' %}" class="sidebar-link"><i class="bi bi-robot"></i><span>AI Trading</span></a>
       <a href="{% url 'profile' %}" class="sidebar-link"><i class="bi bi-person"></i><span data-i18n="nav.profile">Hồ sơ</span></a>
+      <a href="{% url 'settings' %}" class="sidebar-link"><i class="bi bi-gear"></i><span data-i18n="nav.settings">Cài đặt</span></a>
     </nav>
     <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span></a>
   </aside>
@@ -30,9 +29,15 @@
         <h1 class="dashboard-title" data-i18n="dep.title">Nạp tiền USDT</h1>
         <p class="dashboard-sub" data-i18n="dep.sub">Chuyển USDT qua MetaMask — hệ thống tự động xác nhận và cộng xu.</p>
       </div>
-      <div class="coins-display">
-        <i class="bi bi-coin text-warning me-2"></i>
-        <strong>{{ request.user.coins|floatformat:2 }}</strong> <span data-i18n="com.coins_unit">xu</span>
+      <div class="d-flex align-items-center gap-3">
+        <div class="coins-display">
+          <i class="bi bi-coin text-warning me-2"></i>
+          <strong>{{ request.user.coins|floatformat:2 }}</strong> <span data-i18n="com.coins_unit">xu</span>
+        </div>
+        <div class="coins-display">
+          <i class="bi bi-receipt text-accent me-2"></i>
+          <strong>{{ total_tx_count }}</strong> <span data-i18n="prof.stat.txs">Giao dịch</span>
+        </div>
       </div>
     </div>
 

@@ -9,7 +9,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', trading_views.landing, name='landing'),
     path('accounts/', include('accounts.urls')),
-    path('dashboard/', include('accounts.dashboard_urls')),
     path('deposit/', include('deposits.urls')),
     path('trading/', include('trading.urls')),
     path('profile/', include('profiles.urls')),

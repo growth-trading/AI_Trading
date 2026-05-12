@@ -35,7 +35,7 @@ python manage.py collectstatic
 
 - **Backend**: Django 4.2, Python 3.11+, `python-decouple` (`.env`)
 - **Database**: SQLite (dev), `psycopg2-binary` có sẵn cho PostgreSQL
-- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2 (floating controls), Web3.js (MetaMask)
+- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2, Web3.js (MetaMask)
 - **Tác vụ nền**: `django-apscheduler` — scheduler khởi động trong `DepositsConfig.ready()`, không dùng Celery
 - **Email**: Django SMTP (Gmail)
 - **Blockchain**: BscScan API (BSC/BEP-20 USDT)
@@ -44,11 +44,11 @@ python manage.py collectstatic
 
 ```
 aitrading/       # settings.py, urls.py, wsgi.py
-accounts/        # CustomUser, đăng ký, OTP email, dashboard
+accounts/        # CustomUser, đăng ký, OTP email
 deposits/        # DepositTransaction, WalletScanState, tasks, views
 trading/         # landing page, trang trading
-profiles/        # hồ sơ, avatar, lịch sử giao dịch
-templates/       # HTML phân theo app (landing/, accounts/, dashboard/, deposits/, profiles/, emails/)
+profiles/        # hồ sơ, avatar, cài đặt (settings)
+templates/       # HTML phân theo app (landing/, accounts/, deposits/, profiles/, emails/)
 static/          # CSS, JS, web3.js, hình ảnh
 ```
 
@@ -60,11 +60,13 @@ Kế thừa `AbstractUser`, thêm:
 - `is_email_verified` (BooleanField) — gate cho nạp tiền và tính năng AI
 - `otp_code`, `otp_created_at` — OTP lưu trực tiếp trên user, hết hạn sau 10 phút
 - `memo_code` (property) — trả về `f"UID-{self.pk:04d}"`
+- `phone` (CharField max 20, blank=True), `address` (CharField max 255, blank=True)
 
 ### OTP Email Flow
-1. Đăng ký → `user.generate_otp()` → gửi SMTP → lưu `user.pk` vào session `pending_verify_user_id`
-2. `/accounts/verify/` → `user.is_otp_valid(code)` → set `is_email_verified=True`, clear `otp_code`/`otp_created_at` → login
+1. Đăng ký → `user.generate_otp()` → gửi SMTP (`_send_otp_email` trả `True`/`False`, lỗi hiện ra user) → lưu `user.pk` vào session `pending_verify_user_id`
+2. `/accounts/verify/` → `user.is_otp_valid(code)` (dùng `secrets.compare_digest()` — tránh timing attack) → set `is_email_verified=True`, clear `otp_code`/`otp_created_at` → login
 3. `login_view`: sau `authenticate()` thành công, kiểm tra `is_email_verified` — nếu False → redirect `verify_otp`
+4. `login()` gọi trực tiếp (không qua `authenticate()`) phải truyền `backend='django.contrib.auth.backends.ModelBackend'`
 
 ### Luồng nạp tiền (`deposits/`)
 
@@ -81,7 +83,9 @@ Kế thừa `AbstractUser`, thêm:
    - Cập nhật `WalletScanState.last_scanned_block`
 
 2. **Thủ công (submit TxHash)** — `deposits/views.py::submit_txhash_view()`:
-   - User nhập TxHash → `verify_txhash()` tra BscScan → trả `{tx_hash, amount_usdt, memo, ...}`
+   - Kiểm tra `is_email_verified` trước (ngăn bypass qua direct POST)
+   - Validate TxHash bằng regex `^0x[0-9a-fA-F]{64}$`
+   - `verify_txhash()` tra BscScan → trả `{tx_hash, amount_usdt, memo, ...}`
    - **Kiểm tra memo**: nếu memo != `request.user.memo_code` → từ chối (ngăn TxHash theft)
    - Cộng coins bằng `F('coins') + coins_credited`
 
@@ -93,19 +97,24 @@ Kế thừa `AbstractUser`, thêm:
 
 ### URL Structure
 ```
-/                           → trading.landing
+/                           → trading.landing (đã login → redirect trading)
 /accounts/register|login|logout|verify|resend-otp/
-/dashboard/                 → accounts.dashboard_view
 /deposit/                   → deposits.deposit_view, submit_txhash_view, check_deposit_status
-/trading/                   → trading.trading_view
+/trading/                   → trading.trading_view (yêu cầu đăng nhập)
 /profile/                   → profiles.profile_view
+/profile/settings/          → profiles.settings_view
 <bất kỳ URL nào khác>       → catch-all → page_not_found → templates/404.html
 ```
 
 **Catch-all 404**: `re_path(r'^.*$', lambda r, **kw: page_not_found(r, None))` đặt cuối `urlpatterns` trong `aitrading/urls.py`. Hoạt động kể cả khi `DEBUG=True`. Media files prepend trước khi `DEBUG=True` để không bị chặn bởi catch-all.
 
+### Điều hướng sau đăng nhập
+- `LOGIN_REDIRECT_URL = '/profile/'` trong `settings.py`
+- Sau login thành công: redirect `next` param — validate bằng `url_has_allowed_host_and_scheme()` (chặn open redirect); fallback `profile`
+- Dashboard đã bị xóa — mọi redirect trước đây về `dashboard` nay về `profile`
+
 ### Quyền truy cập
-- `trading_view` (`trading/views.py`) — redirect về `register` nếu chưa đăng nhập
+- `trading_view` — redirect về `login` nếu chưa đăng nhập
 - `deposit_view` kiểm tra `request.user.is_email_verified` trước khi hiển thị
 - `login_view` chặn user chưa verify email — redirect `verify_otp`
 - Các view nội bộ dùng `@login_required`
@@ -132,7 +141,7 @@ DJANGO_RUN_SCHEDULER=0                  # set 1 in production to start wallet sc
 ### Dark / Light Theme
 - CSS custom properties trên `:root`; override bằng `[data-theme="light"]` trên `<html>`
 - **Anti-flash**: inline script trong `<head>` đọc `localStorage('ait-theme')` và set `data-theme` trước khi CSS render
-- `applyTheme(theme)` trong `static/js/main.js` — cập nhật attribute, localStorage, icon `#themeIcon` (FA), label `#themeLabel`
+- `applyTheme(theme)` trong `static/js/main.js` — chỉ cập nhật `data-theme` và localStorage (không còn cập nhật icon/label vì floating controls đã xóa)
 
 ### Đa ngôn ngữ VI / EN (client-side)
 - Không dùng Django i18n. Text đánh dấu bằng `data-i18n="key"` trên element HTML
@@ -141,17 +150,19 @@ DJANGO_RUN_SCHEDULER=0                  # set 1 in production to start wallet sc
   - `nav.*`, `footer.*` — navbar/footer (base.html)
   - `hero.*`, `stat.*`, `feat*`, `how.*`, `cta.*` — landing page
   - `auth.login.*`, `auth.register.*`, `auth.label.*`, `auth.otp.*`, `auth.btn.*` — auth forms
-  - `dep.*` — trang nạp tiền; `prof.*` — hồ sơ; `dash.*` — dashboard
+  - `dep.*` — trang nạp tiền; `prof.*` — hồ sơ; `trad.*` — trang AI Trading; `settings.*` — trang cài đặt
   - `com.th.*`, `com.coins_unit`, `com.no_tx` — dùng chung (table headers, đơn vị)
   - `err404.*` — trang 404
 - `applyLang(lang)` query `[data-i18n]` → `textContent`; query `[data-i18n-placeholder]` → `placeholder`
 - **Button có icon**: đặt `data-i18n` trên `<span>` bên trong, không đặt trực tiếp lên `<button>` (textContent xóa mất icon `<i>`)
 - Khi thêm text mới: thêm key vào cả `i18n.vi` và `i18n.en`, gán attribute vào HTML
 
-### Floating Controls (theme + lang toggle)
-- `position: fixed; bottom: 28px; right: 24px`, class `.floating-controls` / `.floating-btn`
-- Icon: Font Awesome `fa-solid fa-moon` / `fa-solid fa-sun`; cờ quốc kỳ: emoji 🇻🇳 / 🇺🇸
-- **DOM order critical**: `<div class="floating-controls">` phải đặt **trước** `<script>` trong base.html — nếu đặt sau script thì `getElementById` trả `null` và event listener không gắn được
+### Theme & Language Toggle
+- Floating Controls (nút góc phải) **đã bị xóa** khỏi `base.html`
+- Toggle chuyển vào trang `/profile/settings/` — hai card: Giao diện (Dark/Light) + Ngôn ngữ (VI/EN)
+- JS dùng `addEventListener`, gọi global `applyTheme()` / `applyLang()` — không override bằng inline onclick
+- `applyTheme(theme)`: chỉ cập nhật `data-theme` và localStorage (không còn cập nhật icon/label)
+- `syncSettingsUI()`: đọc localStorage để highlight card option đang active
 
 ## Thiết kế & UI/UX
 
@@ -193,7 +204,11 @@ Lỗi:             #EF4444  (FAILED)
 
 ### Animation
 - Default transition: `all 0.2s ease`
-- Scroll fade-in: `IntersectionObserver` + class `animate-fadeInUp`
+- **Scroll fade-in**: class `animate-on-scroll` + `IntersectionObserver`
+  - CSS: `@keyframes scrollFadeUp` (không dùng `transition`) — animation có thể restart
+  - JS: `classList.remove('visible')` → `void el.offsetWidth` (force reflow) → `classList.add('visible')` mỗi lần scroll vào; remove khi scroll ra
+  - Exception: `.error-page .animate-on-scroll { opacity: 1; }` — trang 404 không cần scroll
+- `.btn-ghost-sm` hover: viền accent xuất hiện (`border: 1px solid transparent` → `border-color: var(--accent)`)
 - Loading: skeleton screen
 
 ### Responsive

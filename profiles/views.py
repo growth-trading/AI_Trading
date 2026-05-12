@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from deposits.models import DepositTransaction
 from .forms import ProfileForm
 
 
@@ -14,5 +13,9 @@ def profile_view(request):
             form.save()
             messages.success(request, 'Cập nhật hồ sơ thành công.')
             return redirect('profile')
-    all_txs = DepositTransaction.objects.filter(user=request.user)
-    return render(request, 'profiles/profile.html', {'form': form, 'all_txs': all_txs})
+    return render(request, 'profiles/profile.html', {'form': form})
+
+
+@login_required
+def settings_view(request):
+    return render(request, 'profiles/settings.html')

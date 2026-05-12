@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Cài đặt — AITrading{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      {% if request.user.avatar %}
+        <img src="{{ request.user.avatar.url }}" class="sidebar-avatar" alt="avatar" />
+      {% else %}
+        <div class="sidebar-avatar-placeholder"><i class="bi bi-person-fill"></i></div>
+      {% endif %}
+      <div>
+        <div class="sidebar-username">{{ request.user.username }}</div>
+        <div class="sidebar-email">{{ request.user.email }}</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{% url 'deposit' %}" class="sidebar-link"><i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span></a>
+      <a href="{% url 'profile' %}" class="sidebar-link"><i class="bi bi-person"></i><span data-i18n="nav.profile">Hồ sơ</span></a>
+      <a href="{% url 'settings' %}" class="sidebar-link active"><i class="bi bi-gear"></i><span data-i18n="nav.settings">Cài đặt</span></a>
+    </nav>
+    <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span></a>
+  </aside>
+
+  <main class="dashboard-main">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title" data-i18n="settings.title">Cài đặt</h1>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- Giao diện -->
+      <div class="col-12">
+        <div class="dashboard-card">
+          <h5 class="card-title-dark mb-4">
+            <i class="bi bi-palette me-2 text-accent"></i><span data-i18n="settings.appearance.title">Giao diện</span>
+          </h5>
+          <p class="text-muted small mb-3" data-i18n="settings.appearance.desc">Chọn chủ đề hiển thị cho ứng dụng.</p>
+          <div class="settings-option-group">
+            <button type="button" class="settings-option-btn" id="setThemeDark">
+              <div class="settings-option-icon"><i class="fa-solid fa-moon"></i></div>
+              <div>
+                <div class="settings-option-label" data-i18n="settings.appearance.dark">Tối</div>
+                <div class="settings-option-sub" data-i18n="settings.appearance.dark_desc">Nền tối, dễ nhìn ban đêm</div>
+              </div>
+              <i class="bi bi-check-circle-fill settings-option-check ms-auto" id="checkDark"></i>
+            </button>
+            <button type="button" class="settings-option-btn" id="setThemeLight">
+              <div class="settings-option-icon"><i class="fa-solid fa-sun"></i></div>
+              <div>
+                <div class="settings-option-label" data-i18n="settings.appearance.light">Sáng</div>
+                <div class="settings-option-sub" data-i18n="settings.appearance.light_desc">Nền sáng, phù hợp ban ngày</div>
+              </div>
+              <i class="bi bi-check-circle-fill settings-option-check ms-auto" id="checkLight"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ngôn ngữ -->
+      <div class="col-12">
+        <div class="dashboard-card">
+          <h5 class="card-title-dark mb-4">
+            <i class="bi bi-translate me-2 text-accent"></i><span data-i18n="settings.lang.title">Ngôn ngữ</span>
+          </h5>
+          <p class="text-muted small mb-3" data-i18n="settings.lang.desc">Chọn ngôn ngữ hiển thị cho toàn bộ ứng dụng.</p>
+          <div class="settings-option-group">
+            <button type="button" class="settings-option-btn" id="setLangVi">
+              <div class="settings-option-icon">🇻🇳</div>
+              <div>
+                <div class="settings-option-label">Tiếng Việt</div>
+                <div class="settings-option-sub">Vietnamese</div>
+              </div>
+              <i class="bi bi-check-circle-fill settings-option-check ms-auto" id="checkVi"></i>
+            </button>
+            <button type="button" class="settings-option-btn" id="setLangEn">
+              <div class="settings-option-icon">🇺🇸</div>
+              <div>
+                <div class="settings-option-label">English</div>
+                <div class="settings-option-sub">Tiếng Anh</div>
+              </div>
+              <i class="bi bi-check-circle-fill settings-option-check ms-auto" id="checkEn"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function syncSettingsUI() {
+  const theme = localStorage.getItem('ait-theme') || 'dark';
+  const lang  = document.documentElement.getAttribute('data-lang') || localStorage.getItem('ait-lang') || 'vi';
+
+  document.getElementById('checkDark').style.display  = theme === 'dark'  ? '' : 'none';
+  document.getElementById('checkLight').style.display = theme === 'light' ? '' : 'none';
+  document.getElementById('setThemeDark').classList.toggle('active',  theme === 'dark');
+  document.getElementById('setThemeLight').classList.toggle('active', theme === 'light');
+
+  document.getElementById('checkVi').style.display = lang === 'vi' ? '' : 'none';
+  document.getElementById('checkEn').style.display = lang === 'en' ? '' : 'none';
+  document.getElementById('setLangVi').classList.toggle('active', lang === 'vi');
+  document.getElementById('setLangEn').classList.toggle('active', lang === 'en');
+}
+
+function addClick(id, fn) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', fn);
+}
+addClick('setThemeDark',  function() { applyTheme('dark');  syncSettingsUI(); });
+addClick('setThemeLight', function() { applyTheme('light'); syncSettingsUI(); });
+addClick('setLangVi',     function() { applyLang('vi');     syncSettingsUI(); });
+addClick('setLangEn',     function() { applyLang('en');     syncSettingsUI(); });
+
+syncSettingsUI();
+</script>
+{% endblock %}

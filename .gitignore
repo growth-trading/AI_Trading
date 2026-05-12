@@ -1,15 +1,22 @@
 # Environment
 .env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
 venv/
 .venv/
 
 # Django
 db.sqlite3
+db.sqlite3-journal
 media/
 staticfiles/
 
@@ -17,3 +24,10 @@ staticfiles/
 .vscode/
 .idea/
 *.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

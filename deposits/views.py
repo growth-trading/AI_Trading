@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -17,11 +18,12 @@ def deposit_view(request):
         messages.warning(request, 'Vui lòng xác thực email trước khi nạp tiền.')
         return redirect('verify_otp')
 
-    recent_txs = DepositTransaction.objects.filter(user=request.user)[:10]
+    qs = DepositTransaction.objects.filter(user=request.user)
     context = {
         'admin_wallet': settings.ADMIN_WALLET_ADDRESS,
         'memo_code': request.user.memo_code,
-        'recent_txs': recent_txs,
+        'recent_txs': qs.order_by('-created_at')[:10],
+        'total_tx_count': qs.count(),
         'usdt_to_coins': settings.USDT_TO_COINS_RATE,
     }
     return render(request, 'deposits/deposit.html', context)
@@ -32,9 +34,13 @@ def submit_txhash_view(request):
     if request.method != 'POST':
         return redirect('deposit')
 
+    if not request.user.is_email_verified:
+        messages.warning(request, 'Vui lòng xác thực email trước khi nạp tiền.')
+        return redirect('verify_otp')
+
     tx_hash = request.POST.get('tx_hash', '').strip()
-    if not tx_hash or len(tx_hash) < 60:
-        messages.error(request, 'TxHash không hợp lệ.')
+    if not tx_hash or not re.match(r'^0x[0-9a-fA-F]{64}$', tx_hash):
+        messages.error(request, 'TxHash không hợp lệ. Định dạng đúng: 0x + 64 ký tự hex.')
         return redirect('deposit')
 
     if DepositTransaction.objects.filter(tx_hash__iexact=tx_hash).exists():

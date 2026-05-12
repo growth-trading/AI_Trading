@@ -16,10 +16,9 @@
       </div>
     </div>
     <nav class="sidebar-nav">
-      <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
       <a href="{% url 'deposit' %}" class="sidebar-link"><i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span></a>
-      <a href="{% url 'trading' %}" class="sidebar-link"><i class="bi bi-robot"></i><span>AI Trading</span></a>
       <a href="{% url 'profile' %}" class="sidebar-link active"><i class="bi bi-person"></i><span data-i18n="nav.profile">Hồ sơ</span></a>
+      <a href="{% url 'settings' %}" class="sidebar-link"><i class="bi bi-gear"></i><span data-i18n="nav.settings">Cài đặt</span></a>
     </nav>
     <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span></a>
   </aside>
@@ -49,16 +48,6 @@
           <p class="text-muted small mb-3">{{ request.user.email }}</p>
           <div class="profile-stats">
             <div class="profile-stat">
-              <div class="profile-stat-val text-accent">{{ request.user.coins|floatformat:2 }}</div>
-              <div class="profile-stat-label" data-i18n="prof.stat.coins">Xu</div>
-            </div>
-            <div class="profile-stat-divider"></div>
-            <div class="profile-stat">
-              <div class="profile-stat-val">{{ all_txs.count }}</div>
-              <div class="profile-stat-label" data-i18n="prof.stat.txs">Giao dịch</div>
-            </div>
-            <div class="profile-stat-divider"></div>
-            <div class="profile-stat">
               <div class="profile-stat-val">
                 {% if request.user.is_email_verified %}
                   <i class="bi bi-check-circle-fill text-success"></i>
@@ -66,7 +55,12 @@
                   <i class="bi bi-x-circle-fill text-danger"></i>
                 {% endif %}
               </div>
-              <div class="profile-stat-label">Email</div>
+              <div class="profile-stat-label" data-i18n="prof.label.email">Email</div>
+            </div>
+            <div class="profile-stat-divider"></div>
+            <div class="profile-stat">
+              <div class="profile-stat-val font-mono text-accent" style="font-size:0.95rem">{{ request.user.memo_code }}</div>
+              <div class="profile-stat-label" data-i18n="dash.stat.memo">Mã nạp tiền</div>
             </div>
           </div>
         </div>
@@ -87,6 +81,14 @@
                 <label class="form-label-dark" data-i18n="prof.label.first">Tên</label>
                 {{ form.first_name }}
               </div>
+              <div class="col-sm-6">
+                <label class="form-label-dark" data-i18n="prof.label.phone">Số điện thoại</label>
+                {{ form.phone }}
+              </div>
+              <div class="col-12">
+                <label class="form-label-dark" data-i18n="prof.label.address">Địa chỉ</label>
+                {{ form.address }}
+              </div>
               <div class="col-12 d-none">
                 {{ form.avatar }}
               </div>
@@ -97,38 +99,6 @@
           </form>
         </div>
 
-        <!-- Transaction History -->
-        <div class="dashboard-card mt-4">
-          <h5 class="card-title-dark mb-3" data-i18n="prof.tx.title">Toàn bộ giao dịch</h5>
-          {% if all_txs %}
-          <div class="table-responsive">
-            <table class="table-dark-custom">
-              <thead>
-                <tr>
-                  <th>TxHash</th>
-                  <th>USDT</th>
-                  <th data-i18n="com.th.coins">Xu</th>
-                  <th data-i18n="com.th.status">Trạng thái</th>
-                  <th data-i18n="com.th.date">Ngày</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for tx in all_txs %}
-                <tr>
-                  <td class="font-mono text-muted small">{{ tx.tx_hash|slice:":12" }}...</td>
-                  <td class="text-accent">{{ tx.amount_usdt }}</td>
-                  <td class="text-success">+{{ tx.coins_credited }}</td>
-                  <td><span class="status-badge status-{{ tx.status|lower }}">{{ tx.get_status_display }}</span></td>
-                  <td class="text-muted small">{{ tx.created_at|date:"d/m/Y" }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div class="empty-state"><i class="bi bi-inbox"></i><p data-i18n="com.no_tx">Chưa có giao dịch nào.</p></div>
-          {% endif %}
-        </div>
       </div>
     </div>
   </main>
@@ -137,22 +107,27 @@
 
 {% block extra_js %}
 <script>
-document.getElementById('id_avatar').addEventListener('change', function(e) {
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    const preview = document.getElementById('avatarPreview');
-    if (preview.tagName === 'IMG') {
-      preview.src = ev.target.result;
-    } else {
-      const img = document.createElement('img');
-      img.src = ev.target.result;
-      img.className = 'profile-avatar';
-      img.id = 'avatarPreview';
-      preview.replaceWith(img);
-    }
-  };
-  reader.readAsDataURL(e.target.files[0]);
-  this.form.submit();
-});
+const avatarInput = document.getElementById('id_avatar');
+if (avatarInput) {
+  avatarInput.addEventListener('change', function(e) {
+    if (!e.target.files || !e.target.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const preview = document.getElementById('avatarPreview');
+      if (!preview) return;
+      if (preview.tagName === 'IMG') {
+        preview.src = ev.target.result;
+      } else {
+        const img = document.createElement('img');
+        img.src = ev.target.result;
+        img.className = 'profile-avatar';
+        img.id = 'avatarPreview';
+        preview.replaceWith(img);
+      }
+    };
+    reader.readAsDataURL(e.target.files[0]);
+    this.form.submit();
+  });
+}
 </script>
 {% endblock %}

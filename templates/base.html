@@ -22,6 +22,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet" />
   {% load static %}
   <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <noscript><style>.animate-on-scroll { opacity: 1 !important; transform: none !important; }</style></noscript>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -29,7 +30,7 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
   <div class="container">
-    <a class="navbar-brand fw-800" href="{% url 'landing' %}">
+    <a class="navbar-brand fw-800" href="{% if user.is_authenticated %}{% url 'trading' %}{% else %}{% url 'landing' %}{% endif %}">
       <i class="bi bi-cpu-fill text-accent me-2"></i>AITrading
     </a>
 
@@ -38,10 +39,8 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav mx-auto gap-1">
-        <li class="nav-item"><a class="nav-link" href="{% url 'landing' %}" data-i18n="nav.home">Trang chủ</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'trading' %}" data-i18n="nav.ai-trading">AI Trading</a></li>
         {% if user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link" href="{% url 'deposit' %}" data-i18n="nav.deposit">Nạp tiền</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'trading' %}" data-i18n="nav.ai-trading">AI Trading</a></li>
         {% endif %}
       </ul>
       <div class="d-flex align-items-center gap-2">
@@ -61,7 +60,6 @@
               {{ user.username }}
             </button>
             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-              <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="bi bi-grid me-2"></i><span data-i18n="nav.dashboard">Dashboard</span></a></li>
               <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i><span data-i18n="nav.profile">Hồ sơ</span></a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i><span data-i18n="nav.logout">Đăng xuất</span></a></li>
@@ -116,7 +114,6 @@
         <h6 class="footer-heading" data-i18n="footer.account">Tài khoản</h6>
         <ul class="footer-links">
           {% if user.is_authenticated %}
-          <li><a href="{% url 'dashboard' %}" data-i18n="nav.dashboard">Dashboard</a></li>
           <li><a href="{% url 'profile' %}" data-i18n="nav.profile">Hồ sơ</a></li>
           {% else %}
           <li><a href="{% url 'register' %}" data-i18n="nav.register">Đăng ký</a></li>
@@ -138,16 +135,6 @@
   </div>
 </footer>
 
-<!-- Floating Controls (bottom-right) -->
-<div class="floating-controls">
-  <button type="button" class="floating-btn" id="themeToggle" title="Toggle theme">
-    <i class="fa-solid fa-moon" id="themeIcon"></i>
-    <span id="themeLabel">Dark</span>
-  </button>
-  <button type="button" class="floating-btn" id="langToggle" title="Switch language">
-    <span class="fab-flag" id="langFlag">🇻🇳</span>
-  </button>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% load static %}

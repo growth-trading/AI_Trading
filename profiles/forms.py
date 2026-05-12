@@ -8,10 +8,12 @@ _MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5 MB
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'avatar']
+        fields = ['first_name', 'last_name', 'phone', 'address', 'avatar']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
             'avatar': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
 

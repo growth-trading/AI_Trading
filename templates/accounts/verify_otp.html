@@ -30,16 +30,48 @@
             </button>
           </form>
 
+          <!-- Countdown -->
+          <div class="otp-countdown-wrap mt-3">
+            <i class="bi bi-clock text-accent me-1"></i>
+            <span data-i18n="auth.otp.expires">Mã có hiệu lực trong</span>
+            <span class="otp-countdown" id="otpCountdown">10:00</span>
+          </div>
+          <div id="otpExpiredMsg" class="text-danger small mt-1" style="display:none" data-i18n="auth.otp.expired">Mã đã hết hạn. Vui lòng gửi lại.</div>
+
           <p class="text-muted small mt-3">
             <span data-i18n="auth.otp.no_code">Không nhận được mã?</span>
             <a href="{% url 'resend_otp' %}" class="text-accent" data-i18n="auth.otp.resend">Gửi lại</a>
-          </p>
-          <p class="text-muted small">
-            <span data-i18n="auth.otp.expires">Mã có hiệu lực trong</span> <strong>10 <span data-i18n="auth.otp.minutes">phút</span></strong>.
           </p>
         </div>
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  let total = 10 * 60;
+  const el = document.getElementById('otpCountdown');
+  const expiredMsg = document.getElementById('otpExpiredMsg');
+  const submitBtn = document.querySelector('button[type="submit"]');
+
+  const timer = setInterval(function () {
+    total--;
+    if (total <= 0) {
+      clearInterval(timer);
+      el.textContent = '00:00';
+      el.classList.add('otp-countdown-expired');
+      expiredMsg.style.display = '';
+      if (submitBtn) submitBtn.disabled = true;
+      return;
+    }
+    const m = Math.floor(total / 60).toString().padStart(2, '0');
+    const s = (total % 60).toString().padStart(2, '0');
+    el.textContent = m + ':' + s;
+    if (total <= 60) el.classList.add('otp-countdown-warn');
+  }, 1000);
+})();
+</script>
 {% endblock %}

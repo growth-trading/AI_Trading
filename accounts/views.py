@@ -5,31 +5,33 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.conf import settings
 from .models import CustomUser
 from .forms import RegisterForm, LoginForm, OTPForm
-from deposits.models import DepositTransaction
 
 logger = logging.getLogger(__name__)
 
 
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('profile')
     form = RegisterForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         otp = user.generate_otp()
-        _send_otp_email(user, otp)
+        if _send_otp_email(user, otp):
+            messages.success(request, 'Đăng ký thành công! Kiểm tra email để lấy mã xác thực.')
+        else:
+            messages.warning(request, 'Tài khoản đã tạo nhưng email xác thực gửi thất bại. Vui lòng nhấn "Gửi lại".')
         request.session['pending_verify_user_id'] = user.pk
-        messages.success(request, 'Đăng ký thành công! Kiểm tra email để lấy mã xác thực.')
         return redirect('verify_otp')
     return render(request, 'accounts/register.html', {'form': form})
 
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('profile')
     form = LoginForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = authenticate(
@@ -42,8 +44,11 @@ def login_view(request):
                 request.session['pending_verify_user_id'] = user.pk
                 messages.warning(request, 'Vui lòng xác thực email trước khi đăng nhập.')
                 return redirect('verify_otp')
-            login(request, user)
-            return redirect(request.GET.get('next', 'dashboard'))
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            next_url = request.GET.get('next', '')
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+            return redirect('profile')
         messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
     return render(request, 'accounts/login.html', {'form': form})
 
@@ -64,8 +69,8 @@ def verify_otp_view(request):
 
     if user.is_email_verified:
         del request.session['pending_verify_user_id']
-        login(request, user)
-        return redirect('dashboard')
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        return redirect('profile')
 
     form = OTPForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -75,9 +80,9 @@ def verify_otp_view(request):
             user.otp_created_at = None
             user.save(update_fields=['is_email_verified', 'otp_code', 'otp_created_at'])
             del request.session['pending_verify_user_id']
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, 'Xác thực email thành công! Chào mừng bạn.')
-            return redirect('dashboard')
+            return redirect('profile')
         messages.error(request, 'Mã OTP không đúng hoặc đã hết hạn.')
     return render(request, 'accounts/verify_otp.html', {'form': form, 'email': user.email})
 
@@ -89,23 +94,13 @@ def resend_otp_view(request):
     try:
         user = CustomUser.objects.get(pk=user_id)
         otp = user.generate_otp()
-        _send_otp_email(user, otp)
-        messages.success(request, 'Đã gửi lại mã OTP mới vào email của bạn.')
+        if _send_otp_email(user, otp):
+            messages.success(request, 'Đã gửi lại mã OTP mới vào email của bạn.')
+        else:
+            messages.error(request, 'Gửi email thất bại. Vui lòng thử lại sau.')
     except CustomUser.DoesNotExist:
         pass
     return redirect('verify_otp')
-
-
-@login_required
-def dashboard_view(request):
-    recent_txs = DepositTransaction.objects.filter(
-        user=request.user
-    ).order_by('-created_at')[:5]
-    context = {
-        'recent_txs': recent_txs,
-        'coins': request.user.coins,
-    }
-    return render(request, 'dashboard/index.html', context)
 
 
 def _send_otp_email(user, otp):
@@ -120,5 +115,7 @@ def _send_otp_email(user, otp):
             html_message=html_message,
             fail_silently=False,
         )
+        return True
     except Exception as e:
         logger.error('Failed to send OTP email to %s: %s', user.email, e)
+        return False

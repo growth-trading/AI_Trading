@@ -11,7 +11,7 @@ alwaysApply: true
 
 - **Backend**: Django 4.2, Python 3.11+, `python-decouple` (`.env`)
 - **Database**: SQLite (dev), `psycopg2-binary` có sẵn cho PostgreSQL
-- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2 (floating controls), Web3.js (MetaMask)
+- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2, Web3.js (MetaMask)
 - **Tác vụ nền**: `django-apscheduler` — scheduler khởi động trong `DepositsConfig.ready()`, không dùng Celery
 - **Email**: Django SMTP (Gmail)
 - **Blockchain**: BscScan API (BSC/BEP-20 USDT)

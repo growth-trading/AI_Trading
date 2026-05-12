@@ -1,0 +1,22 @@
+# Virtual environment
+venv/
+.venv/
+
+# Django generated
+staticfiles/
+media/
+db.sqlite3
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Migrations (generated, đọc models.py thay thế)
+*/migrations/
+
+# Logs & build
+*.log
+logs/
+dist/
+build/
+*.egg-info/

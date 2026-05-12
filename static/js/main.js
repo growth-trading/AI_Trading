@@ -8,17 +8,21 @@ if (nav) {
   });
 }
 
-// IntersectionObserver — fade-in on scroll
+// IntersectionObserver — fade-in on scroll, replays every time
 const scrollEls = document.querySelectorAll('.animate-on-scroll');
 if (scrollEls.length) {
   const obs = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
+    entries.forEach((entry) => {
+      const el = entry.target;
       if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 100);
-        obs.unobserve(entry.target);
+        el.classList.remove('visible');
+        void el.offsetWidth; // force reflow — restarts animation
+        el.classList.add('visible');
+      } else {
+        el.classList.remove('visible');
       }
     });
-  }, { threshold: 0.15 });
+  }, { threshold: 0.12 });
   scrollEls.forEach(el => obs.observe(el));
 }
 
@@ -99,15 +103,14 @@ document.querySelectorAll('.alert-toast').forEach(el => {
 const i18n = {
   vi: {
     /* navbar */
-    'nav.home':        'Trang chủ',
     'nav.ai-trading':  'AI Trading',
     'nav.deposit':     'Nạp tiền',
     'nav.coins':       'xu',
     'nav.login':       'Đăng nhập',
     'nav.signup':      'Đăng ký ngay',
     'nav.register':    'Đăng ký',
-    'nav.dashboard':   'Dashboard',
     'nav.profile':     'Hồ sơ',
+    'nav.settings':    'Cài đặt',
     'nav.logout':      'Đăng xuất',
     /* footer */
     'footer.desc':     'Nền tảng giao dịch thông minh tích hợp AI — tối ưu lợi nhuận, giảm thiểu rủi ro.',
@@ -186,7 +189,7 @@ const i18n = {
     'auth.otp.no_code': 'Không nhận được mã?',
     'auth.otp.resend':  'Gửi lại',
     'auth.otp.expires': 'Mã có hiệu lực trong',
-    'auth.otp.minutes': 'phút',
+    'auth.otp.expired': 'Mã đã hết hạn. Vui lòng gửi lại.',
     /* deposit */
     'dep.title':           'Nạp tiền USDT',
     'dep.sub':             'Chuyển USDT qua MetaMask — hệ thống tự động xác nhận và cộng xu.',
@@ -209,26 +212,47 @@ const i18n = {
     'dep.empty':           'Chưa có giao dịch nào. Thực hiện nạp tiền đầu tiên của bạn!',
     /* profile */
     'prof.title':       'Hồ sơ cá nhân',
-    'prof.stat.coins':  'Xu',
     'prof.stat.txs':    'Giao dịch',
     'prof.edit.title':  'Chỉnh sửa thông tin',
-    'prof.label.last':  'Họ',
-    'prof.label.first': 'Tên',
-    'prof.label.email': 'Email',
-    'prof.btn.save':    'Lưu thay đổi',
-    'prof.tx.title':    'Toàn bộ giao dịch',
-    /* dashboard */
-    'dash.welcome':    'Chào mừng trở lại,',
-    'dash.stat.coins': 'Số dư xu',
-    'dash.stat.txs':   'Tổng giao dịch nạp',
-    'dash.stat.email': 'Trạng thái Email',
-    'dash.stat.memo':  'Mã nạp tiền của bạn',
-    'dash.verified':   'Đã xác thực',
-    'dash.unverified': 'Chưa xác thực',
-    'dash.recent':     'Giao dịch gần đây',
-    'dash.view_all':   'Xem tất cả',
-    'dash.th.usdt':    'Số USDT',
-    'dash.deposit_now':'Nạp tiền ngay',
+    'prof.label.last':    'Họ',
+    'prof.label.first':   'Tên',
+    'prof.label.email':   'Email',
+    'prof.label.phone':   'Số điện thoại',
+    'prof.label.address': 'Địa chỉ',
+    'prof.btn.save':      'Lưu thay đổi',
+    /* trading page */
+    'trad.hero.title':    'Công nghệ giao dịch thế hệ mới',
+    'trad.hero.sub':      'Thuật toán AI phân tích thị trường 24/7, tự động hóa chiến lược và tối ưu lợi nhuận.',
+    'trad.algo.badge':    'Thuật toán',
+    'trad.algo.title':    'Trí tuệ nhân tạo phân tích thị trường',
+    'trad.algo.desc':     'Mô hình học máy được huấn luyện trên hàng triệu điểm dữ liệu lịch sử, liên tục cập nhật để thích nghi với điều kiện thị trường thay đổi.',
+    'trad.algo.f1.title': 'Phân tích đa khung thời gian',
+    'trad.algo.f1.desc':  'Kết hợp tín hiệu từ M15, H1, H4, D1 để lọc nhiễu và xác nhận xu hướng.',
+    'trad.algo.f2.title': '50+ chỉ báo kỹ thuật',
+    'trad.algo.f2.desc':  'RSI, MACD, Bollinger Bands, Ichimoku, ATR và nhiều chỉ báo tùy chỉnh.',
+    'trad.algo.f3.title': 'Phản ứng tức thì',
+    'trad.algo.f3.desc':  'Đặt lệnh trong vòng mili-giây khi phát hiện cơ hội, không bỏ lỡ điểm vào lệnh tốt.',
+    'trad.algo.stat.month': 'Tháng này',
+    'trad.bt.badge':  'Backtest',
+    'trad.bt.title':  'Kết quả kiểm chứng lịch sử',
+    'trad.bt.sub':    'Chiến lược đã được kiểm thử trên dữ liệu 5 năm trước khi triển khai thực tế.',
+    'trad.bt.profit': 'Lợi nhuận',
+    'trad.bt.period': 'Kỳ test',
+    'trad.bt.years':  '5 năm',
+    'trad.cta.title':    'Sẵn sàng bắt đầu?',
+    'trad.cta.sub':      'Nạp USDT và kích hoạt bot giao dịch của bạn ngay hôm nay.',
+    'trad.cta.deposit':  'Nạp tiền ngay',
+    'trad.cta.register': 'Đăng ký miễn phí',
+    /* settings */
+    'settings.title':                  'Cài đặt',
+    'settings.appearance.title':       'Giao diện',
+    'settings.appearance.desc':        'Chọn chủ đề hiển thị cho ứng dụng.',
+    'settings.appearance.dark':        'Tối',
+    'settings.appearance.dark_desc':   'Nền tối, dễ nhìn ban đêm',
+    'settings.appearance.light':       'Sáng',
+    'settings.appearance.light_desc':  'Nền sáng, phù hợp ban ngày',
+    'settings.lang.title':             'Ngôn ngữ',
+    'settings.lang.desc':              'Chọn ngôn ngữ hiển thị cho toàn bộ ứng dụng.',
     /* common */
     'com.coins_unit': 'xu',
     'com.th.coins':   'Xu nhận',
@@ -252,15 +276,14 @@ const i18n = {
   },
   en: {
     /* navbar */
-    'nav.home':        'Home',
     'nav.ai-trading':  'AI Trading',
     'nav.deposit':     'Deposit',
     'nav.coins':       'coins',
     'nav.login':       'Login',
-    'nav.signup':      'Let Register',
+    'nav.signup':      'Get Started',
     'nav.register':    'Register',
-    'nav.dashboard':   'Dashboard',
     'nav.profile':     'Profile',
+    'nav.settings':    'Settings',
     'nav.logout':      'Logout',
     /* footer */
     'footer.desc':     'AI-powered smart trading platform — maximize profits, minimize risks.',
@@ -339,7 +362,7 @@ const i18n = {
     'auth.otp.no_code': "Didn't receive the code?",
     'auth.otp.resend':  'Resend',
     'auth.otp.expires': 'Code valid for',
-    'auth.otp.minutes': 'minutes',
+    'auth.otp.expired': 'Code expired. Please resend.',
     /* deposit */
     'dep.title':           'Deposit USDT',
     'dep.sub':             'Transfer USDT via MetaMask — system auto-confirms and credits coins.',
@@ -362,26 +385,47 @@ const i18n = {
     'dep.empty':           'No transactions yet. Make your first deposit!',
     /* profile */
     'prof.title':       'Personal Profile',
-    'prof.stat.coins':  'Coins',
     'prof.stat.txs':    'Transactions',
     'prof.edit.title':  'Edit Information',
-    'prof.label.last':  'Last Name',
-    'prof.label.first': 'First Name',
-    'prof.label.email': 'Email',
-    'prof.btn.save':    'Save Changes',
-    'prof.tx.title':    'All Transactions',
-    /* dashboard */
-    'dash.welcome':    'Welcome back,',
-    'dash.stat.coins': 'Coin Balance',
-    'dash.stat.txs':   'Total Deposits',
-    'dash.stat.email': 'Email Status',
-    'dash.stat.memo':  'Your Deposit Code',
-    'dash.verified':   'Verified',
-    'dash.unverified': 'Unverified',
-    'dash.recent':     'Recent Transactions',
-    'dash.view_all':   'View All',
-    'dash.th.usdt':    'USDT Amount',
-    'dash.deposit_now':'Deposit Now',
+    'prof.label.last':    'Last Name',
+    'prof.label.first':   'First Name',
+    'prof.label.email':   'Email',
+    'prof.label.phone':   'Phone Number',
+    'prof.label.address': 'Address',
+    'prof.btn.save':      'Save Changes',
+    /* trading page */
+    'trad.hero.title':    'Next-Generation Trading Technology',
+    'trad.hero.sub':      'AI algorithms analyze markets 24/7, automate strategies and maximize profits.',
+    'trad.algo.badge':    'Algorithm',
+    'trad.algo.title':    'Artificial Intelligence Market Analysis',
+    'trad.algo.desc':     'Machine learning models trained on millions of historical data points, continuously updated to adapt to changing market conditions.',
+    'trad.algo.f1.title': 'Multi-Timeframe Analysis',
+    'trad.algo.f1.desc':  'Combines signals from M15, H1, H4, D1 to filter noise and confirm trends.',
+    'trad.algo.f2.title': '50+ Technical Indicators',
+    'trad.algo.f2.desc':  'RSI, MACD, Bollinger Bands, Ichimoku, ATR and many custom indicators.',
+    'trad.algo.f3.title': 'Instant Response',
+    'trad.algo.f3.desc':  'Places orders within milliseconds when an opportunity is detected — never miss a good entry.',
+    'trad.algo.stat.month': 'This Month',
+    'trad.bt.badge':  'Backtest',
+    'trad.bt.title':  'Historical Performance Results',
+    'trad.bt.sub':    'Strategies tested on 5 years of historical data before live deployment.',
+    'trad.bt.profit': 'Profit',
+    'trad.bt.period': 'Test Period',
+    'trad.bt.years':  '5 years',
+    'trad.cta.title':    'Ready to Start?',
+    'trad.cta.sub':      'Deposit USDT and activate your trading bot today.',
+    'trad.cta.deposit':  'Deposit Now',
+    'trad.cta.register': 'Register Free',
+    /* settings */
+    'settings.title':                  'Settings',
+    'settings.appearance.title':       'Appearance',
+    'settings.appearance.desc':        'Choose the display theme for the application.',
+    'settings.appearance.dark':        'Dark',
+    'settings.appearance.dark_desc':   'Dark background, easy on the eyes at night',
+    'settings.appearance.light':       'Light',
+    'settings.appearance.light_desc':  'Light background, suitable for daytime',
+    'settings.lang.title':             'Language',
+    'settings.lang.desc':              'Choose the display language for the entire application.',
     /* common */
     'com.coins_unit': 'coins',
     'com.th.coins':   'Coins',
@@ -421,30 +465,13 @@ function applyLang(lang) {
     if (dict[key] !== undefined) el.setAttribute('placeholder', dict[key]);
   });
 
-  const flag = document.getElementById('langFlag');
-  if (flag) flag.textContent = lang === 'vi' ? '🇻🇳' : '🇺🇸';
 }
 
 // Apply theme
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('ait-theme', theme);
-  const icon = document.getElementById('themeIcon');
-  if (icon) icon.className = theme === 'dark' ? 'fa-regular fa-moon' : 'fa-regular fa-sun';
-  const label = document.getElementById('themeLabel');
-  if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
 }
-
-// Wire up buttons
-document.getElementById('themeToggle')?.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme') || 'dark';
-  applyTheme(current === 'dark' ? 'light' : 'dark');
-});
-
-document.getElementById('langToggle')?.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-lang') || 'vi';
-  applyLang(current === 'vi' ? 'en' : 'vi');
-});
 
 // Init on page load (theme already set by anti-flash script; sync icon + text)
 (function () {
