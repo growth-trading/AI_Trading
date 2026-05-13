@@ -3,54 +3,339 @@
 
 {% block content %}
 <div class="trading-page">
-  <!-- Chart Card -->
-  <div class="trading-chart-card">
 
-    <!-- Toolbar -->
-    <div class="tv-toolbar">
-      <!-- Symbol Groups -->
-      <div class="tv-symbol-groups">
-        <div class="tv-symbol-group">
-          <span class="tv-group-label">Metals</span>
-          <button class="tv-symbol-btn active" data-symbol="OANDA:XAUUSD">XAUUSD</button>
-          <button class="tv-symbol-btn" data-symbol="OANDA:XAGUSD">XAGUSD</button>
-        </div>
-        <div class="tv-divider"></div>
-        <div class="tv-symbol-group">
-          <span class="tv-group-label">Forex</span>
-          <button class="tv-symbol-btn" data-symbol="OANDA:EURUSD">EURUSD</button>
-          <button class="tv-symbol-btn" data-symbol="OANDA:GBPUSD">GBPUSD</button>
-          <button class="tv-symbol-btn" data-symbol="OANDA:USDJPY">USDJPY</button>
-        </div>
-        <div class="tv-divider"></div>
-        <div class="tv-symbol-group">
-          <span class="tv-group-label">Crypto</span>
-          <button class="tv-symbol-btn" data-symbol="BINANCE:BTCUSDT">BTC</button>
-          <button class="tv-symbol-btn" data-symbol="BINANCE:ETHUSDT">ETH</button>
-          <button class="tv-symbol-btn" data-symbol="BINANCE:SOLUSDT">SOL</button>
-        </div>
-        <div class="tv-divider"></div>
-        <div class="tv-symbol-group">
-          <span class="tv-group-label">Stocks</span>
-          <button class="tv-symbol-btn" data-symbol="NASDAQ:AAPL">AAPL</button>
-          <button class="tv-symbol-btn" data-symbol="NASDAQ:TSLA">TSLA</button>
-        </div>
+{% if not has_ai_access %}
+
+  <!-- ── SUBSCRIPTION GATE ── -->
+  <div class="ai-sub-gate">
+    <div class="ai-sub-gate-inner">
+      <div class="ai-sub-gate-badge">
+        <i class="bi bi-stars me-1"></i>
+        <span data-i18n="trad.sub.badge">AI Trading Bot</span>
+      </div>
+      <h2 class="ai-sub-gate-title" data-i18n="trad.sub.title">Mở khóa AI Trading Bot</h2>
+      <p class="ai-sub-gate-sub" data-i18n="trad.sub.sub">Phân tích chart không giới hạn với Gemini Vision AI + TAAPI.io</p>
+    </div>
+
+    <div class="ai-plans-grid">
+
+      <!-- Tuần -->
+      <div class="ai-plan-card">
+        <div class="ai-plan-name" data-i18n="trad.sub.plan.week">Tuần</div>
+        <div class="ai-plan-price">{{ ai_plans.week }}<span class="ai-plan-unit" data-i18n="com.coins_unit">xu</span></div>
+        <div class="ai-plan-period">7 <span data-i18n="trad.sub.days">ngày</span></div>
+        <ul class="ai-plan-features">
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.unlimited">Phân tích không giới hạn</span></li>
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.realtime">Dữ liệu thời gian thực</span></li>
+        </ul>
+        <button class="btn-ai-buy" data-plan="week">
+          <span data-i18n="trad.sub.buy">Mua ngay</span>
+        </button>
+      </div>
+
+      <!-- Tháng (featured) -->
+      <div class="ai-plan-card ai-plan-card-featured">
+        <div class="ai-plan-popular" data-i18n="trad.sub.popular">Phổ biến nhất</div>
+        <div class="ai-plan-name" data-i18n="trad.sub.plan.month">Tháng</div>
+        <div class="ai-plan-price">{{ ai_plans.month }}<span class="ai-plan-unit" data-i18n="com.coins_unit">xu</span></div>
+        <div class="ai-plan-period">30 <span data-i18n="trad.sub.days">ngày</span></div>
+        <ul class="ai-plan-features">
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.unlimited">Phân tích không giới hạn</span></li>
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.realtime">Dữ liệu thời gian thực</span></li>
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.gemini">Gemini Vision AI</span></li>
+        </ul>
+        <button class="btn-ai-buy btn-ai-buy-featured" data-plan="month">
+          <span data-i18n="trad.sub.buy">Mua ngay</span>
+        </button>
+      </div>
+
+      <!-- Năm -->
+      <div class="ai-plan-card">
+        <div class="ai-plan-saving" data-i18n="trad.sub.saving">Tiết kiệm 33%</div>
+        <div class="ai-plan-name" data-i18n="trad.sub.plan.year">Năm</div>
+        <div class="ai-plan-price">{{ ai_plans.year }}<span class="ai-plan-unit" data-i18n="com.coins_unit">xu</span></div>
+        <div class="ai-plan-period">365 <span data-i18n="trad.sub.days">ngày</span></div>
+        <ul class="ai-plan-features">
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.unlimited">Phân tích không giới hạn</span></li>
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.realtime">Dữ liệu thời gian thực</span></li>
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.gemini">Gemini Vision AI</span></li>
+          <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.priority">Ưu tiên xử lý</span></li>
+        </ul>
+        <button class="btn-ai-buy" data-plan="year">
+          <span data-i18n="trad.sub.buy">Mua ngay</span>
+        </button>
       </div>
 
     </div>
 
-    <!-- Live Bar -->
+    <div class="ai-sub-coins-note">
+      <i class="bi bi-coin text-warning me-1"></i>
+      <span data-i18n="trad.sub.balance">Số dư của bạn:</span>
+      <strong>{{ user.coins|floatformat:2 }}</strong>
+      <span data-i18n="com.coins_unit">xu</span>
+      &nbsp;·&nbsp;
+      <a href="{% url 'deposit' %}" data-i18n="trad.sub.topup">Nạp thêm xu</a>
+    </div>
+  </div>
+
+{% else %}
+
+  <!-- ── SUBSCRIBED VIEW ── -->
+
+  <!-- Subscription Status Bar -->
+  <div class="ai-sub-status-bar">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <span class="tv-live-dot"></span>
+      <span class="fw-600" data-i18n="trad.sub.active">AI Trading Đang Hoạt Động</span>
+      <span class="ai-sub-expiry-badge">
+        <i class="bi bi-calendar3 me-1"></i>
+        <span data-i18n="trad.sub.expires">Hết hạn:</span>
+        <span class="fw-600 ms-1">{{ ai_expires_at|date:"d/m/Y" }}</span>
+      </span>
+    </div>
+    <button class="btn-ai-renew" data-bs-toggle="modal" data-bs-target="#renewModal">
+      <i class="bi bi-arrow-clockwise me-1"></i>
+      <span data-i18n="trad.sub.renew">Gia hạn</span>
+    </button>
+  </div>
+
+  <!-- Chart Card -->
+  <div class="trading-chart-card">
+
+    <div class="tv-toolbar">
+      <div class="tv-toolbar-left">
+
+        <!-- Symbol dropdown -->
+        <div class="tv-dropdown" id="symbolDropdown">
+          <button class="tv-dropdown-btn" type="button">
+            <i class="bi bi-graph-up tv-dropdown-icon"></i>
+            <span class="tv-dropdown-label">XAU/USD</span>
+            <i class="bi bi-chevron-down tv-dropdown-arrow"></i>
+          </button>
+          <div class="tv-dropdown-menu">
+            <div class="tv-dropdown-group">Metals</div>
+            <div class="tv-dropdown-item active" data-value="OANDA:XAUUSD">
+              <span class="tv-item-name">XAU/USD</span><span class="tv-item-desc">Gold / USD</span>
+            </div>
+            <div class="tv-dropdown-item" data-value="OANDA:XAGUSD">
+              <span class="tv-item-name">XAG/USD</span><span class="tv-item-desc">Silver / USD</span>
+            </div>
+            <div class="tv-dropdown-sep"></div>
+            <div class="tv-dropdown-group">Forex</div>
+            <div class="tv-dropdown-item" data-value="OANDA:EURUSD">
+              <span class="tv-item-name">EUR/USD</span><span class="tv-item-desc">Euro / USD</span>
+            </div>
+            <div class="tv-dropdown-item" data-value="OANDA:GBPUSD">
+              <span class="tv-item-name">GBP/USD</span><span class="tv-item-desc">Pound / USD</span>
+            </div>
+            <div class="tv-dropdown-item" data-value="OANDA:USDJPY">
+              <span class="tv-item-name">USD/JPY</span><span class="tv-item-desc">USD / Yen</span>
+            </div>
+            <div class="tv-dropdown-sep"></div>
+            <div class="tv-dropdown-group">Crypto</div>
+            <div class="tv-dropdown-item" data-value="BINANCE:BTCUSDT">
+              <span class="tv-item-name">BTC/USDT</span><span class="tv-item-desc">Bitcoin</span>
+            </div>
+            <div class="tv-dropdown-item" data-value="BINANCE:ETHUSDT">
+              <span class="tv-item-name">ETH/USDT</span><span class="tv-item-desc">Ethereum</span>
+            </div>
+            <div class="tv-dropdown-item" data-value="BINANCE:SOLUSDT">
+              <span class="tv-item-name">SOL/USDT</span><span class="tv-item-desc">Solana</span>
+            </div>
+            <div class="tv-dropdown-sep"></div>
+            <div class="tv-dropdown-group">Stocks</div>
+            <div class="tv-dropdown-item" data-value="NASDAQ:AAPL">
+              <span class="tv-item-name">AAPL</span><span class="tv-item-desc">Apple Inc.</span>
+            </div>
+            <div class="tv-dropdown-item" data-value="NASDAQ:TSLA">
+              <span class="tv-item-name">TSLA</span><span class="tv-item-desc">Tesla Inc.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interval dropdown -->
+        <div class="tv-dropdown" id="intervalDropdown">
+          <button class="tv-dropdown-btn" type="button">
+            <i class="bi bi-clock tv-dropdown-icon"></i>
+            <span class="tv-dropdown-label">1h</span>
+            <i class="bi bi-chevron-down tv-dropdown-arrow"></i>
+          </button>
+          <div class="tv-dropdown-menu tv-dropdown-menu-sm">
+            <div class="tv-dropdown-item" data-value="1">1m</div>
+            <div class="tv-dropdown-item" data-value="5">5m</div>
+            <div class="tv-dropdown-item" data-value="15">15m</div>
+            <div class="tv-dropdown-item" data-value="30">30m</div>
+            <div class="tv-dropdown-sep"></div>
+            <div class="tv-dropdown-item active" data-value="60">1h</div>
+            <div class="tv-dropdown-item" data-value="120">2h</div>
+            <div class="tv-dropdown-item" data-value="240">4h</div>
+            <div class="tv-dropdown-sep"></div>
+            <div class="tv-dropdown-item" data-value="D">1D</div>
+            <div class="tv-dropdown-item" data-value="W">1W</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="tv-toolbar-right">
+        <div class="tv-search-wrap">
+          <input id="tvSearchInput" class="tv-search-input" type="text"
+                 data-i18n-placeholder="trad.sym.placeholder"
+                 placeholder="VD: NASDAQ:NVDA"
+                 autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button id="tvSearchBtn" class="tv-search-btn" type="button">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+        <button class="btn-ai-analyze" id="btnAiAnalyze">
+          <i class="bi bi-stars me-1"></i>
+          <span data-i18n="trad.ai.btn">AI Phân tích</span>
+        </button>
+      </div>
+    </div>
+
     <div class="tv-live-bar">
       <span class="tv-live-dot"></span>
       <span class="text-muted small" data-i18n="trad.chart.realtime">Dữ liệu thời gian thực từ TradingView</span>
     </div>
 
-    <!-- TradingView Widget -->
     <div class="tradingview-widget-container">
       <div id="tradingview_chart"></div>
     </div>
 
   </div>
+
+  <!-- AI Result Panel -->
+  <div class="ai-result-panel" id="aiResultPanel" style="display:none">
+
+    <div class="ai-result-loading" id="aiLoading">
+      <div class="ai-loading-spinner"></div>
+      <div>
+        <div class="fw-600" data-i18n="trad.ai.loading">Đang phân tích...</div>
+        <div class="text-muted small" data-i18n="trad.ai.loading_sub">Gemini đang đọc chart và tính toán tín hiệu</div>
+      </div>
+    </div>
+
+    <div id="aiResultContent" style="display:none">
+      <div class="ai-result-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-stars text-accent"></i>
+          <span class="fw-700" data-i18n="trad.ai.result_title">Kết quả phân tích AI</span>
+          <span class="text-muted small" id="aiResultSymbol"></span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small" id="aiResultTime"></span>
+          <button class="ai-close-btn" id="btnCloseAi"><i class="bi bi-x-lg"></i></button>
+        </div>
+      </div>
+
+      <div class="ai-signal-row">
+        <div class="ai-signal-badge" id="aiSignalBadge">—</div>
+        <div class="ai-confidence-wrap">
+          <div class="ai-confidence-label">
+            <span data-i18n="trad.ai.confidence">Độ tin cậy</span>
+            <span class="fw-700" id="aiConfidenceVal">0%</span>
+          </div>
+          <div class="ai-confidence-bar">
+            <div class="ai-confidence-fill" id="aiConfidenceFill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-prices-row" id="aiPricesRow">
+        <div class="ai-price-item">
+          <div class="ai-price-label" data-i18n="trad.ai.entry">Vào lệnh</div>
+          <div class="ai-price-val text-accent fw-700" id="aiEntry">—</div>
+        </div>
+        <div class="ai-price-divider"></div>
+        <div class="ai-price-item">
+          <div class="ai-price-label">Stop Loss</div>
+          <div class="ai-price-val text-danger fw-700" id="aiSL">—</div>
+        </div>
+        <div class="ai-price-divider"></div>
+        <div class="ai-price-item">
+          <div class="ai-price-label">Take Profit</div>
+          <div class="ai-price-val text-success fw-700" id="aiTP">—</div>
+        </div>
+      </div>
+
+      <div class="ai-reasoning" id="aiReasoning"></div>
+      <div class="ai-disclaimer" data-i18n="trad.ai.disclaimer">
+        ⚠️ Tín hiệu chỉ mang tính tham khảo, không phải khuyến nghị đầu tư. Giao dịch luôn có rủi ro.
+      </div>
+    </div>
+
+    <div class="ai-result-error" id="aiError" style="display:none">
+      <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+      <span id="aiErrorMsg"></span>
+    </div>
+
+  </div>
+
+  <!-- Renew Modal -->
+  <div class="modal fade" id="renewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 800px;">
+      <div class="modal-content ai-modal-content">
+        <div class="ai-modal-header">
+          <h5 class="fw-700 d-flex align-items-center gap-2 mb-0">
+            <i class="bi bi-arrow-clockwise text-accent"></i>
+            <span data-i18n="trad.sub.renew_title">Gia hạn AI Trading</span>
+          </h5>
+          <button type="button" class="ai-modal-close" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <div class="ai-renew-plans">
+          <div class="ai-plan-card">
+            <div class="ai-plan-name" data-i18n="trad.sub.plan.week">Tuần</div>
+            <div class="ai-plan-price">{{ ai_plans.week }}<span class="ai-plan-unit" data-i18n="com.coins_unit">xu</span></div>
+            <div class="ai-plan-period">7 <span data-i18n="trad.sub.days">ngày</span></div>
+            <ul class="ai-plan-features">
+              <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.unlimited">Phân tích không giới hạn</span></li>
+            </ul>
+            <button class="btn-ai-buy" data-plan="week">
+              <span data-i18n="trad.sub.buy">Mua ngay</span>
+            </button>
+          </div>
+          <div class="ai-plan-card ai-plan-card-featured">
+            <div class="ai-plan-popular" data-i18n="trad.sub.popular">Phổ biến nhất</div>
+            <div class="ai-plan-name" data-i18n="trad.sub.plan.month">Tháng</div>
+            <div class="ai-plan-price">{{ ai_plans.month }}<span class="ai-plan-unit" data-i18n="com.coins_unit">xu</span></div>
+            <div class="ai-plan-period">30 <span data-i18n="trad.sub.days">ngày</span></div>
+            <ul class="ai-plan-features">
+              <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.unlimited">Phân tích không giới hạn</span></li>
+            </ul>
+            <button class="btn-ai-buy btn-ai-buy-featured" data-plan="month">
+              <span data-i18n="trad.sub.buy">Mua ngay</span>
+            </button>
+          </div>
+          <div class="ai-plan-card">
+            <div class="ai-plan-saving" data-i18n="trad.sub.saving">Tiết kiệm 33%</div>
+            <div class="ai-plan-name" data-i18n="trad.sub.plan.year">Năm</div>
+            <div class="ai-plan-price">{{ ai_plans.year }}<span class="ai-plan-unit" data-i18n="com.coins_unit">xu</span></div>
+            <div class="ai-plan-period">365 <span data-i18n="trad.sub.days">ngày</span></div>
+            <ul class="ai-plan-features">
+              <li><i class="bi bi-check-circle text-success me-1"></i><span data-i18n="trad.sub.f.unlimited">Phân tích không giới hạn</span></li>
+            </ul>
+            <button class="btn-ai-buy" data-plan="year">
+              <span data-i18n="trad.sub.buy">Mua ngay</span>
+            </button>
+          </div>
+        </div>
+        <div class="ai-modal-footer">
+          <i class="bi bi-coin text-warning me-1"></i>
+          <span data-i18n="trad.sub.balance">Số dư của bạn:</span>
+          <strong>{{ user.coins|floatformat:2 }}</strong>
+          <span data-i18n="com.coins_unit">xu</span>
+          <span class="text-muted small ms-2">·</span>
+          <span class="text-muted small ms-1" data-i18n="trad.sub.renew_note">Gia hạn từ ngày hết hạn hiện tại</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endif %}
+
 </div>
 {% endblock %}
 
@@ -58,15 +343,92 @@
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
 (function () {
+  function getCookie(name) {
+    var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return v ? v[2] : null;
+  }
+
+  // ── Buy / Subscribe plan ──
+  document.querySelectorAll('.btn-ai-buy').forEach(function (btn) {
+    btn.addEventListener('click', function () { buyPlan(btn.dataset.plan); });
+  });
+
+  function buyPlan(plan) {
+    var allBtns = document.querySelectorAll('.btn-ai-buy');
+    allBtns.forEach(function (b) { b.disabled = true; });
+
+    fetch('{% url "subscribe_ai" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ plan: plan }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (json) {
+      if (json.success) {
+        showToast('Đăng ký thành công! Đang tải lại...', 'success');
+        setTimeout(function () { location.reload(); }, 1200);
+      } else {
+        allBtns.forEach(function (b) { b.disabled = false; });
+        showToast(json.error || 'Đã xảy ra lỗi', 'error');
+      }
+    })
+    .catch(function () {
+      allBtns.forEach(function (b) { b.disabled = false; });
+      showToast('Không thể kết nối. Vui lòng thử lại.', 'error');
+    });
+  }
+
+{% if has_ai_access %}
+  // ── TradingView Chart ──
   var currentSymbol = 'OANDA:XAUUSD';
+  var currentInterval = '60';
 
-  function loadChart(symbol) {
-    currentSymbol = symbol;
+  var tvSearchInput = document.getElementById('tvSearchInput');
+
+  // ── Custom dropdown logic ──
+  function initDropdown(id, onSelect) {
+    var el   = document.getElementById(id);
+    var btn  = el.querySelector('.tv-dropdown-btn');
+    var menu = el.querySelector('.tv-dropdown-menu');
+    var lbl  = btn.querySelector('.tv-dropdown-label');
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      document.querySelectorAll('.tv-dropdown.open').forEach(function (d) {
+        if (d !== el) d.classList.remove('open');
+      });
+      el.classList.toggle('open');
+    });
+
+    menu.querySelectorAll('.tv-dropdown-item').forEach(function (item) {
+      item.addEventListener('click', function () {
+        var val  = item.dataset.value;
+        var name = item.querySelector('.tv-item-name') || item;
+        lbl.textContent = name.textContent.trim();
+        menu.querySelectorAll('.tv-dropdown-item').forEach(function (i) { i.classList.remove('active'); });
+        item.classList.add('active');
+        el.classList.remove('open');
+        onSelect(val);
+      });
+    });
+
+    return { setLabel: function (text) { lbl.textContent = text; } };
+  }
+
+  document.addEventListener('click', function () {
+    document.querySelectorAll('.tv-dropdown.open').forEach(function (d) { d.classList.remove('open'); });
+  });
+
+  var symbolDD   = initDropdown('symbolDropdown',   function (v) { loadChart(v, null); });
+  var intervalDD = initDropdown('intervalDropdown', function (v) { loadChart(null, v); });
+
+  function loadChart(symbol, interval) {
+    if (symbol)   currentSymbol   = symbol;
+    if (interval) currentInterval = interval;
     document.getElementById('tradingview_chart').innerHTML = '';
-
     new TradingView.widget({
-      symbol: symbol,
-      interval: 'H1',
+      symbol: currentSymbol,
+      interval: currentInterval,
       theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
       style: '1',
       locale: document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'vi_VN',
@@ -77,19 +439,108 @@
       allow_symbol_change: true,
       withdateranges: true,
       save_image: false,
+      hide_top_toolbar: true,
+      show_bar_countdown_timer: true,
+      enabled_features: ['countdown'],
       toolbar_bg: '#111827',
-    });
-
-    document.querySelectorAll('.tv-symbol-btn').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.symbol === symbol);
     });
   }
 
-  document.querySelectorAll('.tv-symbol-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () { loadChart(btn.dataset.symbol); });
+  tvSearchInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') doSearch();
+  });
+  document.getElementById('tvSearchBtn').addEventListener('click', doSearch);
+
+  function doSearch() {
+    var raw = tvSearchInput.value.trim().toUpperCase();
+    if (!raw) return;
+    tvSearchInput.value = '';
+    var clean = raw.includes(':') ? raw.split(':')[1] : raw;
+    var match = document.querySelector('#symbolDropdown .tv-dropdown-item[data-value="' + raw + '"]');
+    document.querySelectorAll('#symbolDropdown .tv-dropdown-item').forEach(function (i) { i.classList.remove('active'); });
+    if (match) {
+      match.classList.add('active');
+      var name = match.querySelector('.tv-item-name') || match;
+      symbolDD.setLabel(name.textContent.trim());
+    } else {
+      symbolDD.setLabel(clean);
+    }
+    loadChart(raw, null);
+  }
+
+  document.getElementById('btnAiAnalyze').addEventListener('click', function () { runAnalysis(); });
+  document.getElementById('btnCloseAi').addEventListener('click', function () {
+    document.getElementById('aiResultPanel').style.display = 'none';
   });
 
-loadChart(currentSymbol);
+  function runAnalysis() {
+    var panel   = document.getElementById('aiResultPanel');
+    var loading = document.getElementById('aiLoading');
+    var content = document.getElementById('aiResultContent');
+    var error   = document.getElementById('aiError');
+
+    panel.style.display = 'block';
+    loading.style.display = 'flex';
+    content.style.display = 'none';
+    error.style.display = 'none';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    fetch('{% url "analyze_chart" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ symbol: currentSymbol, interval: currentInterval }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (json) {
+      loading.style.display = 'none';
+      if (json.success) {
+        renderResult(json.data);
+        content.style.display = 'block';
+      } else {
+        showError(json.error || 'Đã xảy ra lỗi');
+      }
+    })
+    .catch(function () {
+      loading.style.display = 'none';
+      showError('Không thể kết nối. Vui lòng thử lại.');
+    });
+  }
+
+  function renderResult(data) {
+    var signal = data.signal || 'HOLD';
+    var badge = document.getElementById('aiSignalBadge');
+    badge.textContent = signal;
+    badge.className = 'ai-signal-badge ai-signal-' + signal.toLowerCase();
+
+    var conf = data.confidence || 0;
+    document.getElementById('aiConfidenceVal').textContent = conf + '%';
+    var fill = document.getElementById('aiConfidenceFill');
+    fill.style.width = conf + '%';
+    fill.className = 'ai-confidence-fill ' + (conf >= 70 ? 'fill-high' : conf >= 40 ? 'fill-mid' : 'fill-low');
+
+    document.getElementById('aiEntry').textContent = data.entry ? formatPrice(data.entry) : '—';
+    document.getElementById('aiSL').textContent    = data.sl    ? formatPrice(data.sl)    : '—';
+    document.getElementById('aiTP').textContent    = data.tp    ? formatPrice(data.tp)    : '—';
+    document.getElementById('aiPricesRow').style.display = signal === 'HOLD' ? 'none' : '';
+
+    document.getElementById('aiReasoning').textContent = data.reasoning || '';
+    var sym = currentSymbol.includes(':') ? currentSymbol.split(':')[1] : currentSymbol;
+    document.getElementById('aiResultSymbol').textContent = '— ' + sym;
+    document.getElementById('aiResultTime').textContent = new Date().toLocaleTimeString('vi-VN');
+  }
+
+  function showError(msg) {
+    document.getElementById('aiError').style.display = 'flex';
+    document.getElementById('aiErrorMsg').textContent = msg;
+  }
+
+  function formatPrice(val) {
+    var n = parseFloat(val);
+    return n >= 100 ? n.toFixed(2) : n.toFixed(5);
+  }
+
+  loadChart(currentSymbol);
+{% endif %}
 })();
 </script>
 {% endblock %}

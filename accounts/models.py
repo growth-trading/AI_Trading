@@ -14,10 +14,17 @@ class CustomUser(AbstractUser):
     otp_created_at = models.DateTimeField(null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     address = models.CharField(max_length=255, blank=True)
+    ai_trading_expires_at = models.DateTimeField(null=True, blank=True)
 
     @property
     def memo_code(self):
         return f"UID-{self.pk:04d}"
+
+    @property
+    def has_ai_trading_access(self):
+        if not self.ai_trading_expires_at:
+            return False
+        return self.ai_trading_expires_at > timezone.now()
 
     def generate_otp(self):
         self.otp_code = ''.join(random.choices(string.digits, k=6))

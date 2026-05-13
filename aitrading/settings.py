@@ -101,6 +101,16 @@ BSCSCAN_API_KEY = config('BSCSCAN_API_KEY', default='')
 USDT_TO_COINS_RATE = config('USDT_TO_COINS_RATE', default=1, cast=int)
 WALLET_SCAN_INTERVAL_SECONDS = config('WALLET_SCAN_INTERVAL_SECONDS', default=60, cast=int)
 
+# AI Chart Analysis
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
+TAAPI_API_KEY = config('TAAPI_API_KEY', default='')
+CHART_IMG_API_KEY = config('CHART_IMG_API_KEY', default='')
+
+# AI Trading subscription plan costs (in coins)
+AI_PLAN_WEEK_COST  = config('AI_PLAN_WEEK_COST',  default=20,  cast=int)
+AI_PLAN_MONTH_COST = config('AI_PLAN_MONTH_COST', default=50,  cast=int)
+AI_PLAN_YEAR_COST  = config('AI_PLAN_YEAR_COST',  default=400, cast=int)
+
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 25
 
