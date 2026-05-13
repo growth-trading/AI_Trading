@@ -111,7 +111,6 @@ Kế thừa `AbstractUser`, thêm:
 ### Điều hướng sau đăng nhập
 - `LOGIN_REDIRECT_URL = '/profile/'` trong `settings.py`
 - Sau login thành công: redirect `next` param — validate bằng `url_has_allowed_host_and_scheme()` (chặn open redirect); fallback `profile`
-- Dashboard đã bị xóa — mọi redirect trước đây về `dashboard` nay về `profile`
 
 ### Quyền truy cập
 - `trading_view` — redirect về `login` nếu chưa đăng nhập
@@ -196,11 +195,6 @@ Lỗi:             #EF4444  (FAILED)
 - **Badge/Status**: pill shape, màu theo trạng thái
 - **Input**: bg `#1E293B`, border `#334155`, focus ring accent
 - **Table**: bg `#111827`, header `#1F2937`, row hover `#1E2A3A`
-
-### Dashboard (sau đăng nhập)
-- Sidebar trái: `#111827`, active highlight xanh
-- Stat Card: số lớn + trend indicator cho coins/số giao dịch
-- Bảng lịch sử: badge status, TxHash rút gọn + copy button
 
 ### Animation
 - Default transition: `all 0.2s ease`

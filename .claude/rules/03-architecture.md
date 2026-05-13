@@ -59,7 +59,6 @@ Kế thừa `AbstractUser`, thêm:
 - `login_view`: redirect `next` param sau login thành công — dùng `url_has_allowed_host_and_scheme()` để chặn open redirect; fallback về `profile`
 - `login()` phải truyền `backend='django.contrib.auth.backends.ModelBackend'` khi gọi trực tiếp (không qua `authenticate()`)
 - `landing`: nếu user đã đăng nhập → redirect `trading` (không hiện landing page)
-- Dashboard đã bị xóa — không còn URL `/dashboard/`
 
 ## Quyền truy cập
 

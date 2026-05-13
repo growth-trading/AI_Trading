@@ -54,12 +54,6 @@ Không dùng Django i18n framework. Toàn bộ xử lý phía client.
 - **Thêm key mới**: thêm vào cả `i18n.vi` và `i18n.en`, gán `data-i18n="key"` vào HTML
 - **Button có icon**: đặt `data-i18n` trên `<span>` bọc text bên trong, không đặt lên thẻ `<button>` (vì `textContent` sẽ xóa mất icon `<i>`)
 
-## Floating Controls
-
-**Đã bị xóa** hoàn toàn. Theme và Language toggle đã được chuyển vào trang `/profile/settings/` (`templates/profiles/settings.html`).
-
-CSS class `.floating-controls`, `.floating-btn`, `.fab-*` và các `@keyframes fab-*` đã được **xóa khỏi `main.css`** (~105 dòng dead code).
-
 ## Bảng màu
 
 ```
@@ -124,13 +118,6 @@ background: #111827;       /* table bg */
 /* header: */ background: #1F2937;
 /* row hover: */ background: #1E2A3A;
 ```
-
-## Dashboard (sau đăng nhập)
-
-- Sidebar trái: bg `#111827`, active item highlight `#3B82F6`
-- Stat Card: số lớn + trend indicator cho coins / số giao dịch
-- Bảng lịch sử: badge status, TxHash rút gọn + copy button
-
 ## Animation & Hiệu ứng
 
 - Default transition: `transition: all 0.2s ease`
