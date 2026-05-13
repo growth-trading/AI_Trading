@@ -4,6 +4,9 @@
 {% block content %}
 <div class="dashboard-layout">
   <aside class="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Thu/Mở sidebar">
+      <i class="bi bi-chevron-left"></i>
+    </button>
     <div class="sidebar-user">
       {% if request.user.avatar %}
         <img src="{{ request.user.avatar.url }}" class="sidebar-avatar" alt="avatar" />
@@ -16,8 +19,8 @@
       </div>
     </div>
     <nav class="sidebar-nav">
-      <a href="{% url 'deposit' %}" class="sidebar-link"><i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span></a>
       <a href="{% url 'profile' %}" class="sidebar-link active"><i class="bi bi-person"></i><span data-i18n="nav.profile">Hồ sơ</span></a>
+      <a href="{% url 'deposit' %}" class="sidebar-link"><i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span></a>
       <a href="{% url 'settings' %}" class="sidebar-link"><i class="bi bi-gear"></i><span data-i18n="nav.settings">Cài đặt</span></a>
     </nav>
     <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span></a>
@@ -60,17 +63,46 @@
             <div class="profile-stat-divider"></div>
             <div class="profile-stat">
               <div class="profile-stat-val font-mono text-accent" style="font-size:0.95rem">{{ request.user.memo_code }}</div>
-              <div class="profile-stat-label" data-i18n="dash.stat.memo">Mã nạp tiền</div>
+              <div class="profile-stat-label" data-i18n="prof.stat.memo">Mã nạp tiền</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Edit Form -->
+      <!-- Info Card -->
       <div class="col-lg-8">
         <div class="dashboard-card">
-          <h5 class="card-title-dark mb-4" data-i18n="prof.edit.title">Chỉnh sửa thông tin</h5>
-          <form method="post" enctype="multipart/form-data" novalidate>
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <h5 class="card-title-dark mb-0" data-i18n="prof.edit.title">Thông tin cá nhân</h5>
+            <button type="button" class="btn btn-outline-accent btn-sm" id="btnEdit">
+              <i class="bi bi-pencil me-1"></i><span data-i18n="prof.btn.edit">Chỉnh sửa</span>
+            </button>
+          </div>
+
+          <!-- View mode (default) -->
+          <div id="profileView">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="form-label-dark" data-i18n="prof.label.last">Họ</div>
+                <div class="profile-info-val">{{ request.user.last_name|default:"—" }}</div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-label-dark" data-i18n="prof.label.first">Tên</div>
+                <div class="profile-info-val">{{ request.user.first_name|default:"—" }}</div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-label-dark" data-i18n="prof.label.phone">Số điện thoại</div>
+                <div class="profile-info-val">{{ request.user.phone|default:"—" }}</div>
+              </div>
+              <div class="col-12">
+                <div class="form-label-dark" data-i18n="prof.label.address">Địa chỉ</div>
+                <div class="profile-info-val">{{ request.user.address|default:"—" }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit mode (hidden by default) -->
+          <form method="post" enctype="multipart/form-data" novalidate id="profileForm" style="display:none">
             {% csrf_token %}
             <div class="row g-3">
               <div class="col-sm-6">
@@ -93,12 +125,17 @@
                 {{ form.avatar }}
               </div>
             </div>
-            <button type="submit" class="btn btn-primary-gradient mt-4">
-              <i class="bi bi-check-lg me-2"></i><span data-i18n="prof.btn.save">Lưu thay đổi</span>
-            </button>
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary-gradient">
+                <i class="bi bi-check-lg me-2"></i><span data-i18n="prof.btn.save">Lưu thay đổi</span>
+              </button>
+              <button type="button" class="btn btn-outline-danger" id="btnCancel">
+                <i class="bi bi-x-lg me-2"></i><span data-i18n="prof.btn.cancel">Hủy</span>
+              </button>
+            </div>
           </form>
-        </div>
 
+        </div>
       </div>
     </div>
   </main>
@@ -107,27 +144,67 @@
 
 {% block extra_js %}
 <script>
-const avatarInput = document.getElementById('id_avatar');
-if (avatarInput) {
-  avatarInput.addEventListener('change', function(e) {
-    if (!e.target.files || !e.target.files[0]) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      const preview = document.getElementById('avatarPreview');
-      if (!preview) return;
-      if (preview.tagName === 'IMG') {
-        preview.src = ev.target.result;
-      } else {
-        const img = document.createElement('img');
-        img.src = ev.target.result;
-        img.className = 'profile-avatar';
-        img.id = 'avatarPreview';
-        preview.replaceWith(img);
-      }
-    };
-    reader.readAsDataURL(e.target.files[0]);
-    this.form.submit();
+(function () {
+  var btnEdit    = document.getElementById('btnEdit');
+  var btnCancel  = document.getElementById('btnCancel');
+  var profileView = document.getElementById('profileView');
+  var profileForm = document.getElementById('profileForm');
+
+  // Snapshot original values so Cancel can restore them
+  var origValues = {};
+  ['id_last_name', 'id_first_name', 'id_phone', 'id_address'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) origValues[id] = el.value;
   });
-}
+
+  function enterEdit() {
+    profileView.style.display = 'none';
+    profileForm.style.display = '';
+    btnEdit.style.display = 'none';
+  }
+
+  function exitEdit() {
+    profileForm.style.display = 'none';
+    profileView.style.display = '';
+    btnEdit.style.display = '';
+  }
+
+  btnEdit.addEventListener('click', enterEdit);
+
+  btnCancel.addEventListener('click', function () {
+    Object.keys(origValues).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = origValues[id];
+    });
+    exitEdit();
+  });
+
+  // If server returned form errors, stay in edit mode
+  {% if form.errors %}enterEdit();{% endif %}
+
+  // Avatar upload (works regardless of edit mode visibility)
+  var avatarInput = document.getElementById('id_avatar');
+  if (avatarInput) {
+    avatarInput.addEventListener('change', function (e) {
+      if (!e.target.files || !e.target.files[0]) return;
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        var preview = document.getElementById('avatarPreview');
+        if (!preview) return;
+        if (preview.tagName === 'IMG') {
+          preview.src = ev.target.result;
+        } else {
+          var img = document.createElement('img');
+          img.src = ev.target.result;
+          img.className = 'profile-avatar';
+          img.id = 'avatarPreview';
+          preview.replaceWith(img);
+        }
+      };
+      reader.readAsDataURL(e.target.files[0]);
+      this.form.submit();
+    });
+  }
+})();
 </script>
 {% endblock %}

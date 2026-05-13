@@ -213,13 +213,16 @@ const i18n = {
     /* profile */
     'prof.title':       'Hồ sơ cá nhân',
     'prof.stat.txs':    'Giao dịch',
-    'prof.edit.title':  'Chỉnh sửa thông tin',
+    'prof.edit.title':  'Thông tin cá nhân',
     'prof.label.last':    'Họ',
     'prof.label.first':   'Tên',
     'prof.label.email':   'Email',
     'prof.label.phone':   'Số điện thoại',
     'prof.label.address': 'Địa chỉ',
+    'prof.btn.edit':      'Chỉnh sửa',
     'prof.btn.save':      'Lưu thay đổi',
+    'prof.btn.cancel':    'Hủy',
+    'prof.stat.memo':     'Mã nạp tiền',
     /* trading page */
     'trad.hero.title':    'Công nghệ giao dịch thế hệ mới',
     'trad.hero.sub':      'Thuật toán AI phân tích thị trường 24/7, tự động hóa chiến lược và tối ưu lợi nhuận.',
@@ -386,13 +389,16 @@ const i18n = {
     /* profile */
     'prof.title':       'Personal Profile',
     'prof.stat.txs':    'Transactions',
-    'prof.edit.title':  'Edit Information',
+    'prof.edit.title':  'Personal Information',
     'prof.label.last':    'Last Name',
     'prof.label.first':   'First Name',
     'prof.label.email':   'Email',
     'prof.label.phone':   'Phone Number',
     'prof.label.address': 'Address',
+    'prof.btn.edit':      'Edit',
     'prof.btn.save':      'Save Changes',
+    'prof.btn.cancel':    'Cancel',
+    'prof.stat.memo':     'Deposit Code',
     /* trading page */
     'trad.hero.title':    'Next-Generation Trading Technology',
     'trad.hero.sub':      'AI algorithms analyze markets 24/7, automate strategies and maximize profits.',
@@ -479,4 +485,18 @@ function applyTheme(theme) {
   const lang  = localStorage.getItem('ait-lang')  || 'vi';
   applyTheme(theme);
   applyLang(lang);
+})();
+
+// Sidebar toggle
+(function () {
+  const toggle = document.getElementById('sidebarToggle');
+  if (!toggle) return;
+  const sidebar = document.querySelector('.sidebar');
+  if (localStorage.getItem('ait-sidebar') === 'collapsed') {
+    sidebar.classList.add('collapsed');
+  }
+  toggle.addEventListener('click', function () {
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('ait-sidebar', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+  });
 })();

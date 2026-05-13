@@ -75,6 +75,7 @@ body {
   transition: all 0.2s ease;
 }
 .nav-link:hover { color: var(--text-main) !important; background: rgba(255,255,255,0.05); }
+.nav-link.active { color: var(--accent) !important; background: rgba(59,130,246,0.1); }
 .nav-coins {
   font-size: 0.875rem;
   color: var(--text-sub);
@@ -551,6 +552,8 @@ body {
   left: 0;
   bottom: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.25s ease, padding 0.25s ease;
 }
 .sidebar-user {
   display: flex;
@@ -595,18 +598,57 @@ body {
   padding: 0.6rem 0.9rem;
   border-radius: var(--radius-sm);
   color: var(--danger);
+  background: rgba(239,68,68,0.08);
+  border: 1px solid transparent;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
   margin-top: 0.5rem;
 }
-.sidebar-logout:hover { background: rgba(239,68,68,0.08); }
+.sidebar-logout:hover {
+  background: rgba(239,68,68,0.9);
+  border-color: #EF4444;
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.25);
+}
+/* Sidebar toggle button */
+.sidebar-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  width: 28px; height: 28px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text-sub);
+  font-size: 0.75rem;
+  z-index: 10;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.sidebar-toggle:hover { color: var(--accent); border-color: var(--accent); }
+.sidebar.collapsed .sidebar-toggle { right: 50%; transform: translate(50%, -50%); }
+/* Collapsed state */
+.sidebar.collapsed { width: 64px; padding: 1.5rem 0.5rem; }
+.sidebar.collapsed .sidebar-toggle .bi { transform: rotate(180deg); }
+.sidebar.collapsed .sidebar-username,
+.sidebar.collapsed .sidebar-email { display: none; }
+.sidebar.collapsed .sidebar-user { justify-content: center; }
+.sidebar.collapsed .sidebar-link span,
+.sidebar.collapsed .sidebar-logout span { display: none; }
+.sidebar.collapsed .sidebar-link { justify-content: center; gap: 0; padding: 0.7rem; }
+.sidebar.collapsed .sidebar-link.active { border-left: none; }
+.sidebar.collapsed .sidebar-logout { justify-content: center; gap: 0; padding: 0.7rem; }
+.sidebar.collapsed + .dashboard-main { margin-left: 64px; max-width: calc(100vw - 64px); }
 .dashboard-main {
   flex: 1;
   margin-left: 240px;
   padding: 2rem 2.5rem;
   max-width: calc(100vw - 240px);
+  transition: margin-left 0.25s ease, max-width 0.25s ease;
 }
 .dashboard-header {
   display: flex;
@@ -846,6 +888,13 @@ body {
 .profile-stat-val { font-size: 1.1rem; font-weight: 700; }
 .profile-stat-label { font-size: 0.72rem; color: var(--text-sub); }
 .profile-stat-divider { width: 1px; height: 30px; background: var(--border); }
+.profile-info-val {
+  color: var(--text-main);
+  font-size: 0.95rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  min-height: 2.1rem;
+}
 
 /* ---- SETTINGS PAGE ---- */
 .settings-option-group {
