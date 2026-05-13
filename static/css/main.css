@@ -987,6 +987,176 @@ body {
 .backtest-stat { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
 .backtest-stat:last-child { border-bottom: none; }
 
+/* ---- TRADING PAGE ---- */
+.trading-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: calc(65px + 1.75rem) 2rem 3rem;
+}
+
+.trading-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+.trading-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--success);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.trading-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+.trading-sub { color: var(--text-sub); font-size: 0.875rem; }
+
+.trading-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.trading-meta-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  text-align: right;
+}
+.trading-meta-label { font-size: 0.7rem; color: var(--text-sub); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+.trading-meta-val { font-size: 1rem; font-weight: 700; }
+
+/* Chart Card */
+.trading-chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* Toolbar */
+.tv-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card-2);
+}
+.tv-symbol-groups {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tv-symbol-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.tv-group-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-right: 0.1rem;
+}
+.tv-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-2);
+  margin: 0 0.25rem;
+}
+.tv-symbol-btn {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.tv-symbol-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.06); }
+.tv-symbol-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--accent); }
+
+.btn-outline-accent {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+}
+.btn-outline-accent:hover { background: var(--accent); color: #fff; }
+
+
+/* Live bar */
+.tv-live-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.tv-live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+  position: relative;
+}
+.tv-live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--success);
+  opacity: 0;
+  animation: livePulse 1.8s ease-out infinite;
+}
+@keyframes livePulse {
+  0%   { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(2);   opacity: 0; }
+}
+
+.tradingview-widget-container { overflow: hidden; }
+
+@media (max-width: 768px) {
+  .trading-page { padding: calc(65px + 1rem) 1rem 2rem; }
+  .trading-header { flex-direction: column; gap: 1rem; }
+  .trading-header-meta { align-self: flex-start; }
+  .tv-toolbar { flex-direction: column; align-items: flex-start; }
+  .tv-symbol-groups { gap: 0.35rem; }
+  .tv-divider { display: none; }
+}
+
 /* ---- FOOTER ---- */
 .footer {
   padding: 4rem 0 2rem;
