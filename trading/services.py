@@ -1,17 +1,16 @@
 import json
+import re
 import base64
-import requests
+import logging
+import pandas as pd
+import pandas_ta as ta
 import google.generativeai as genai
 from django.conf import settings
+from django.core.cache import cache
 
-_DEMO_KEYS = {'your_gemini_api_key', 'your_taapi_api_key', 'your_chart_img_api_key', ''}
+logger = logging.getLogger(__name__)
 
-# 1×1 transparent PNG (fallback image for demo mode)
-_EMPTY_PNG = (
-    b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01'
-    b'\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f'
-    b'\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82'
-)
+_DEMO_KEYS = {'your_gemini_api_key', ''}
 
 def _mock_indicators() -> dict:
     return {
@@ -105,98 +104,74 @@ def _mock_analysis(symbol: str, current_price=None) -> dict:
         ),
     }
 
-# TradingView interval → TAAPI interval
-_INTERVAL_MAP = {
-    '1': '1m', '5': '5m', '15': '15m', '30': '30m',
-    '60': '1h', '120': '2h', '240': '4h',
-    'D': '1d', 'W': '1w',
-}
-
-# TradingView interval → Chart-IMG interval
-_CHART_IMG_INTERVAL_MAP = {
-    '1': '1m', '5': '5m', '15': '15m', '30': '30m',
-    '60': '1h', '120': '2h', '240': '4h',
-    'D': '1D', 'W': '1W',
-}
-
-
 def _strip_exchange(symbol: str) -> str:
-    """'OANDA:XAUUSD' → 'XAUUSD'"""
     return symbol.split(':')[1] if ':' in symbol else symbol
 
 
-def _get_exchange(symbol: str) -> str:
-    """'BINANCE:BTCUSDT' → 'binance', 'OANDA:XAUUSD' → 'oanda'"""
-    if ':' not in symbol:
-        return 'binance'
-    return symbol.split(':')[0].lower()
-
-
-def fetch_chart_image(symbol: str, interval: str) -> bytes:
-    """Gọi Chart-IMG API, trả về ảnh PNG dạng bytes."""
-    if settings.CHART_IMG_API_KEY in _DEMO_KEYS:
-        return _EMPTY_PNG
-    chart_interval = _CHART_IMG_INTERVAL_MAP.get(interval, '1h')
-    resp = requests.get(
-        'https://api.chart-img.com/v2/tradingview/advanced-chart',
-        params={
-            'symbol': symbol,
-            'interval': chart_interval,
-            'theme': 'dark',
-            'width': 1280,
-            'height': 720,
-            'key': settings.CHART_IMG_API_KEY,
-        },
-        timeout=30,
-    )
-    resp.raise_for_status()
-    return resp.content
-
-
-def fetch_indicators(symbol: str, interval: str) -> dict:
-    """Gọi TAAPI.io bulk endpoint, trả về dict các indicator."""
-    if settings.TAAPI_API_KEY in _DEMO_KEYS:
+def compute_indicators_local(candles: list) -> dict:
+    """Tính RSI/MACD/EMA/Supertrend từ OHLCV cục bộ — không gọi API ngoài."""
+    if len(candles) < 60:
+        logger.warning('compute_indicators_local: chỉ có %d nến, cần >= 60', len(candles))
         return _mock_indicators()
-    taapi_interval = _INTERVAL_MAP.get(interval, '1h')
-    exchange = _get_exchange(symbol)
-    clean_symbol = _strip_exchange(symbol)
 
-    # TAAPI dùng format "BTC/USDT" cho crypto, "XAU/USD" cho metals
-    if '/' not in clean_symbol and len(clean_symbol) > 5:
-        # e.g. BTCUSDT → BTC/USDT (best effort)
-        taapi_symbol = clean_symbol[:-4] + '/' + clean_symbol[-4:]
-    elif len(clean_symbol) == 6 and clean_symbol.isalpha():
-        # e.g. XAUUSD → XAU/USD
-        taapi_symbol = clean_symbol[:3] + '/' + clean_symbol[3:]
-    else:
-        taapi_symbol = clean_symbol
+    try:
+        df = pd.DataFrame(candles)[['open', 'high', 'low', 'close']].astype(float)
 
-    payload = {
-        'secret': settings.TAAPI_API_KEY,
-        'construct': {
-            'exchange': exchange,
-            'symbol': taapi_symbol,
-            'interval': taapi_interval,
-            'indicators': [
-                {'id': 'rsi', 'indicator': 'rsi'},
-                {'id': 'macd', 'indicator': 'macd'},
-                {'id': 'ema20', 'indicator': 'ema', 'optInTimePeriod': 20},
-                {'id': 'ema50', 'indicator': 'ema', 'optInTimePeriod': 50},
-                {'id': 'supertrend', 'indicator': 'supertrend'},
-            ],
-        },
-    }
+        df.ta.rsi(length=14, append=True)
+        df.ta.macd(fast=12, slow=26, signal=9, append=True)
+        df.ta.ema(length=20, append=True)
+        df.ta.ema(length=50, append=True)
+        df.ta.supertrend(length=10, multiplier=3.0, append=True)
 
-    resp = requests.post('https://api.taapi.io/bulk', json=payload, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+        last = df.iloc[-1]
 
-    result = {}
-    for item in data.get('data', []):
-        iid = item.get('id')
-        val = item.get('result', {})
-        result[iid] = val
-    return result
+        def _v(col):
+            val = last.get(col)
+            return float(val) if val is not None and pd.notna(val) else None
+
+        result = {}
+
+        rsi = _v('RSI_14')
+        if rsi is not None:
+            result['rsi'] = {'value': rsi}
+
+        macd = _v('MACD_12_26_9')
+        if macd is not None:
+            result['macd'] = {
+                'valueMACD':       macd,
+                'valueMACDSignal': _v('MACDs_12_26_9'),
+                'valueMACDHist':   _v('MACDh_12_26_9'),
+            }
+
+        ema20 = _v('EMA_20')
+        if ema20 is not None:
+            result['ema20'] = {'value': ema20}
+
+        ema50 = _v('EMA_50')
+        if ema50 is not None:
+            result['ema50'] = {'value': ema50}
+
+        st_cols     = [c for c in df.columns if re.match(r'^SUPERT_\d', c)]
+        st_dir_cols = [c for c in df.columns if re.match(r'^SUPERTd_\d', c)]
+        if st_cols and st_dir_cols:
+            st_val = _v(st_cols[0])
+            st_dir = _v(st_dir_cols[0])
+            if st_val is not None:
+                result['supertrend'] = {
+                    'value':       st_val,
+                    'valueAdvice': 'long' if (st_dir or 0) > 0 else 'short',
+                }
+
+        if not result:
+            logger.warning('compute_indicators_local: tất cả indicator đều None. Columns: %s', list(df.columns))
+            return _mock_indicators()
+        return result
+
+    except Exception:
+        logger.exception('compute_indicators_local thất bại, dùng mock')
+        return _mock_indicators()
+
+
 
 
 def analyze_with_gemini(image_bytes: bytes, indicators: dict, symbol: str, interval: str,
@@ -241,11 +216,9 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
     response = model.generate_content([prompt, image_part])
     raw = response.text.strip()
 
-    # Strip markdown code block nếu có
     if raw.startswith('```'):
-        raw = raw.split('```')[1]
-        if raw.startswith('json'):
-            raw = raw[4:]
+        raw = re.sub(r'^```(?:json)?\s*', '', raw)
+        raw = re.sub(r'\s*```$', '', raw)
     raw = raw.strip()
 
     data = json.loads(raw)

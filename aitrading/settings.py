@@ -107,8 +107,6 @@ MT5_PASSWORD = config('MT5_PASSWORD', default='')
 MT5_SERVER   = config('MT5_SERVER',   default='')
 
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
-TAAPI_API_KEY = config('TAAPI_API_KEY', default='')
-CHART_IMG_API_KEY = config('CHART_IMG_API_KEY', default='')
 
 # AI Trading subscription plan costs (in coins)
 AI_PLAN_WEEK_COST  = config('AI_PLAN_WEEK_COST',  default=20,  cast=int)

@@ -8,3 +8,5 @@ google-generativeai==0.8.3
 MetaTrader5
 django-redis==5.4.0
 redis==5.0.8
+pandas>=2.0
+pandas-ta>=0.3.14b

@@ -983,6 +983,22 @@
     clearLevels();
   });
 
+  function captureChartImage() {
+    try {
+      var container = document.getElementById('lwChart');
+      var canvases  = Array.from(container.querySelectorAll('canvas'));
+      if (!canvases.length) return null;
+      var w = container.clientWidth, h = 600;
+      var tmp = document.createElement('canvas');
+      tmp.width = w; tmp.height = h;
+      var ctx = tmp.getContext('2d');
+      canvases.forEach(function(c) { ctx.drawImage(c, 0, 0); });
+      return tmp.toDataURL('image/png').split(',')[1];
+    } catch (e) {
+      return null;
+    }
+  }
+
   function runAnalysis() {
     var panel   = document.getElementById('aiResultPanel');
     var loading = document.getElementById('aiLoading');
@@ -1000,6 +1016,8 @@
         symbol: currentSymbol,
         interval: currentInterval,
         current_price: chartCandles.length ? chartCandles[chartCandles.length - 1].close : null,
+        chart_image: captureChartImage(),
+        candles: chartCandles,
       }),
     })
     .then(function (res) { return res.json(); })

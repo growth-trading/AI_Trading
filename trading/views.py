@@ -1,5 +1,8 @@
+import base64
+import binascii
 import json
 import logging
+import re
 import threading
 import urllib.request
 from datetime import timedelta, datetime as _dt, timezone as _tz
@@ -34,7 +37,14 @@ from django.utils import timezone
 
 from accounts.models import CustomUser
 from .models import ChartAnalysisLog
-from .services import fetch_chart_image, fetch_indicators, analyze_with_gemini
+from .services import compute_indicators_local, analyze_with_gemini
+
+# 1×1 transparent PNG — dùng khi canvas capture thất bại
+_PNG_FALLBACK = (
+    b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01'
+    b'\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f'
+    b'\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82'
+)
 
 
 def landing(request):
@@ -126,25 +136,52 @@ def analyze_chart_view(request):
     if not request.user.has_ai_trading_access:
         return JsonResponse({'error': 'Bạn chưa mua gói AI Trading'}, status=403)
 
-    # Rate-limit: tối đa 5 lần phân tích / phút / user
+    # Rate-limit: tối đa 5 lần phân tích / phút / user (atomic incr tránh race condition)
     rate_key = f'ai:analyze:rate:{request.user.pk}'
-    rate_count = cache.get(rate_key, 0)
-    if rate_count >= 5:
+    try:
+        rate_count = cache.incr(rate_key)
+    except ValueError:
+        cache.add(rate_key, 0, 60)
+        rate_count = cache.incr(rate_key)
+    if rate_count > 5:
         return JsonResponse({'error': 'Bạn đang phân tích quá nhanh. Vui lòng chờ 1 phút.'}, status=429)
-    cache.set(rate_key, rate_count + 1, 60)
 
     try:
         body = json.loads(request.body)
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({'error': 'Dữ liệu không hợp lệ'}, status=400)
 
-    symbol        = body.get('symbol', 'OANDA:XAUUSD').strip()
-    interval      = body.get('interval', '60').strip()
-    current_price = body.get('current_price')
+    symbol          = body.get('symbol', 'OANDA:XAUUSD').strip().upper()
+    interval        = body.get('interval', '60').strip()
+    current_price   = body.get('current_price')
+    chart_image_b64 = body.get('chart_image') or ''
+    candles         = body.get('candles')
+
+    if not re.match(r'^[A-Z0-9_:.]{1,50}$', symbol):
+        return JsonResponse({'error': 'Symbol không hợp lệ'}, status=400)
+    if interval not in {'1', '5', '15', '30', '60', '120', '240', 'D', 'W'}:
+        return JsonResponse({'error': 'Interval không hợp lệ'}, status=400)
+    if chart_image_b64 and len(chart_image_b64) > 2_000_000:
+        chart_image_b64 = ''
+    if isinstance(candles, list):
+        if len(candles) > 500:
+            return JsonResponse({'error': 'Quá nhiều nến'}, status=400)
+        required_keys = {'open', 'high', 'low', 'close'}
+        if candles and not all(isinstance(c, dict) and required_keys.issubset(c) for c in candles[:5]):
+            candles = None
 
     try:
-        image_bytes = fetch_chart_image(symbol, interval)
-        indicators  = fetch_indicators(symbol, interval)
+        if chart_image_b64:
+            try:
+                image_bytes = base64.b64decode(chart_image_b64, validate=True)
+                if not image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
+                    raise ValueError('not png')
+            except (ValueError, binascii.Error):
+                image_bytes = _PNG_FALLBACK
+        else:
+            image_bytes = _PNG_FALLBACK
+
+        indicators = compute_indicators_local(candles if isinstance(candles, list) else [])
         result      = analyze_with_gemini(image_bytes, indicators, symbol, interval,
                                           current_price=current_price)
 
