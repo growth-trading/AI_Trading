@@ -102,6 +102,10 @@ USDT_TO_COINS_RATE = config('USDT_TO_COINS_RATE', default=1, cast=int)
 WALLET_SCAN_INTERVAL_SECONDS = config('WALLET_SCAN_INTERVAL_SECONDS', default=60, cast=int)
 
 # AI Chart Analysis
+MT5_ACCOUNT  = config('MT5_ACCOUNT',  default='')
+MT5_PASSWORD = config('MT5_PASSWORD', default='')
+MT5_SERVER   = config('MT5_SERVER',   default='')
+
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 TAAPI_API_KEY = config('TAAPI_API_KEY', default='')
 CHART_IMG_API_KEY = config('CHART_IMG_API_KEY', default='')
@@ -110,6 +114,31 @@ CHART_IMG_API_KEY = config('CHART_IMG_API_KEY', default='')
 AI_PLAN_WEEK_COST  = config('AI_PLAN_WEEK_COST',  default=20,  cast=int)
 AI_PLAN_MONTH_COST = config('AI_PLAN_MONTH_COST', default=50,  cast=int)
 AI_PLAN_YEAR_COST  = config('AI_PLAN_YEAR_COST',  default=400, cast=int)
+
+# Cache — dùng Redis nếu REDIS_URL được set, fallback LocMemCache (chỉ dùng cho dev single-process)
+REDIS_URL = config('REDIS_URL', default='')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'SOCKET_CONNECT_TIMEOUT': 5,
+                'SOCKET_TIMEOUT': 5,
+                'IGNORE_EXCEPTIONS': True,
+            },
+            'KEY_PREFIX': 'ait',
+            'TIMEOUT': 300,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'ait-mt5',
+        }
+    }
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 25

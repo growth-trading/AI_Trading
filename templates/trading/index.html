@@ -1,5 +1,61 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}AI Trading Bot — AITrading{% endblock %}
+{% block extra_css %}
+<style>
+#lwChart{background:#111827;border-radius:0 0 8px 8px;}
+.chart-loading{position:absolute;top:0;left:0;width:100%;height:600px;background:rgba(17,24,39,.85);display:flex;align-items:center;justify-content:center;z-index:10;border-radius:0 0 8px 8px;}
+.chart-loading-spinner{width:40px;height:40px;border:3px solid #1E293B;border-top-color:#3B82F6;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#priceCdLabel{position:absolute;right:0;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5;min-width:60px;padding:3px 6px;border-radius:2px 0 0 2px;font-size:11px;font-weight:600;line-height:1.35;color:#fff;transform:translateY(-50%);}
+#priceCdLabel::before{content:"";position:absolute;right:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;}
+.pcd-up{background:#10B981;}
+.pcd-up::before{border-right-color:#10B981;}
+.pcd-dn{background:#EF4444;}
+.pcd-dn::before{border-right-color:#EF4444;}
+#priceCdLabel .pcd-price{font-variant-numeric:tabular-nums;}
+#priceCdLabel .pcd-cd{font-size:10px;opacity:.9;font-variant-numeric:tabular-nums;}
+.ai-price-dist{font-size:.7rem;opacity:.85;margin-top:2px;}
+.ai-signal-item{justify-content:center;min-width:70px;}
+/* Search suggestions */
+.tv-search-wrap{position:relative;}
+#tvSearchSuggestions{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:320px;width:max-content;background:#1A1A2E;border:1px solid #1E293B;border-radius:8px;z-index:100;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.65);}
+[data-theme=light] #tvSearchSuggestions{background:#fff;border-color:#E2E8F0;box-shadow:0 8px 24px rgba(0,0,0,.15);}
+.tv-sug-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;white-space:nowrap;}
+.tv-sug-item:hover,.tv-sug-item.tv-sug-active{background:#16213E;}
+[data-theme=light] .tv-sug-item:hover,[data-theme=light] .tv-sug-item.tv-sug-active{background:#F1F5F9;}
+.tv-sug-sym{font-size:13px;font-weight:600;color:#F1F5F9;min-width:100px;}
+[data-theme=light] .tv-sug-sym{color:#0F172A;}
+.tv-sug-ex{font-size:10px;color:#64748B;background:#1E293B;padding:1px 6px;border-radius:3px;min-width:56px;text-align:center;}
+[data-theme=light] .tv-sug-ex{background:#E2E8F0;}
+.tv-sug-desc{font-size:12px;color:#94A3B8;min-width:90px;}
+#tvSearchHint{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:320px;width:max-content;background:#1A1A2E;border:1px solid #EF4444;border-radius:8px;padding:10px 14px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.65);}
+[data-theme=light] #tvSearchHint{background:#fff;}
+.tv-hint-title{font-size:12px;font-weight:600;color:#EF4444;margin-bottom:6px;}
+.tv-hint-body{font-size:12px;color:#94A3B8;line-height:1.6;}
+.tv-hint-ex{color:#3B82F6;cursor:pointer;font-weight:500;}
+.tv-hint-ex:hover{text-decoration:underline;}
+#tzBar{position:relative;display:flex;justify-content:flex-end;align-items:center;padding:3px 8px;background:#0B0F17;border-top:1px solid #1E293B;border-radius:0 0 8px 8px;}
+[data-theme=light] #tzBar{background:#F1F5F9;border-top-color:#E2E8F0;}
+#tzClock{font-size:11px;font-weight:500;color:#F59E0B;padding:2px 7px;border-radius:3px;cursor:pointer;pointer-events:auto;font-variant-numeric:tabular-nums;letter-spacing:.3px;user-select:none;}
+#tzClock:hover{background:rgba(30,41,59,.7);}
+[data-theme=light] #tzClock{color:#B45309;}
+[data-theme=light] #tzClock:hover{background:rgba(226,232,240,.8);}
+#tzPicker{display:none;position:absolute;bottom:calc(100% + 4px);right:8px;background:#1A1A2E;border:1px solid #1E293B;border-radius:6px;z-index:30;min-width:200px;max-height:300px;overflow-y:auto;box-shadow:0 -4px 24px rgba(0,0,0,.7);}
+[data-theme=light] #tzPicker{background:#fff;border-color:#E2E8F0;box-shadow:0 -4px 24px rgba(0,0,0,.15);}
+.tz-pick-title{padding:7px 14px 4px;font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:.7px;position:sticky;top:0;background:#1A1A2E;}
+[data-theme=light] .tz-pick-title{background:#fff;}
+.tz-pick-item{padding:6px 14px;font-size:12px;cursor:pointer;color:#CBD5E1;white-space:nowrap;}
+.tz-pick-item:hover{background:#16213E;color:#F1F5F9;}
+.tz-pick-item.active{color:#3B82F6;font-weight:600;}
+[data-theme=light] .tz-pick-item{color:#374151;}
+[data-theme=light] .tz-pick-item:hover{background:#F1F5F9;}
+.tz-pick-sep{height:1px;background:#1E293B;margin:2px 0;}
+[data-theme=light] .tz-pick-sep{background:#E2E8F0;}
+.tv-live-bar{font-size:.8rem;padding:6px 16px;display:flex;align-items:center;gap:4px;color:#94A3B8;}
+[data-theme=light] .tv-live-bar{color:#64748B;}
+[data-theme=light] #lwChart{background:#FFFFFF;}
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="trading-page">
@@ -157,23 +213,24 @@
         <div class="tv-dropdown" id="intervalDropdown">
           <button class="tv-dropdown-btn" type="button">
             <i class="bi bi-clock tv-dropdown-icon"></i>
-            <span class="tv-dropdown-label">1h</span>
+            <span class="tv-dropdown-label">H1</span>
             <i class="bi bi-chevron-down tv-dropdown-arrow"></i>
           </button>
           <div class="tv-dropdown-menu tv-dropdown-menu-sm">
-            <div class="tv-dropdown-item" data-value="1">1m</div>
-            <div class="tv-dropdown-item" data-value="5">5m</div>
-            <div class="tv-dropdown-item" data-value="15">15m</div>
-            <div class="tv-dropdown-item" data-value="30">30m</div>
+            <div class="tv-dropdown-item" data-value="1">M1</div>
+            <div class="tv-dropdown-item" data-value="5">M5</div>
+            <div class="tv-dropdown-item" data-value="15">M15</div>
+            <div class="tv-dropdown-item" data-value="30">M30</div>
             <div class="tv-dropdown-sep"></div>
-            <div class="tv-dropdown-item active" data-value="60">1h</div>
-            <div class="tv-dropdown-item" data-value="120">2h</div>
-            <div class="tv-dropdown-item" data-value="240">4h</div>
+            <div class="tv-dropdown-item active" data-value="60">H1</div>
+            <div class="tv-dropdown-item" data-value="120">H2</div>
+            <div class="tv-dropdown-item" data-value="240">H4</div>
             <div class="tv-dropdown-sep"></div>
-            <div class="tv-dropdown-item" data-value="D">1D</div>
-            <div class="tv-dropdown-item" data-value="W">1W</div>
+            <div class="tv-dropdown-item" data-value="D">D1</div>
+            <div class="tv-dropdown-item" data-value="W">W1</div>
           </div>
         </div>
+
 
       </div>
 
@@ -181,11 +238,13 @@
         <div class="tv-search-wrap">
           <input id="tvSearchInput" class="tv-search-input" type="text"
                  data-i18n-placeholder="trad.sym.placeholder"
-                 placeholder="VD: NASDAQ:NVDA"
+                 placeholder="VD: BINANCE:BNBUSDT"
                  autocomplete="off" autocapitalize="characters" spellcheck="false">
           <button id="tvSearchBtn" class="tv-search-btn" type="button">
             <i class="bi bi-search"></i>
           </button>
+          <div id="tvSearchSuggestions"></div>
+          <div id="tvSearchHint"></div>
         </div>
         <button class="btn-ai-analyze" id="btnAiAnalyze">
           <i class="bi bi-stars me-1"></i>
@@ -194,13 +253,59 @@
       </div>
     </div>
 
-    <div class="tv-live-bar">
-      <span class="tv-live-dot"></span>
-      <span class="text-muted small" data-i18n="trad.chart.realtime">Dữ liệu thời gian thực từ TradingView</span>
+    <div style="position:relative">
+      <div id="lwChart" style="width:100%;height:600px;"></div>
+      <div class="chart-loading" id="chartLoading" style="display:none">
+        <div class="chart-loading-spinner"></div>
+      </div>
+      <div id="priceCdLabel"><span class="pcd-price"></span><span class="pcd-cd"></span></div>
+      <div id="chartError" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(17,24,39,.9);align-items:center;justify-content:center;color:#EF4444;font-size:.9rem;border-radius:0 0 8px 8px;padding:16px;text-align:center;"></div>
     </div>
 
-    <div class="tradingview-widget-container">
-      <div id="tradingview_chart"></div>
+    <!-- Timezone bar -->
+    <div id="tzBar">
+      <div id="tzClock"></div>
+      <div id="tzPicker">
+        <div class="tz-pick-title">Múi giờ / Timezone</div>
+        <div class="tz-pick-item" data-value="-12">UTC−12 · Baker Island</div>
+        <div class="tz-pick-item" data-value="-11">UTC−11 · Pago Pago (SST)</div>
+        <div class="tz-pick-item" data-value="-10">UTC−10 · Honolulu (HST)</div>
+        <div class="tz-pick-item" data-value="-9.5">UTC−9:30 · Marquesas (MART)</div>
+        <div class="tz-pick-item" data-value="-9">UTC−9 · Anchorage (AKST)</div>
+        <div class="tz-pick-item" data-value="-8">UTC−8 · Los Angeles (PST)</div>
+        <div class="tz-pick-item" data-value="-7">UTC−7 · Denver (MST)</div>
+        <div class="tz-pick-item" data-value="-6">UTC−6 · Chicago (CST)</div>
+        <div class="tz-pick-item" data-value="-5">UTC−5 · New York (EST)</div>
+        <div class="tz-pick-item" data-value="-4">UTC−4 · New York (EDT)</div>
+        <div class="tz-pick-item" data-value="-3">UTC−3 · São Paulo (BRT)</div>
+        <div class="tz-pick-item" data-value="-2">UTC−2 · South Georgia</div>
+        <div class="tz-pick-item" data-value="-1">UTC−1 · Azores (AZOT)</div>
+        <div class="tz-pick-sep"></div>
+        <div class="tz-pick-item" data-value="0">UTC+0 · London (GMT)</div>
+        <div class="tz-pick-item" data-value="1">UTC+1 · Paris / Berlin (CET)</div>
+        <div class="tz-pick-item" data-value="2">UTC+2 · Frankfurt / Cairo (EET)</div>
+        <div class="tz-pick-item" data-value="3">UTC+3 · Moscow / Riyadh (MSK)</div>
+        <div class="tz-pick-item" data-value="3.5">UTC+3:30 · Tehran (IRST)</div>
+        <div class="tz-pick-item" data-value="4">UTC+4 · Dubai (GST)</div>
+        <div class="tz-pick-item" data-value="4.5">UTC+4:30 · Kabul (AFT)</div>
+        <div class="tz-pick-item" data-value="5">UTC+5 · Karachi (PKT)</div>
+        <div class="tz-pick-item" data-value="5.5">UTC+5:30 · Mumbai / Kolkata (IST)</div>
+        <div class="tz-pick-item" data-value="5.75">UTC+5:45 · Kathmandu (NPT)</div>
+        <div class="tz-pick-item" data-value="6">UTC+6 · Dhaka (BST)</div>
+        <div class="tz-pick-item" data-value="6.5">UTC+6:30 · Yangon (MMT)</div>
+        <div class="tz-pick-item" data-value="7">UTC+7 · Hà Nội / Bangkok (ICT)</div>
+        <div class="tz-pick-item" data-value="8">UTC+8 · Singapore / Beijing (SGT)</div>
+        <div class="tz-pick-item" data-value="8.75">UTC+8:45 · Eucla (ACWST)</div>
+        <div class="tz-pick-item" data-value="9">UTC+9 · Tokyo / Seoul (JST)</div>
+        <div class="tz-pick-item" data-value="9.5">UTC+9:30 · Adelaide (ACST)</div>
+        <div class="tz-pick-item" data-value="10">UTC+10 · Sydney (AEST)</div>
+        <div class="tz-pick-item" data-value="10.5">UTC+10:30 · Lord Howe</div>
+        <div class="tz-pick-item" data-value="11">UTC+11 · Solomon Islands (SBT)</div>
+        <div class="tz-pick-item" data-value="12">UTC+12 · Auckland / Fiji (NZST)</div>
+        <div class="tz-pick-item" data-value="12.75">UTC+12:45 · Chatham (CHAST)</div>
+        <div class="tz-pick-item" data-value="13">UTC+13 · Tonga (TOT)</div>
+        <div class="tz-pick-item" data-value="14">UTC+14 · Kiribati (LINT)</div>
+      </div>
     </div>
 
   </div>
@@ -229,20 +334,11 @@
         </div>
       </div>
 
-      <div class="ai-signal-row">
-        <div class="ai-signal-badge" id="aiSignalBadge">—</div>
-        <div class="ai-confidence-wrap">
-          <div class="ai-confidence-label">
-            <span data-i18n="trad.ai.confidence">Độ tin cậy</span>
-            <span class="fw-700" id="aiConfidenceVal">0%</span>
-          </div>
-          <div class="ai-confidence-bar">
-            <div class="ai-confidence-fill" id="aiConfidenceFill"></div>
-          </div>
-        </div>
-      </div>
-
       <div class="ai-prices-row" id="aiPricesRow">
+        <div class="ai-price-item ai-signal-item">
+          <div class="ai-signal-badge" id="aiSignalBadge">—</div>
+        </div>
+        <div class="ai-price-divider"></div>
         <div class="ai-price-item">
           <div class="ai-price-label" data-i18n="trad.ai.entry">Vào lệnh</div>
           <div class="ai-price-val text-accent fw-700" id="aiEntry">—</div>
@@ -251,11 +347,18 @@
         <div class="ai-price-item">
           <div class="ai-price-label">Stop Loss</div>
           <div class="ai-price-val text-danger fw-700" id="aiSL">—</div>
+          <div class="ai-price-dist text-danger" id="aiSLDist"></div>
         </div>
         <div class="ai-price-divider"></div>
         <div class="ai-price-item">
           <div class="ai-price-label">Take Profit</div>
           <div class="ai-price-val text-success fw-700" id="aiTP">—</div>
+          <div class="ai-price-dist text-success" id="aiTPDist"></div>
+        </div>
+        <div class="ai-price-divider"></div>
+        <div class="ai-price-item">
+          <div class="ai-price-label">R:R</div>
+          <div class="ai-price-val fw-700" id="aiRR">—</div>
         </div>
       </div>
 
@@ -340,7 +443,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://s3.tradingview.com/tv.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script>
 (function () {
   function getCookie(name) {
@@ -348,7 +451,7 @@
     return v ? v[2] : null;
   }
 
-  // ── Buy / Subscribe plan ──
+  // Buy / Subscribe plan
   document.querySelectorAll('.btn-ai-buy').forEach(function (btn) {
     btn.addEventListener('click', function () { buyPlan(btn.dataset.plan); });
   });
@@ -356,7 +459,6 @@
   function buyPlan(plan) {
     var allBtns = document.querySelectorAll('.btn-ai-buy');
     allBtns.forEach(function (b) { b.disabled = true; });
-
     fetch('{% url "subscribe_ai" %}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
@@ -379,19 +481,232 @@
   }
 
 {% if has_ai_access %}
-  // ── TradingView Chart ──
-  var currentSymbol = 'OANDA:XAUUSD';
+  var currentSymbol   = 'OANDA:XAUUSD';
   var currentInterval = '60';
+  var currentTzOffset = parseFloat(localStorage.getItem('ait-tz') || '7');
+  var chart = null, candleSeries = null;
+  var entryLine = null, slLine = null, tpLine = null;
+  var lastAnalysisLevels = null;
+  var lastCandleTime = 0;
+  var _refreshTimer = null;
+  var chartCandles = [];
+  var _loadingMore    = false;
+  var _noMoreHistory  = false;
+  var _histCooldown   = false;
 
-  var tvSearchInput = document.getElementById('tvSearchInput');
+  function getRefreshDelay(iv) {
+    return (iv === 'D' || iv === 'W') ? 60000 : 2000;
+  }
 
-  // ── Custom dropdown logic ──
+  function _padZ(n) { return n < 10 ? '0' + n : '' + n; }
+  function _tzDate(ts) { return new Date((ts + currentTzOffset * 3600) * 1000); }
+  function _makeTimeFormatter() {
+    return function(ts) {
+      var d = _tzDate(ts);
+      return _padZ(d.getUTCHours()) + ':' + _padZ(d.getUTCMinutes());
+    };
+  }
+  function _makeTickMarkFormatter() {
+    return function(time, tickMarkType) {
+      var TM = LightweightCharts.TickMarkType;
+      var d  = _tzDate(time);
+      if (tickMarkType === TM.Year)       return String(d.getUTCFullYear());
+      if (tickMarkType === TM.Month)      return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()];
+      if (tickMarkType === TM.DayOfMonth) return _padZ(d.getUTCDate()) + '/' + _padZ(d.getUTCMonth() + 1);
+      return _padZ(d.getUTCHours()) + ':' + _padZ(d.getUTCMinutes());
+    };
+  }
+  function setChartTimezone(offset) {
+    currentTzOffset = offset;
+    if (!chart) return;
+    chart.applyOptions({
+      localization: { timeFormatter: _makeTimeFormatter() },
+      timeScale: { tickMarkFormatter: _makeTickMarkFormatter() },
+    });
+  }
+  function _tzLabel(off) {
+    var sign = off >= 0 ? '+' : '-';
+    var abs  = Math.abs(off);
+    var h    = Math.floor(abs);
+    var m    = Math.round((abs - h) * 60);
+    return 'UTC' + sign + (m > 0 ? h + ':' + (m < 10 ? '0' + m : m) : h);
+  }
+
+  var _clockTimer = null;
+  function _updateTzClock() {
+    var el = document.getElementById('tzClock');
+    if (!el) return;
+    var now = new Date();
+    var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+    var d = new Date(utcMs + currentTzOffset * 3600000);
+    el.textContent = _padZ(d.getHours()) + ':' + _padZ(d.getMinutes()) + ':' + _padZ(d.getSeconds()) + ' ' + _tzLabel(currentTzOffset);
+  }
+  function startTzClock() {
+    if (_clockTimer) clearInterval(_clockTimer);
+    _updateTzClock();
+    _clockTimer = setInterval(_updateTzClock, 1000);
+  }
+
+  function showChartError(msg) {
+    var el = document.getElementById('chartError');
+    if (el) { el.textContent = msg; el.style.display = 'flex'; }
+  }
+
+  function initChart() {
+    var container = document.getElementById('lwChart');
+    var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: 600,
+      layout: {
+        background: { color: isDark ? '#111827' : '#FFFFFF' },
+        textColor: isDark ? '#94A3B8' : '#374151',
+      },
+      grid: {
+        vertLines: { color: isDark ? '#1E293B' : '#E5E7EB' },
+        horzLines: { color: isDark ? '#1E293B' : '#E5E7EB' },
+      },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+      rightPriceScale: { borderColor: isDark ? '#1E293B' : '#374151' },
+      timeScale: { borderColor: isDark ? '#1E293B' : '#E5E7EB', timeVisible: true, secondsVisible: false, tickMarkFormatter: _makeTickMarkFormatter() },
+      localization: { timeFormatter: _makeTimeFormatter() },
+    });
+    candleSeries = chart.addCandlestickSeries({
+      upColor: '#10B981', downColor: '#EF4444',
+      borderUpColor: '#10B981', borderDownColor: '#EF4444',
+      wickUpColor: '#10B981', wickDownColor: '#EF4444',
+      lastValueVisible: false,
+      priceLineVisible: true,
+      priceLineStyle: 1,
+    });
+    var ro = new ResizeObserver(function () {
+      chart.applyOptions({ width: container.clientWidth });
+      _cdUpdatePos();
+    });
+    ro.observe(container);
+    chart.timeScale().subscribeVisibleTimeRangeChange(function () { _cdUpdatePos(); });
+    chart.timeScale().subscribeVisibleLogicalRangeChange(function (range) {
+      if (range && range.from < -2 && !_histCooldown) loadMoreHistory();
+    });
+  }
+
+  function loadChart(symbol, interval) {
+    if (symbol)   currentSymbol   = symbol;
+    if (interval) currentInterval = interval;
+    clearLevels();
+    stopAutoRefresh();
+    lastCandleTime = 0;
+    _loadingMore   = false;
+    _noMoreHistory = false;
+    _histCooldown  = true;
+    var errEl = document.getElementById('chartError');
+    if (errEl) errEl.style.display = 'none';
+    document.getElementById('chartLoading').style.display = 'flex';
+    fetch('/trading/chart-data/?symbol=' + encodeURIComponent(currentSymbol) + '&interval=' + currentInterval)
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        document.getElementById('chartLoading').style.display = 'none';
+        if (json.success && json.candles && json.candles.length) {
+          chartCandles = json.candles;
+          candleSeries.setData(chartCandles);
+          chart.applyOptions({ width: document.getElementById('lwChart').clientWidth });
+          chart.timeScale().fitContent();
+          lastCandleTime = chartCandles[chartCandles.length - 1].time;
+          if (lastAnalysisLevels) {
+            drawLevels(lastAnalysisLevels.entry, lastAnalysisLevels.sl, lastAnalysisLevels.tp);
+          }
+          startAutoRefresh();
+          startCountdown();
+          _cdUpdatePos();
+          setTimeout(function () { _histCooldown = false; }, 600);
+        } else {
+          _histCooldown = false;
+          showChartError(json.error || 'Không tải được dữ liệu');
+        }
+      })
+      .catch(function (e) {
+        document.getElementById('chartLoading').style.display = 'none';
+        _histCooldown = false;
+        showChartError('Lỗi kết nối: ' + e.message);
+      });
+  }
+
+  function loadMoreHistory() {
+    if (_loadingMore || _noMoreHistory || !chartCandles.length) return;
+    _loadingMore = true;
+    var oldest = chartCandles[0].time;
+    fetch('/trading/chart-data/?symbol=' + encodeURIComponent(currentSymbol) + '&interval=' + currentInterval + '&before=' + oldest)
+      .then(function(r) { return r.json(); })
+      .then(function(json) {
+        _loadingMore = false;
+        if (!json.success || !json.candles || !json.candles.length) {
+          _noMoreHistory = true;
+          return;
+        }
+        var newCandles = json.candles.filter(function(c) { return c.time < chartCandles[0].time; });
+        if (!newCandles.length) { _noMoreHistory = true; return; }
+        var logicalRange = chart.timeScale().getVisibleLogicalRange();
+        chartCandles = newCandles.concat(chartCandles);
+        candleSeries.setData(chartCandles);
+        if (logicalRange) {
+          chart.timeScale().setVisibleLogicalRange({
+            from: logicalRange.from + newCandles.length,
+            to:   logicalRange.to   + newCandles.length,
+          });
+        }
+      })
+      .catch(function() { _loadingMore = false; });
+  }
+
+  function refreshChart() {
+    if (!lastCandleTime || !candleSeries || !chartCandles.length) return;
+    fetch('/trading/tick/?symbol=' + encodeURIComponent(currentSymbol) + '&interval=' + currentInterval)
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        if (!json.success) return;
+        var candle = json.candle;
+        var last   = chartCandles[chartCandles.length - 1];
+        if (candle.time === last.time) {
+          chartCandles[chartCandles.length - 1] = candle;
+        } else if (candle.time > last.time) {
+          chartCandles.push(candle);
+        }
+        candleSeries.setData(chartCandles);
+        lastCandleTime = chartCandles[chartCandles.length - 1].time;
+        _cdUpdatePos();
+      })
+      .catch(function () {});
+  }
+
+  function startAutoRefresh() {
+    stopAutoRefresh();
+    _refreshTimer = setInterval(refreshChart, getRefreshDelay(currentInterval));
+  }
+
+  function stopAutoRefresh() {
+    if (_refreshTimer) { clearInterval(_refreshTimer); _refreshTimer = null; }
+  }
+
+  function drawLevels(entry, sl, tp) {
+    clearLevels();
+    if (!entry || !sl || !tp || !candleSeries) return;
+    var LS = LightweightCharts.LineStyle;
+    entryLine = candleSeries.createPriceLine({ price: parseFloat(entry), color: '#3B82F6', lineWidth: 2, lineStyle: LS.Dashed, axisLabelVisible: true, title: 'Entry' });
+    slLine    = candleSeries.createPriceLine({ price: parseFloat(sl),    color: '#EF4444', lineWidth: 2, lineStyle: LS.Dashed, axisLabelVisible: true, title: 'SL'    });
+    tpLine    = candleSeries.createPriceLine({ price: parseFloat(tp),    color: '#10B981', lineWidth: 2, lineStyle: LS.Dashed, axisLabelVisible: true, title: 'TP'    });
+  }
+
+  function clearLevels() {
+    if (entryLine && candleSeries) { try { candleSeries.removePriceLine(entryLine); } catch (e) {} entryLine = null; }
+    if (slLine    && candleSeries) { try { candleSeries.removePriceLine(slLine);    } catch (e) {} slLine    = null; }
+    if (tpLine    && candleSeries) { try { candleSeries.removePriceLine(tpLine);    } catch (e) {} tpLine    = null; }
+  }
+
   function initDropdown(id, onSelect) {
     var el   = document.getElementById(id);
     var btn  = el.querySelector('.tv-dropdown-btn');
     var menu = el.querySelector('.tv-dropdown-menu');
     var lbl  = btn.querySelector('.tv-dropdown-label');
-
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
       document.querySelectorAll('.tv-dropdown.open').forEach(function (d) {
@@ -399,19 +714,16 @@
       });
       el.classList.toggle('open');
     });
-
     menu.querySelectorAll('.tv-dropdown-item').forEach(function (item) {
       item.addEventListener('click', function () {
-        var val  = item.dataset.value;
-        var name = item.querySelector('.tv-item-name') || item;
-        lbl.textContent = name.textContent.trim();
+        var nameEl = item.querySelector('.tv-item-name') || item;
+        lbl.textContent = nameEl.textContent.trim();
         menu.querySelectorAll('.tv-dropdown-item').forEach(function (i) { i.classList.remove('active'); });
         item.classList.add('active');
         el.classList.remove('open');
-        onSelect(val);
+        onSelect(item.dataset.value);
       });
     });
-
     return { setLabel: function (text) { lbl.textContent = text; } };
   }
 
@@ -422,55 +734,257 @@
   var symbolDD   = initDropdown('symbolDropdown',   function (v) { loadChart(v, null); });
   var intervalDD = initDropdown('intervalDropdown', function (v) { loadChart(null, v); });
 
-  function loadChart(symbol, interval) {
-    if (symbol)   currentSymbol   = symbol;
-    if (interval) currentInterval = interval;
-    document.getElementById('tradingview_chart').innerHTML = '';
-    new TradingView.widget({
-      symbol: currentSymbol,
-      interval: currentInterval,
-      theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
-      style: '1',
-      locale: document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'vi_VN',
-      container_id: 'tradingview_chart',
-      width: '100%',
-      height: 600,
-      hide_side_toolbar: false,
-      allow_symbol_change: true,
-      withdateranges: true,
-      save_image: false,
-      hide_top_toolbar: true,
-      show_bar_countdown_timer: true,
-      enabled_features: ['countdown'],
-      toolbar_bg: '#111827',
-    });
-  }
+  // Timezone picker (click clock to open)
+  (function() {
+    var clock  = document.getElementById('tzClock');
+    var picker = document.getElementById('tzPicker');
 
-  tvSearchInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') doSearch();
-  });
+    function syncPickerActive() {
+      picker.querySelectorAll('.tz-pick-item').forEach(function(i) {
+        i.classList.toggle('active', parseFloat(i.dataset.value) === currentTzOffset);
+      });
+    }
+
+    clock.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = picker.style.display === 'block';
+      picker.style.display = open ? 'none' : 'block';
+      if (!open) {
+        syncPickerActive();
+        // scroll active item into view
+        var active = picker.querySelector('.tz-pick-item.active');
+        if (active) active.scrollIntoView({ block: 'nearest' });
+      }
+    });
+
+    picker.querySelectorAll('.tz-pick-item').forEach(function(item) {
+      item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var off = parseFloat(item.dataset.value);
+        setChartTimezone(off);
+        localStorage.setItem('ait-tz', String(off));
+        _updateTzClock();
+        syncPickerActive();
+        picker.style.display = 'none';
+      });
+    });
+
+    document.addEventListener('click', function() { picker.style.display = 'none'; });
+    syncPickerActive();
+  }());
+
+  var tvSearchInput = document.getElementById('tvSearchInput');
+  tvSearchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doSearch(); });
   document.getElementById('tvSearchBtn').addEventListener('click', doSearch);
 
-  function doSearch() {
-    var raw = tvSearchInput.value.trim().toUpperCase();
-    if (!raw) return;
+  // Danh sách symbol gợi ý
+  var _KNOWN_SYMS = [
+    { v:'OANDA:XAUUSD',    s:'XAUUSD',    ex:'OANDA',   d:'Vàng / USD' },
+    { v:'OANDA:XAGUSD',    s:'XAGUSD',    ex:'OANDA',   d:'Bạc / USD' },
+    { v:'OANDA:EURUSD',    s:'EURUSD',    ex:'OANDA',   d:'Euro / USD' },
+    { v:'OANDA:GBPUSD',    s:'GBPUSD',    ex:'OANDA',   d:'Pound / USD' },
+    { v:'OANDA:USDJPY',    s:'USDJPY',    ex:'OANDA',   d:'USD / Yên' },
+    { v:'OANDA:AUDUSD',    s:'AUDUSD',    ex:'OANDA',   d:'AUD / USD' },
+    { v:'OANDA:USDCAD',    s:'USDCAD',    ex:'OANDA',   d:'USD / CAD' },
+    { v:'OANDA:USDCHF',    s:'USDCHF',    ex:'OANDA',   d:'USD / CHF' },
+    { v:'BINANCE:BTCUSDT', s:'BTCUSDT',   ex:'BINANCE', d:'Bitcoin' },
+    { v:'BINANCE:ETHUSDT', s:'ETHUSDT',   ex:'BINANCE', d:'Ethereum' },
+    { v:'BINANCE:BNBUSDT', s:'BNBUSDT',   ex:'BINANCE', d:'BNB' },
+    { v:'BINANCE:SOLUSDT', s:'SOLUSDT',   ex:'BINANCE', d:'Solana' },
+    { v:'BINANCE:XRPUSDT', s:'XRPUSDT',   ex:'BINANCE', d:'XRP' },
+    { v:'BINANCE:ADAUSDT', s:'ADAUSDT',   ex:'BINANCE', d:'Cardano' },
+    { v:'BINANCE:DOGEUSDT',s:'DOGEUSDT',  ex:'BINANCE', d:'Dogecoin' },
+    { v:'BINANCE:AVAXUSDT',s:'AVAXUSDT',  ex:'BINANCE', d:'Avalanche' },
+    { v:'BINANCE:DOTUSDT', s:'DOTUSDT',   ex:'BINANCE', d:'Polkadot' },
+    { v:'BINANCE:LINKUSDT',s:'LINKUSDT',  ex:'BINANCE', d:'Chainlink' },
+    { v:'NASDAQ:AAPL',     s:'AAPL',      ex:'NASDAQ',  d:'Apple' },
+    { v:'NASDAQ:TSLA',     s:'TSLA',      ex:'NASDAQ',  d:'Tesla' },
+    { v:'NASDAQ:NVDA',     s:'NVDA',      ex:'NASDAQ',  d:'NVIDIA' },
+    { v:'NASDAQ:MSFT',     s:'MSFT',      ex:'NASDAQ',  d:'Microsoft' },
+  ];
+
+  var _sugBox  = document.getElementById('tvSearchSuggestions');
+  var _hintBox = document.getElementById('tvSearchHint');
+  var _sugIndex = -1;
+
+  function _closePanels() {
+    _sugBox.style.display = 'none';
+    _hintBox.style.display = 'none';
+    _sugIndex = -1;
+  }
+
+  function _selectSymbol(val) {
+    _closePanels();
     tvSearchInput.value = '';
-    var clean = raw.includes(':') ? raw.split(':')[1] : raw;
-    var match = document.querySelector('#symbolDropdown .tv-dropdown-item[data-value="' + raw + '"]');
-    document.querySelectorAll('#symbolDropdown .tv-dropdown-item').forEach(function (i) { i.classList.remove('active'); });
+    var clean = val.includes(':') ? val.split(':')[1] : val;
+    var match = document.querySelector('#symbolDropdown .tv-dropdown-item[data-value="' + val + '"]');
+    document.querySelectorAll('#symbolDropdown .tv-dropdown-item').forEach(function(i){ i.classList.remove('active'); });
     if (match) {
       match.classList.add('active');
-      var name = match.querySelector('.tv-item-name') || match;
-      symbolDD.setLabel(name.textContent.trim());
+      var nameEl = match.querySelector('.tv-item-name') || match;
+      symbolDD.setLabel(nameEl.textContent.trim());
     } else {
       symbolDD.setLabel(clean);
     }
-    loadChart(raw, null);
+    loadChart(val, null);
+  }
+
+  function _renderSuggestions(q) {
+    _hintBox.style.display = 'none';
+    if (!q) { _sugBox.style.display = 'none'; return; }
+
+    var matches = _KNOWN_SYMS.filter(function(s) {
+      return s.s.includes(q) || s.v.includes(q) || s.d.toUpperCase().includes(q);
+    }).slice(0, 8);
+
+    if (!matches.length) { _sugBox.style.display = 'none'; return; }
+
+    _sugBox.innerHTML = matches.map(function(s, idx) {
+      return '<div class="tv-sug-item" data-idx="' + idx + '" data-value="' + s.v + '">' +
+        '<span class="tv-sug-sym">' + s.s + '</span>' +
+        '<span class="tv-sug-ex">' + s.ex + '</span>' +
+        '<span class="tv-sug-desc">' + s.d + '</span>' +
+        '</div>';
+    }).join('');
+    _sugBox.querySelectorAll('.tv-sug-item').forEach(function(el) {
+      el.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        _selectSymbol(el.dataset.value);
+      });
+    });
+    _sugIndex = -1;
+    _sugBox.style.display = 'block';
+  }
+
+  function _showHint(q) {
+    var suggestions = [];
+    var cryptoQ = ['USDT','BUSD','USDC','BTC','ETH','BNB'];
+    var isCrypto = cryptoQ.some(function(s){ return q.length > s.length && q.endsWith(s); });
+    var isForex  = q.length === 6 && /^[A-Z]+$/.test(q);
+
+    if (isCrypto)        suggestions.push('BINANCE:' + q);
+    else if (isForex)    suggestions.push('OANDA:' + q);
+    else { suggestions.push('BINANCE:' + q); suggestions.push('OANDA:' + q); suggestions.push('NASDAQ:' + q); }
+
+    _hintBox.innerHTML =
+      '<div class="tv-hint-title"><i class="bi bi-exclamation-circle me-1"></i>Thiếu sàn giao dịch (exchange prefix)</div>' +
+      '<div class="tv-hint-body">Format đúng: <b>EXCHANGE:SYMBOL</b> &nbsp;—&nbsp; Ví dụ gợi ý:<br>' +
+      suggestions.map(function(ex) {
+        return '<span class="tv-hint-ex" data-val="' + ex + '">' + ex + '</span>';
+      }).join(' &nbsp;·&nbsp; ') + '</div>';
+
+    _hintBox.querySelectorAll('.tv-hint-ex').forEach(function(el) {
+      el.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        _selectSymbol(el.dataset.val);
+      });
+    });
+    _hintBox.style.display = 'block';
+  }
+
+  function doSearch() {
+    var q = tvSearchInput.value.trim().toUpperCase();
+    if (!q) return;
+    _closePanels();
+
+    // Có đủ format EXCHANGE:SYMBOL → load thẳng
+    if (q.includes(':')) {
+      _selectSymbol(q);
+      return;
+    }
+
+    // Thiếu exchange prefix → luôn hiện hint hướng dẫn
+    _showHint(q);
+  }
+
+  var tvSearchInput = document.getElementById('tvSearchInput');
+  tvSearchInput.addEventListener('keydown', function(e) {
+    var items = _sugBox.querySelectorAll('.tv-sug-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _sugIndex = Math.min(_sugIndex + 1, items.length - 1);
+      items.forEach(function(el, i){ el.classList.toggle('tv-sug-active', i === _sugIndex); });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _sugIndex = Math.max(_sugIndex - 1, -1);
+      items.forEach(function(el, i){ el.classList.toggle('tv-sug-active', i === _sugIndex); });
+    } else if (e.key === 'Enter') {
+      if (_sugIndex >= 0 && items[_sugIndex]) {
+        _selectSymbol(items[_sugIndex].dataset.value);
+      } else {
+        doSearch();
+      }
+    } else if (e.key === 'Escape') {
+      _closePanels();
+    }
+  });
+  tvSearchInput.addEventListener('input', function() {
+    _renderSuggestions(tvSearchInput.value.trim().toUpperCase());
+  });
+  tvSearchInput.addEventListener('focus', function() {
+    var q = tvSearchInput.value.trim().toUpperCase();
+    if (q) _renderSuggestions(q);
+  });
+  document.getElementById('tvSearchBtn').addEventListener('click', doSearch);
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.tv-search-wrap')) _closePanels();
+  });
+
+  // Candle countdown
+  var _cdTimer = null;
+  function _cdSecsLeft() {
+    var now = new Date(), iv = currentInterval;
+    if (iv === 'D') {
+      var nx = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+      return Math.round((nx - now) / 1000);
+    }
+    if (iv === 'W') {
+      var d = (7 - now.getUTCDay()) % 7 || 7;
+      var nx = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + d));
+      return Math.round((nx - now) / 1000);
+    }
+    var mins = parseInt(iv, 10);
+    var tot = now.getUTCMinutes() * 60 + now.getUTCSeconds();
+    return mins * 60 - (tot % (mins * 60));
+  }
+  function _formatPrice(p) {
+    return p >= 1000 ? p.toFixed(2) : p >= 100 ? p.toFixed(3) : p.toFixed(4);
+  }
+  function _cdUpdatePos() {
+    if (!chart || !candleSeries || !chartCandles.length) return;
+    var lbl = document.getElementById('priceCdLabel');
+    if (!lbl) return;
+    var last = chartCandles[chartCandles.length - 1];
+    var y = candleSeries.priceToCoordinate(last.close);
+    if (y === null) return;
+    var psWidth = chart.priceScale('right').width();
+    var isUp = last.close >= last.open;
+    lbl.className = isUp ? 'pcd-up' : 'pcd-dn';
+    lbl.style.top = Math.round(y) + 'px';
+    lbl.style.width = psWidth + 'px';
+    lbl.querySelector('.pcd-price').textContent = _formatPrice(last.close);
+    lbl.style.display = 'flex';
+  }
+  function startCountdown() {
+    if (_cdTimer) clearInterval(_cdTimer);
+    function tick() {
+      var lbl = document.getElementById('priceCdLabel');
+      if (!lbl) return;
+      var secs = _cdSecsLeft();
+      var h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
+      var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+      var cdEl = lbl.querySelector('.pcd-cd');
+      if (cdEl) cdEl.textContent = h > 0 ? h + ':' + p(m) + ':' + p(s) : p(m) + ':' + p(s);
+      _cdUpdatePos();
+    }
+    tick();
+    _cdTimer = setInterval(tick, 1000);
   }
 
   document.getElementById('btnAiAnalyze').addEventListener('click', function () { runAnalysis(); });
   document.getElementById('btnCloseAi').addEventListener('click', function () {
     document.getElementById('aiResultPanel').style.display = 'none';
+    clearLevels();
   });
 
   function runAnalysis() {
@@ -478,68 +992,109 @@
     var loading = document.getElementById('aiLoading');
     var content = document.getElementById('aiResultContent');
     var error   = document.getElementById('aiError');
-
-    panel.style.display = 'block';
+    panel.style.display   = 'block';
     loading.style.display = 'flex';
     content.style.display = 'none';
-    error.style.display = 'none';
+    error.style.display   = 'none';
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
     fetch('{% url "analyze_chart" %}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({ symbol: currentSymbol, interval: currentInterval }),
+      body: JSON.stringify({
+        symbol: currentSymbol,
+        interval: currentInterval,
+        current_price: chartCandles.length ? chartCandles[chartCandles.length - 1].close : null,
+      }),
     })
     .then(function (res) { return res.json(); })
     .then(function (json) {
       loading.style.display = 'none';
-      if (json.success) {
-        renderResult(json.data);
-        content.style.display = 'block';
-      } else {
-        showError(json.error || 'Đã xảy ra lỗi');
-      }
+      if (json.success) { renderResult(json.data); content.style.display = 'block'; }
+      else              { showAiError(json.error || 'Đã xảy ra lỗi'); }
     })
     .catch(function () {
       loading.style.display = 'none';
-      showError('Không thể kết nối. Vui lòng thử lại.');
+      showAiError('Không thể kết nối. Vui lòng thử lại.');
     });
   }
 
   function renderResult(data) {
     var signal = data.signal || 'HOLD';
-    var badge = document.getElementById('aiSignalBadge');
+    var badge  = document.getElementById('aiSignalBadge');
     badge.textContent = signal;
-    badge.className = 'ai-signal-badge ai-signal-' + signal.toLowerCase();
-
-    var conf = data.confidence || 0;
-    document.getElementById('aiConfidenceVal').textContent = conf + '%';
-    var fill = document.getElementById('aiConfidenceFill');
-    fill.style.width = conf + '%';
-    fill.className = 'ai-confidence-fill ' + (conf >= 70 ? 'fill-high' : conf >= 40 ? 'fill-mid' : 'fill-low');
+    badge.className   = 'ai-signal-badge ai-signal-' + signal.toLowerCase();
 
     document.getElementById('aiEntry').textContent = data.entry ? formatPrice(data.entry) : '—';
     document.getElementById('aiSL').textContent    = data.sl    ? formatPrice(data.sl)    : '—';
     document.getElementById('aiTP').textContent    = data.tp    ? formatPrice(data.tp)    : '—';
     document.getElementById('aiPricesRow').style.display = signal === 'HOLD' ? 'none' : '';
 
+    if (data.entry && data.sl && data.tp && signal !== 'HOLD') {
+      var e = parseFloat(data.entry), s = parseFloat(data.sl), t = parseFloat(data.tp);
+      var slDist = Math.abs(e - s), tpDist = Math.abs(t - e);
+      var slPct  = (slDist / e * 100).toFixed(2), tpPct = (tpDist / e * 100).toFixed(2);
+      var rr     = slDist > 0 ? (tpDist / slDist).toFixed(1) : '—';
+      var isBuy  = signal === 'BUY';
+      document.getElementById('aiSLDist').textContent = (isBuy ? '↓ ' : '↑ ') + formatPrice(slDist) + ' (' + slPct + '%)';
+      document.getElementById('aiTPDist').textContent = (isBuy ? '↑ ' : '↓ ') + formatPrice(tpDist) + ' (' + tpPct + '%)';
+      var rrEl  = document.getElementById('aiRR');
+      var rrNum = parseFloat(rr);
+      rrEl.textContent = '1 : ' + rr;
+      rrEl.className   = 'ai-price-val fw-700 ' + (rrNum >= 2 ? 'text-success' : rrNum >= 1.5 ? 'text-warning' : 'text-danger');
+      lastAnalysisLevels = { entry: data.entry, sl: data.sl, tp: data.tp };
+      drawLevels(data.entry, data.sl, data.tp);
+      document.querySelector('.trading-chart-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      lastAnalysisLevels = null;
+      document.getElementById('aiSLDist').textContent = '';
+      document.getElementById('aiTPDist').textContent = '';
+      var rrEl = document.getElementById('aiRR');
+      rrEl.textContent = '—';
+      rrEl.className   = 'ai-price-val fw-700';
+    }
+
     document.getElementById('aiReasoning').textContent = data.reasoning || '';
     var sym = currentSymbol.includes(':') ? currentSymbol.split(':')[1] : currentSymbol;
-    document.getElementById('aiResultSymbol').textContent = '— ' + sym;
-    document.getElementById('aiResultTime').textContent = new Date().toLocaleTimeString('vi-VN');
+    var _ivLabel = {'1':'M1','5':'M5','15':'M15','30':'M30','60':'H1','120':'H2','240':'H4','D':'D1','W':'W1'};
+    document.getElementById('aiResultSymbol').textContent = '— ' + sym + ' · ' + (_ivLabel[currentInterval] || currentInterval);
+    document.getElementById('aiResultTime').textContent   = new Date().toLocaleTimeString('vi-VN');
   }
 
-  function showError(msg) {
-    document.getElementById('aiError').style.display = 'flex';
+  function showAiError(msg) {
+    var error = document.getElementById('aiError');
+    error.style.display = 'flex';
     document.getElementById('aiErrorMsg').textContent = msg;
   }
 
   function formatPrice(val) {
     var n = parseFloat(val);
-    return n >= 100 ? n.toFixed(2) : n.toFixed(5);
+    return n >= 1000 ? n.toFixed(2) : n >= 100 ? n.toFixed(3) : n >= 1 ? n.toFixed(4) : n.toFixed(5);
   }
 
+  initChart();
   loadChart(currentSymbol);
+  startCountdown();
+  startTzClock();
+
+  new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      if (m.attributeName !== 'data-theme' || !chart) return;
+      var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      chart.applyOptions({
+        layout: {
+          background: { color: isDark ? '#111827' : '#FFFFFF' },
+          textColor: isDark ? '#94A3B8' : '#374151',
+        },
+        grid: {
+          vertLines: { color: isDark ? '#1E293B' : '#E5E7EB' },
+          horzLines: { color: isDark ? '#1E293B' : '#E5E7EB' },
+        },
+        rightPriceScale: { borderColor: isDark ? '#1E293B' : '#374151' },
+        timeScale: { borderColor: isDark ? '#1E293B' : '#E5E7EB', timeVisible: true, secondsVisible: false, tickMarkFormatter: _makeTickMarkFormatter() },
+        localization: { timeFormatter: _makeTimeFormatter() },
+      });
+    });
+  }).observe(document.documentElement, { attributes: true });
 {% endif %}
 })();
 </script>
