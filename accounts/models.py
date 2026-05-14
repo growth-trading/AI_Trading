@@ -7,6 +7,8 @@ from django.utils import timezone
 
 
 class CustomUser(AbstractUser):
+    # unique=True ở DB level — chặn race condition 2 user đăng ký cùng email đồng thời
+    email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     coins = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     is_email_verified = models.BooleanField(default=False)

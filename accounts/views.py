@@ -1,10 +1,10 @@
 import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.conf import settings
 from .models import CustomUser
@@ -45,7 +45,7 @@ def login_view(request):
                 messages.warning(request, 'Vui lòng xác thực email trước khi đăng nhập.')
                 return redirect('verify_otp')
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            next_url = request.GET.get('next', '')
+            next_url = request.POST.get('next') or request.GET.get('next', '')
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
                 return redirect(next_url)
             return redirect('trading')
@@ -84,7 +84,18 @@ def verify_otp_view(request):
             messages.success(request, 'Xác thực email thành công! Chào mừng bạn.')
             return redirect('trading')
         messages.error(request, 'Mã OTP không đúng hoặc đã hết hạn.')
-    return render(request, 'accounts/verify_otp.html', {'form': form, 'email': user.email})
+
+    # Tính thời gian còn lại của OTP từ server để frontend sync đúng
+    seconds_left = 0
+    if user.otp_created_at:
+        expire_at = user.otp_created_at + timezone.timedelta(minutes=10)
+        seconds_left = max(0, int((expire_at - timezone.now()).total_seconds()))
+
+    return render(request, 'accounts/verify_otp.html', {
+        'form': form,
+        'email': user.email,
+        'otp_seconds_left': seconds_left,
+    })
 
 
 def resend_otp_view(request):

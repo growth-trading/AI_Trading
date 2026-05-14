@@ -52,7 +52,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  let total = 10 * 60;
+  let total = {{ otp_seconds_left }};
   const el = document.getElementById('otpCountdown');
   const expiredMsg = document.getElementById('otpExpiredMsg');
   const submitBtn = document.querySelector('button[type="submit"]');

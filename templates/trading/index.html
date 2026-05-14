@@ -773,10 +773,6 @@
     syncPickerActive();
   }());
 
-  var tvSearchInput = document.getElementById('tvSearchInput');
-  tvSearchInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doSearch(); });
-  document.getElementById('tvSearchBtn').addEventListener('click', doSearch);
-
   // Danh sách symbol gợi ý
   var _KNOWN_SYMS = [
     { v:'OANDA:XAUUSD',    s:'XAUUSD',    ex:'OANDA',   d:'Vàng / USD' },

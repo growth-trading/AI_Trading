@@ -260,25 +260,33 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
     }
 
 
+def _safe_num(val, fmt='.2f') -> str:
+    """Format số an toàn — trả 'N/A' nếu không convert được."""
+    try:
+        return format(float(val), fmt)
+    except (TypeError, ValueError):
+        return 'N/A'
+
+
 def _format_indicators(indicators: dict) -> str:
     lines = []
     if 'rsi' in indicators:
-        lines.append(f"- RSI(14): {indicators['rsi'].get('value', 'N/A'):.2f}")
+        lines.append(f"- RSI(14): {_safe_num(indicators['rsi'].get('value'))}")
     if 'macd' in indicators:
         m = indicators['macd']
         lines.append(
-            f"- MACD: value={m.get('valueMACD', 'N/A'):.4f}, "
-            f"signal={m.get('valueMACDSignal', 'N/A'):.4f}, "
-            f"hist={m.get('valueMACDHist', 'N/A'):.4f}"
+            f"- MACD: value={_safe_num(m.get('valueMACD'), '.4f')}, "
+            f"signal={_safe_num(m.get('valueMACDSignal'), '.4f')}, "
+            f"hist={_safe_num(m.get('valueMACDHist'), '.4f')}"
         )
     if 'ema20' in indicators:
-        lines.append(f"- EMA(20): {indicators['ema20'].get('value', 'N/A'):.4f}")
+        lines.append(f"- EMA(20): {_safe_num(indicators['ema20'].get('value'), '.4f')}")
     if 'ema50' in indicators:
-        lines.append(f"- EMA(50): {indicators['ema50'].get('value', 'N/A'):.4f}")
+        lines.append(f"- EMA(50): {_safe_num(indicators['ema50'].get('value'), '.4f')}")
     if 'supertrend' in indicators:
         st = indicators['supertrend']
         lines.append(
-            f"- Supertrend: value={st.get('value', 'N/A'):.4f}, "
+            f"- Supertrend: value={_safe_num(st.get('value'), '.4f')}, "
             f"trend={'UP' if st.get('valueAdvice') == 'long' else 'DOWN'}"
         )
     return '\n'.join(lines) if lines else '(Không có dữ liệu indicator)'

@@ -27,6 +27,7 @@ except ImportError:
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.db import transaction
+from django.db.models import F
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -93,20 +94,27 @@ def subscribe_ai_trading_view(request):
             if user.coins < cost:
                 return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
 
+            new_expiry = (
+                user.ai_trading_expires_at + timedelta(days=days)
+                if user.ai_trading_expires_at and user.ai_trading_expires_at > now
+                else now + timedelta(days=days)
+            )
+            # F() đảm bảo atomic deduction kể cả khi select_for_update là no-op (SQLite)
+            CustomUser.objects.filter(pk=user.pk).update(
+                coins=F('coins') - cost,
+                ai_trading_expires_at=new_expiry,
+            )
             user.coins -= cost
-            if user.ai_trading_expires_at and user.ai_trading_expires_at > now:
-                user.ai_trading_expires_at += timedelta(days=days)
-            else:
-                user.ai_trading_expires_at = now + timedelta(days=days)
-            user.save(update_fields=['coins', 'ai_trading_expires_at'])
+            user.ai_trading_expires_at = new_expiry
 
         return JsonResponse({
             'success': True,
             'expires_at': user.ai_trading_expires_at.isoformat(),
             'coins_remaining': float(user.coins),
         })
-    except Exception as e:
-        return JsonResponse({'error': f'Đăng ký thất bại: {str(e)}'}, status=500)
+    except Exception:
+        logger.exception('subscribe_ai_trading failed for user %s', request.user.pk)
+        return JsonResponse({'error': 'Đăng ký thất bại, vui lòng thử lại.'}, status=500)
 
 
 @require_POST
@@ -117,6 +125,13 @@ def analyze_chart_view(request):
         return JsonResponse({'error': 'Chưa xác thực email'}, status=403)
     if not request.user.has_ai_trading_access:
         return JsonResponse({'error': 'Bạn chưa mua gói AI Trading'}, status=403)
+
+    # Rate-limit: tối đa 5 lần phân tích / phút / user
+    rate_key = f'ai:analyze:rate:{request.user.pk}'
+    rate_count = cache.get(rate_key, 0)
+    if rate_count >= 5:
+        return JsonResponse({'error': 'Bạn đang phân tích quá nhanh. Vui lòng chờ 1 phút.'}, status=429)
+    cache.set(rate_key, rate_count + 1, 60)
 
     try:
         body = json.loads(request.body)
@@ -142,8 +157,9 @@ def analyze_chart_view(request):
 
         return JsonResponse({'success': True, 'data': result})
 
-    except Exception as e:
-        return JsonResponse({'error': f'Phân tích thất bại: {str(e)}'}, status=500)
+    except Exception:
+        logger.exception('analyze_chart failed for user %s symbol %s', request.user.pk, symbol)
+        return JsonResponse({'error': 'Phân tích thất bại, vui lòng thử lại.'}, status=500)
 
 
 _MT5_SYMBOLS = {
@@ -235,8 +251,12 @@ def chart_data_view(request):
     interval  = request.GET.get('interval', '60').strip()
     since_raw  = request.GET.get('since')
     before_raw = request.GET.get('before')
-    since_ts   = int(float(since_raw))  if since_raw  else None
-    before_ts  = int(float(before_raw)) if before_raw else None
+
+    try:
+        since_ts  = int(float(since_raw))  if since_raw  else None
+        before_ts = int(float(before_raw)) if before_raw else None
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'Tham số không hợp lệ'}, status=400)
 
     try:
         if symbol.startswith('BINANCE:'):
@@ -248,8 +268,9 @@ def chart_data_view(request):
 
     except _MT5Unavailable as e:
         return JsonResponse({'error': str(e)}, status=503)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    except Exception:
+        logger.exception('chart_data failed for user %s symbol %s', request.user.pk, symbol)
+        return JsonResponse({'error': 'Không thể tải dữ liệu biểu đồ, vui lòng thử lại.'}, status=500)
 
 
 class _MT5Unavailable(Exception):
@@ -364,16 +385,21 @@ def tick_view(request):
 
     try:
         if symbol.startswith('BINANCE:'):
-            ticker = symbol.split(':', 1)[1]
-            bi  = _BINANCE_INTERVAL.get(interval, '1h')
-            url = f'https://api.binance.com/api/v3/klines?symbol={ticker}&interval={bi}&limit=1'
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=5) as r:
-                d = json.loads(r.read())[0]
-            candle = {
-                'time': int(d[0]) // 1000, 'open': float(d[1]),
-                'high': float(d[2]), 'low': float(d[3]), 'close': float(d[4]),
-            }
+            # Cache 3s để giảm tải Binance API khi nhiều user poll đồng thời
+            tick_cache_key = f'binance:tick:{symbol}:{interval}'
+            candle = cache.get(tick_cache_key)
+            if candle is None:
+                ticker = symbol.split(':', 1)[1]
+                bi  = _BINANCE_INTERVAL.get(interval, '1h')
+                url = f'https://api.binance.com/api/v3/klines?symbol={ticker}&interval={bi}&limit=1'
+                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=5) as r:
+                    d = json.loads(r.read())[0]
+                candle = {
+                    'time': int(d[0]) // 1000, 'open': float(d[1]),
+                    'high': float(d[2]), 'low': float(d[3]), 'close': float(d[4]),
+                }
+                cache.set(tick_cache_key, candle, 3)
         else:
             tick_key = f'mt5:tick:{symbol}:{interval}'
             cached = cache.get(tick_key)
@@ -408,5 +434,6 @@ def tick_view(request):
 
         return JsonResponse({'success': True, 'candle': candle})
 
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    except Exception:
+        logger.exception('tick_view failed for user %s symbol %s', request.user.pk, symbol)
+        return JsonResponse({'error': 'Không thể tải dữ liệu, vui lòng thử lại.'}, status=500)

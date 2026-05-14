@@ -1,15 +1,18 @@
 import re
-from decimal import Decimal
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.conf import settings
 from django.utils import timezone
+from django.core.cache import cache
 from .models import DepositTransaction
 from .tasks import verify_txhash
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -38,42 +41,59 @@ def submit_txhash_view(request):
         messages.warning(request, 'Vui lòng xác thực email trước khi nạp tiền.')
         return redirect('verify_otp')
 
-    tx_hash = request.POST.get('tx_hash', '').strip()
-    if not tx_hash or not re.match(r'^0x[0-9a-fA-F]{64}$', tx_hash):
+    # Normalize lowercase trước mọi thao tác (tránh bypass unique constraint)
+    tx_hash = request.POST.get('tx_hash', '').strip().lower()
+    if not tx_hash or not re.match(r'^0x[0-9a-f]{64}$', tx_hash):
         messages.error(request, 'TxHash không hợp lệ. Định dạng đúng: 0x + 64 ký tự hex.')
         return redirect('deposit')
 
-    if DepositTransaction.objects.filter(tx_hash__iexact=tx_hash).exists():
-        messages.error(request, 'Giao dịch này đã được xử lý.')
+    # Rate-limit 5 request/phút/user để hạn chế tải BscScan
+    rate_key = f'dep:rate:{request.user.pk}'
+    rate_count = cache.get(rate_key, 0)
+    if rate_count >= 5:
+        messages.error(request, 'Bạn đang gửi quá nhiều yêu cầu. Vui lòng chờ 1 phút và thử lại.')
         return redirect('deposit')
+    cache.set(rate_key, rate_count + 1, 60)
 
-    tx_info = verify_txhash(tx_hash)
+    # Cache kết quả verify 60s tránh gọi BscScan lặp cho cùng TxHash
+    verify_key = f'dep:verify:{tx_hash}'
+    tx_info = cache.get(verify_key)
+    if tx_info is None:
+        tx_info = verify_txhash(tx_hash)
+        if tx_info:
+            cache.set(verify_key, tx_info, 60)
+
     if not tx_info:
         messages.error(request, 'Không tìm thấy giao dịch hoặc giao dịch không hợp lệ. '
                                  'Hãy đảm bảo bạn đã chuyển USDT đến đúng địa chỉ ví.')
         return redirect('deposit')
 
+    # Bắt buộc memo phải khớp — memo rỗng cũng từ chối để chặn claim TxHash người khác
     tx_memo = tx_info.get('memo', '')
-    if tx_memo and tx_memo != request.user.memo_code:
+    if tx_memo != request.user.memo_code:
         messages.error(request, 'Giao dịch này không thuộc về tài khoản của bạn. '
                                  'Hãy chắc chắn bạn đã ghi đúng mã memo khi chuyển.')
         return redirect('deposit')
 
     coins_to_credit = tx_info['amount_usdt'] * settings.USDT_TO_COINS_RATE
 
-    with transaction.atomic():
-        dep = DepositTransaction.objects.create(
-            user=request.user,
-            tx_hash=tx_info['tx_hash'],
-            amount_usdt=tx_info['amount_usdt'],
-            coins_credited=coins_to_credit,
-            status=DepositTransaction.STATUS_COMPLETED,
-            memo=request.user.memo_code,
-            confirmed_at=timezone.now(),
-        )
-        request.user.__class__.objects.filter(pk=request.user.pk).update(
-            coins=F('coins') + coins_to_credit
-        )
+    try:
+        with transaction.atomic():
+            DepositTransaction.objects.create(
+                user=request.user,
+                tx_hash=tx_info['tx_hash'],   # đã lowercase từ verify_txhash
+                amount_usdt=tx_info['amount_usdt'],
+                coins_credited=coins_to_credit,
+                status=DepositTransaction.STATUS_COMPLETED,
+                memo=tx_memo,                  # lưu memo thực từ blockchain
+                confirmed_at=timezone.now(),
+            )
+            request.user.__class__.objects.filter(pk=request.user.pk).update(
+                coins=F('coins') + coins_to_credit
+            )
+    except IntegrityError:
+        messages.error(request, 'Giao dịch này đã được xử lý.')
+        return redirect('deposit')
 
     messages.success(
         request,

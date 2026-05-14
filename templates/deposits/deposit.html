@@ -61,7 +61,7 @@
             <label class="wallet-field-label" data-i18n="dep.wallet.addr">Địa chỉ ví Admin</label>
             <div class="wallet-address-box">
               <span id="adminWallet" class="font-mono">{{ admin_wallet }}</span>
-              <button class="btn-copy-inline" onclick="copyText('{{ admin_wallet }}')">
+              <button class="btn-copy-inline" data-copy="{{ admin_wallet }}">
                 <i class="bi bi-copy"></i> <span data-i18n="dep.copy">Sao chép</span>
               </button>
             </div>
@@ -71,7 +71,7 @@
             <label class="wallet-field-label" data-i18n="dep.memo.label">Mã nạp tiền của bạn (Memo)</label>
             <div class="wallet-address-box accent-border">
               <span class="font-mono text-accent fw-700">{{ memo_code }}</span>
-              <button class="btn-copy-inline" onclick="copyText('{{ memo_code }}')">
+              <button class="btn-copy-inline" data-copy="{{ memo_code }}">
                 <i class="bi bi-copy"></i> <span data-i18n="dep.copy">Sao chép</span>
               </button>
             </div>
@@ -182,4 +182,9 @@
 {% block extra_js %}
 {% load static %}
 <script src="{% static 'js/web3_connect.js' %}"></script>
+<script>
+document.querySelectorAll('.btn-copy-inline[data-copy]').forEach(function(btn) {
+  btn.addEventListener('click', function() { copyText(btn.dataset.copy); });
+});
+</script>
 {% endblock %}
