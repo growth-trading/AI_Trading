@@ -14,6 +14,8 @@ from .tasks import verify_txhash
 
 logger = logging.getLogger(__name__)
 
+_VERIFY_MISS = object()  # sentinel phân biệt cache miss với cached None
+
 
 @login_required
 def deposit_view(request):
@@ -59,10 +61,9 @@ def submit_txhash_view(request):
         return redirect('deposit')
 
     # Cache kết quả verify 60s (kể cả None) để tránh gọi BscScan lặp cho cùng TxHash
-    _MISS = object.__new__(object)
     verify_key = f'dep:verify:{tx_hash}'
-    tx_info = cache.get(verify_key, _MISS)
-    if tx_info is _MISS:
+    tx_info = cache.get(verify_key, _VERIFY_MISS)
+    if tx_info is _VERIFY_MISS:
         tx_info = verify_txhash(tx_hash)
         cache.set(verify_key, tx_info, 60 if tx_info else 30)
 

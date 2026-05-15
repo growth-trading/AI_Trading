@@ -27,11 +27,12 @@ class ProfileForm(forms.ModelForm):
             try:
                 avatar.seek(0)
                 img = Image.open(avatar)
+                img_format = img.format  # lưu trước khi verify() đóng file handle
                 img.verify()
-                if img.format not in _ALLOWED_PIL_FORMATS:
-                    raise forms.ValidationError('Chỉ cho phép file ảnh (JPEG, PNG, GIF, WebP).')
-            except (UnidentifiedImageError, Exception):
+            except (UnidentifiedImageError, OSError, SyntaxError):
                 raise forms.ValidationError('File không phải ảnh hợp lệ.')
             finally:
                 avatar.seek(0)
+            if img_format not in _ALLOWED_PIL_FORMATS:
+                raise forms.ValidationError('Chỉ cho phép file ảnh (JPEG, PNG, GIF, WebP).')
         return avatar

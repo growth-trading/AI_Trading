@@ -127,7 +127,7 @@ def verify_txhash(tx_hash: str):
         return None
 
     tx_result = proxy_data.get('result')
-    if not tx_result or tx_result == 'null':
+    if not tx_result or tx_result == 'null' or not isinstance(tx_result, dict):
         return None
 
     block_hex = tx_result.get('blockNumber')

@@ -4,7 +4,7 @@ import base64
 import logging
 from decimal import Decimal, InvalidOperation
 import pandas as pd
-import pandas_ta as ta
+import pandas_ta  # noqa: F401  # registers df.ta accessor on pandas DataFrame
 import google.generativeai as genai
 from django.conf import settings
 from django.core.cache import cache
@@ -27,8 +27,9 @@ def _mock_levels(price: float, signal: str) -> tuple:
     p = float(price)
     if signal == 'BUY':
         return round(p, 5), round(p * 0.9940, 5), round(p * 1.0150, 5)
-    else:  # SELL
+    if signal == 'SELL':
         return round(p, 5), round(p * 1.0060, 5), round(p * 0.9850, 5)
+    return None, None, None  # HOLD
 
 
 def _mock_analysis(symbol: str, current_price=None) -> dict:
@@ -180,7 +181,11 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
         raw = re.sub(r'\s*```$', '', raw)
     raw = raw.strip()
 
-    data = json.loads(raw)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        logger.warning('Gemini returned non-JSON for %s: %.200s', symbol, raw)
+        return _mock_analysis(symbol, current_price=current_price)
 
     return {
         'signal': str(data.get('signal', 'HOLD')).upper(),

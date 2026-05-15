@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -18,7 +19,11 @@ def register_view(request):
         return redirect('trading')
     form = RegisterForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = form.save()
+        try:
+            user = form.save()
+        except IntegrityError:
+            messages.error(request, 'Email này đã được sử dụng.')
+            return render(request, 'accounts/register.html', {'form': form})
         otp = user.generate_otp()
         if _send_otp_email(user, otp):
             messages.success(request, 'Đăng ký thành công! Kiểm tra email để lấy mã xác thực.')

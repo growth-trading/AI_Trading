@@ -4,6 +4,7 @@ import json
 import logging
 import re
 import threading
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import timedelta, datetime as _dt, timezone as _tz
@@ -33,10 +34,9 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import F
 from django.conf import settings
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 
-from django.shortcuts import get_object_or_404
 from accounts.models import CustomUser
 from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription
 from .services import compute_indicators_local, analyze_with_gemini
@@ -55,6 +55,7 @@ def landing(request):
     return render(request, 'landing/index.html')
 
 
+@require_GET
 def tradingview_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -231,16 +232,6 @@ def analyze_chart_view(request):
     if not request.user.has_ai_trading_access:
         return JsonResponse({'error': 'Bạn chưa mua gói AI Trading'}, status=403)
 
-    # Rate-limit: tối đa 5 lần phân tích / phút / user (atomic incr tránh race condition)
-    rate_key = f'ai:analyze:rate:{request.user.pk}'
-    try:
-        rate_count = cache.incr(rate_key)
-    except ValueError:
-        cache.add(rate_key, 0, 60)
-        rate_count = cache.incr(rate_key)
-    if rate_count > 5:
-        return JsonResponse({'error': 'Bạn đang phân tích quá nhanh. Vui lòng chờ 1 phút.'}, status=429)
-
     try:
         body = json.loads(request.body)
     except (json.JSONDecodeError, ValueError):
@@ -265,6 +256,16 @@ def analyze_chart_view(request):
         if candles and not all(isinstance(c, dict) and required_keys.issubset(c) for c in candles[:5]):
             candles = None
 
+    # Rate-limit sau validation — tối đa 5 lần / phút / user (atomic incr tránh race condition)
+    rate_key = f'ai:analyze:rate:{request.user.pk}'
+    try:
+        rate_count = cache.incr(rate_key)
+    except ValueError:
+        cache.add(rate_key, 0, 60)
+        rate_count = cache.incr(rate_key)
+    if rate_count > 5:
+        return JsonResponse({'error': 'Bạn đang phân tích quá nhanh. Vui lòng chờ 1 phút.'}, status=429)
+
     _ALLOWED_SIGNALS = {'BUY', 'SELL', 'HOLD'}
 
     def _clamp_price(v, max_val=10 ** 12):
@@ -272,7 +273,7 @@ def analyze_chart_view(request):
             return None
         try:
             f = float(v)
-            return None if abs(f) > max_val else v
+            return None if abs(f) > max_val else f  # trả float để JSON serializable
         except (TypeError, ValueError):
             return None
 
@@ -314,7 +315,7 @@ def analyze_chart_view(request):
         try:
             cache.decr(rate_key)
         except Exception:
-            pass
+            logger.debug('Failed to decrement rate counter for key %s', rate_key, exc_info=True)
         return JsonResponse({'error': 'Phân tích thất bại, vui lòng thử lại.'}, status=500)
 
 
@@ -367,8 +368,10 @@ def _mt5_connect():
 def _interval_secs(iv):
     if iv == 'D': return 86400
     if iv == 'W': return 604800
-    try: return int(iv) * 60
-    except: return 3600
+    try:
+        return int(iv) * 60
+    except (ValueError, TypeError):
+        return 3600
 
 _MT5_TF = None
 
@@ -470,8 +473,15 @@ def _binance_candles(symbol, interval, since_ts, before_ts):
         url = f'https://api.binance.com/api/v3/klines?symbol={ticker}&interval={bi}&limit=150'
 
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=10) as r:
-        data = json.loads(r.read())
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read())
+    except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, OSError) as e:
+        logger.warning('Binance fetch failed for %s %s: %s', symbol, interval, e)
+        raise _MT5Unavailable('Không thể tải dữ liệu Binance')
+    if not isinstance(data, list):
+        logger.warning('Binance returned non-list for %s %s: %s', symbol, interval, str(data)[:200])
+        raise _MT5Unavailable('Binance trả dữ liệu không hợp lệ')
     candles = [
         {'time': int(d[0]) // 1000, 'open': float(d[1]),
          'high': float(d[2]), 'low': float(d[3]), 'close': float(d[4])}
@@ -543,7 +553,7 @@ def _mt5_candles(symbol, interval, since_ts, before_ts):
             ttl = _CACHE_TTL.get(interval, 180)
             cache.set(latest_key, candles, ttl)
             # Cập nhật tick cùng lúc
-            cache.set(f'mt5:tick:{symbol}:{interval}', candles[-1], max(5, ttl // 3))
+            cache.set(f'mt5:tick:{symbol}:{interval}', candles[-1], 2)
 
         return candles
 
@@ -580,7 +590,7 @@ def tick_view(request):
                     'time': int(d[0]) // 1000, 'open': float(d[1]),
                     'high': float(d[2]), 'low': float(d[3]), 'close': float(d[4]),
                 }
-                cache.set(tick_cache_key, candle, 3)
+                cache.set(tick_cache_key, candle, 2)
         else:
             tick_key = f'mt5:tick:{symbol}:{interval}'
             cached = cache.get(tick_key)
@@ -610,8 +620,7 @@ def tick_view(request):
                     'low':   round(float(r['low']),   6),
                     'close': round(float(r['close']), 6),
                 }
-                ttl = max(5, _CACHE_TTL.get(interval, 60) // 3)
-                cache.set(tick_key, candle, ttl)
+                cache.set(tick_key, candle, 2)
 
         return JsonResponse({'success': True, 'candle': candle})
 

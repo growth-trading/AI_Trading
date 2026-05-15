@@ -42,11 +42,11 @@ python manage.py collectstatic
 - **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2, Web3.js (MetaMask), Lightweight Charts (biểu đồ nến)
 - **Tác vụ nền**: `django-apscheduler` — scheduler trong `DepositsConfig.ready()`, không dùng Celery
 - **Email**: Django SMTP (Gmail)
-- **Blockchain**: BscScan API (BSC/BEP-20 USDT)
+- **Blockchain**: BscScan API (BSC/BEP-20 USDT); `deposits/tasks.py` dùng `requests`, còn `trading/views.py` chỉ dùng stdlib `urllib.request`
 - **AI Analysis**: `google-generativeai` (Gemini 2.5 Flash Vision) — phân tích ảnh biểu đồ
 - **Chỉ báo kỹ thuật**: `pandas>=2.0` + `pandas-ta>=0.3.14b` — tính RSI/MACD/EMA/Supertrend cục bộ
-- **Dữ liệu thị trường**: MetaTrader5 (primary), fallback Binance public API
-- **Cache**: `django-redis` + Redis (self-hosted), fallback `LocMemCache`
+- **Dữ liệu thị trường**: MetaTrader5 (primary), fallback Binance public API; symbol có prefix `BINANCE:` đi thẳng vào Binance path
+- **Cache**: `django-redis` + Redis (self-hosted), fallback `LocMemCache`; Redis key prefix = `'ait'`
 
 ## Cấu trúc project
 
@@ -68,12 +68,12 @@ Kế thừa `AbstractUser`, thêm:
 - `is_email_verified` (BooleanField) — gate cho nạp tiền và AI
 - `otp_code`, `otp_created_at` — OTP trực tiếp trên user, hết hạn 10 phút
 - `memo_code` (property) — `f"UID-{self.pk:04d}"`
-- `phone`, `address` — thông tin hồ sơ
+- `phone`, `address`, `avatar` — thông tin hồ sơ; avatar upload tới `avatars/`, validate qua PIL (max 5MB, JPEG/PNG/GIF/WebP)
 - `ai_trading_expires_at` (DateTimeField, null) — thời điểm hết hạn gói AI
 - `has_ai_trading_access` (property) — `ai_trading_expires_at > timezone.now()`
 
 ### Email Verification Middleware (`accounts/middleware.py::EmailVerifiedMiddleware`)
-Chặn **mọi URL** (trừ `/accounts/`, `/admin/`, `/static/`, `/media/`, `/trading/tradingview`, `/`) nếu user đã login nhưng chưa verify email → redirect `verify_otp`. Gate này bổ sung cho các check cụ thể trong từng view.
+Chặn **mọi URL** (trừ prefix `/accounts/`, `/admin/`, `/static/`, `/media/` và exact path `/`, `/favicon.ico`) nếu user đã login nhưng chưa verify email → redirect `verify_otp`. Gate này bổ sung cho các check cụ thể trong từng view.
 
 ### OTP Email Flow
 1. Đăng ký → `user.generate_otp()` → gửi SMTP → lưu `user.pk` vào session
@@ -90,24 +90,29 @@ Chặn **mọi URL** (trừ `/accounts/`, `/admin/`, `/static/`, `/media/`, `/tr
 /trading/analyze/               → analyze_chart_view (POST JSON)
 /trading/chart-data/            → chart_data_view (GET, ?symbol=&interval=&since=&before=)
 /trading/tick/                  → tick_view (GET, ?symbol=&interval=)
-/trading/tradingview/           → tradingview_view (yêu cầu đăng nhập)
+/trading/tradingview/           → tradingview_view (yêu cầu đăng nhập + email verified)
 /trading/tradingview/subscribe/ → subscribe_tradingview_view (POST JSON)
 /profile/                       → profile_view
 /profile/settings/              → settings_view
 <bất kỳ URL khác>               → catch-all → page_not_found → 404.html
 ```
 
-**Điều hướng sau đăng nhập**: `LOGIN_REDIRECT_URL = '/trading/'` — redirect về trang AI Trading.
+**Điều hướng sau đăng nhập**: custom `login_view` redirect thẳng tới `'trading'` (không qua `LOGIN_REDIRECT_URL`). `LOGIN_REDIRECT_URL = '/trading/'` vẫn set trong settings làm fallback cho Django auth.
 
 ### Luồng nạp tiền (`deposits/`)
 
 **Models:**
-- `DepositTransaction`: `tx_hash` (unique) — ngăn double-credit; `user` (FK nullable)
+- `DepositTransaction`: `tx_hash` (unique, lowercase normalized) — ngăn double-credit; `user` (FK nullable, SET_NULL)
 - `WalletScanState`: lưu `last_scanned_block` trong DB theo `network`
 
-**Tự động** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây: BscScan API → decode memo `UID-XXXX` → cộng coins bằng `F('coins') + amount`.
+**Tự động** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây: BscScan API → decode memo `UID-XXXX` → cộng coins bằng `F('coins') + amount`. Tx không decode được memo → `STATUS_PENDING`, chờ admin xử lý thủ công.
 
-**Thủ công** — `deposits/views.py::submit_txhash_view()`: validate regex tx_hash → 2-step BscScan lookup (proxy để lấy block number, rồi tokentx trong block đó) → kiểm tra memo == `request.user.memo_code` → cộng coins.
+**Thủ công** — `deposits/views.py::submit_txhash_view()`:
+- Rate-limit 5 req/phút/user (atomic `cache.incr`)
+- Validate regex `^0x[0-9a-f]{64}$` (sau khi lowercase)
+- Cache kết quả `verify_txhash` 60s (30s nếu None) — tránh gọi BscScan lặp
+- 2-step BscScan lookup: proxy lấy block number → tokentx trong block đó
+- Kiểm tra memo == `request.user.memo_code` → reject nếu không khớp (kể cả memo rỗng)
 
 **CRITICAL:** Luôn dùng `F('coins') + amount` / `F('coins') - cost` khi cộng/trừ coins — tránh race condition.
 
@@ -119,13 +124,17 @@ Chặn **mọi URL** (trừ `/accounts/`, `/admin/`, `/static/`, `/media/`, `/tr
 
 **Phân tích** — `analyze_chart_view`:
 1. Check `is_authenticated` + `is_email_verified` + `has_ai_trading_access`
-2. Rate-limit 5 req/phút/user (atomic `cache.incr`)
+2. Rate-limit 5 req/phút/user (atomic `cache.incr`); rate counter được **hoàn trả** (`cache.decr`) nếu xử lý thất bại do lỗi hệ thống
 3. Validate: symbol regex, interval whitelist, candles ≤ 500, chart_image ≤ 2MB + PNG magic bytes
 4. `compute_indicators_local(candles)` — tính RSI/MACD/EMA20/EMA50/Supertrend bằng pandas-ta (không API)
 5. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision
 6. Lưu `ChartAnalysisLog`, trả JSON
 
-**Dữ liệu nến** — `chart_data_view` / `tick_view`: ưu tiên MT5 (với `_mt5_lock` đảm bảo thread-safe), fallback Binance public API. Cache theo TTL của từng interval.
+**Dữ liệu nến** — `chart_data_view` / `tick_view`:
+- Symbol prefix `BINANCE:` → đi thẳng vào Binance API path; các symbol khác đi vào MT5 path
+- MT5 với `_mt5_lock` đảm bảo thread-safe; symbol resolution thử các suffix `('', 'm', '.', 'pro', 'c', 'n')` và cache kết quả
+- Cache theo TTL của từng interval; historical data (`before_ts`) cache 600s
+- `chart_data_view` rate-limit 30 req/phút/user; `tick_view` rate-limit 60 req/phút/user
 
 **MT5 Collector** — `trading/management/commands/run_mt5_collector.py`: process độc lập kết nối MT5 một lần, liên tục làm mới cache. Dùng trong production thay vì để Django worker gọi MT5 trực tiếp.
 
@@ -143,9 +152,7 @@ Bán quyền truy cập vào các chart TradingView premium được nhúng qua 
 
 **Mua gói** — `subscribe_tradingview_view`: nhận `{plan, product_slug}` → lấy `product` theo slug → `select_for_update()` → trừ coins → upsert `UserTVSubscription.expires_at`. Gia hạn cộng dồn nếu còn hạn.
 
-**Hiển thị** — `tradingview_view`: query `TradingViewProduct.objects.filter(is_active=True)` + truy vấn tất cả `UserTVSubscription` còn hạn của user → render list với flag `has_access` per product.
-
-**Middleware exemption**: `/trading/tradingview` được exempt khỏi `EmailVerifiedMiddleware` — user chưa verify vẫn xem được trang sản phẩm (nhưng không thể mua).
+**Hiển thị** — `tradingview_view`: yêu cầu `is_authenticated` + `is_email_verified`. Query `TradingViewProduct.objects.filter(is_active=True)` + truy vấn tất cả `UserTVSubscription` còn hạn của user → render list với flag `has_access` per product.
 
 ## Biến môi trường (`.env`)
 
