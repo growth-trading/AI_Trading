@@ -1,4 +1,3 @@
-import random
 import secrets
 import string
 from django.contrib.auth.models import AbstractUser
@@ -17,7 +16,6 @@ class CustomUser(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
     address = models.CharField(max_length=255, blank=True)
     ai_trading_expires_at = models.DateTimeField(null=True, blank=True)
-
     @property
     def memo_code(self):
         return f"UID-{self.pk:04d}"
@@ -29,7 +27,7 @@ class CustomUser(AbstractUser):
         return self.ai_trading_expires_at > timezone.now()
 
     def generate_otp(self):
-        self.otp_code = ''.join(random.choices(string.digits, k=6))
+        self.otp_code = ''.join(secrets.choice(string.digits) for _ in range(6))
         self.otp_created_at = timezone.now()
         self.save(update_fields=['otp_code', 'otp_created_at'])
         return self.otp_code

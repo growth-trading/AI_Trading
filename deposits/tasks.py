@@ -49,6 +49,8 @@ def scan_admin_wallet():
         return
 
     if data.get('status') != '1':
+        if data.get('message') != 'No transactions found':
+            logger.warning('BscScan scan error: %s', data.get('message'))
         return
 
     max_block = state.last_scanned_block
@@ -178,7 +180,9 @@ def verify_txhash(tx_hash: str):
 def _decode_memo(input_hex: str) -> str:
     try:
         if input_hex and input_hex != '0x':
-            raw = bytes.fromhex(input_hex.replace('0x', ''))
+            # Giới hạn 200 hex chars (~100 bytes) — memo UID-XXXX chỉ cần vài byte đầu
+            hex_str = input_hex.replace('0x', '')[:200]
+            raw = bytes.fromhex(hex_str)
             text = raw.decode('utf-8', errors='ignore').strip()
             # Strict: chỉ khớp UID- theo sau là chữ số, không chấp nhận ký tự thừa
             m = re.match(r'^(UID-\d+)', text)
@@ -193,9 +197,9 @@ def _resolve_user_from_memo(memo: str):
     from accounts.models import CustomUser
     if memo.startswith('UID-'):
         try:
-            uid = int(memo.split('-')[1])
+            uid = int(memo.split('-', 1)[1])
             return CustomUser.objects.get(pk=uid)
-        except (ValueError, CustomUser.DoesNotExist):
+        except (ValueError, IndexError, CustomUser.DoesNotExist):
             pass
     return None
 

@@ -4,6 +4,7 @@ import json
 import logging
 import re
 import threading
+import urllib.parse
 import urllib.request
 from datetime import timedelta, datetime as _dt, timezone as _tz
 
@@ -35,8 +36,9 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 
+from django.shortcuts import get_object_or_404
 from accounts.models import CustomUser
-from .models import ChartAnalysisLog
+from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription
 from .services import compute_indicators_local, analyze_with_gemini
 
 # 1×1 transparent PNG — dùng khi canvas capture thất bại
@@ -51,6 +53,100 @@ def landing(request):
     if request.user.is_authenticated:
         return redirect('trading')
     return render(request, 'landing/index.html')
+
+
+def tradingview_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not request.user.is_email_verified:
+        return redirect('verify_otp')
+
+    now = timezone.now()
+    products = TradingViewProduct.objects.filter(is_active=True)
+
+    active_subs = {
+        sub.product_id: sub
+        for sub in UserTVSubscription.objects.filter(
+            user=request.user,
+            expires_at__gt=now,
+        ).select_related('product')
+    }
+
+    product_list = [
+        {
+            'product': p,
+            'subscription': active_subs.get(p.pk),
+            'has_access': p.pk in active_subs,
+        }
+        for p in products
+    ]
+
+    return render(request, 'trading/tradingview.html', {
+        'product_list': product_list,
+    })
+
+
+
+_TV_PLAN_DAYS = {'week': 7, 'month': 30, 'year': 365}
+
+
+@require_POST
+def subscribe_tradingview_view(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)
+    if not request.user.is_email_verified:
+        return JsonResponse({'error': 'Chưa xác thực email'}, status=403)
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'error': 'Dữ liệu không hợp lệ'}, status=400)
+
+    plan = body.get('plan')
+    product_slug = body.get('product_slug', '')
+
+    if plan not in _TV_PLAN_DAYS:
+        return JsonResponse({'error': 'Gói không hợp lệ'}, status=400)
+
+    try:
+        product = TradingViewProduct.objects.get(slug=product_slug, is_active=True)
+    except TradingViewProduct.DoesNotExist:
+        return JsonResponse({'error': 'Sản phẩm không tồn tại'}, status=404)
+
+    cost = getattr(product, f'{plan}_cost')
+    days = _TV_PLAN_DAYS[plan]
+    now = timezone.now()
+
+    try:
+        with transaction.atomic():
+            user = CustomUser.objects.select_for_update().get(pk=request.user.pk)
+            if user.coins < cost:
+                return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
+
+            sub, _ = UserTVSubscription.objects.get_or_create(
+                user=user,
+                product=product,
+                defaults={'expires_at': now},
+            )
+            # Lock the subscription row to prevent concurrent expiry miscalculation
+            sub = UserTVSubscription.objects.select_for_update().get(pk=sub.pk)
+            new_expiry = (
+                sub.expires_at + timedelta(days=days)
+                if sub.expires_at > now
+                else now + timedelta(days=days)
+            )
+            UserTVSubscription.objects.filter(pk=sub.pk).update(expires_at=new_expiry)
+            CustomUser.objects.filter(pk=user.pk).update(coins=F('coins') - cost)
+
+        user.refresh_from_db(fields=['coins'])
+        return JsonResponse({
+            'success': True,
+            'expires_at': new_expiry.isoformat(),
+            'coins_remaining': float(user.coins),
+        })
+    except Exception:
+        logger.exception('subscribe_tradingview failed for user %s', request.user.pk)
+        return JsonResponse({'error': 'Đăng ký thất bại, vui lòng thử lại.'}, status=500)
 
 
 def trading_view(request):
@@ -114,9 +210,8 @@ def subscribe_ai_trading_view(request):
                 coins=F('coins') - cost,
                 ai_trading_expires_at=new_expiry,
             )
-            user.coins -= cost
-            user.ai_trading_expires_at = new_expiry
 
+        user.refresh_from_db(fields=['coins', 'ai_trading_expires_at'])
         return JsonResponse({
             'success': True,
             'expires_at': user.ai_trading_expires_at.isoformat(),
@@ -170,6 +265,17 @@ def analyze_chart_view(request):
         if candles and not all(isinstance(c, dict) and required_keys.issubset(c) for c in candles[:5]):
             candles = None
 
+    _ALLOWED_SIGNALS = {'BUY', 'SELL', 'HOLD'}
+
+    def _clamp_price(v, max_val=10 ** 12):
+        if v is None:
+            return None
+        try:
+            f = float(v)
+            return None if abs(f) > max_val else v
+        except (TypeError, ValueError):
+            return None
+
     try:
         if chart_image_b64:
             try:
@@ -185,6 +291,14 @@ def analyze_chart_view(request):
         result      = analyze_with_gemini(image_bytes, indicators, symbol, interval,
                                           current_price=current_price)
 
+        # Sanitize Gemini output before persisting
+        if result.get('signal') not in _ALLOWED_SIGNALS:
+            result['signal'] = 'HOLD'
+        result['confidence'] = max(0, min(100, int(result.get('confidence', 0) or 0)))
+        result['entry'] = _clamp_price(result.get('entry'))
+        result['sl']    = _clamp_price(result.get('sl'))
+        result['tp']    = _clamp_price(result.get('tp'))
+
         ChartAnalysisLog.objects.create(
             user=request.user,
             symbol=symbol,
@@ -196,6 +310,11 @@ def analyze_chart_view(request):
 
     except Exception:
         logger.exception('analyze_chart failed for user %s symbol %s', request.user.pk, symbol)
+        # Hoàn trả rate-limit slot khi xử lý thất bại (không phải lỗi của user)
+        try:
+            cache.decr(rate_key)
+        except Exception:
+            pass
         return JsonResponse({'error': 'Phân tích thất bại, vui lòng thử lại.'}, status=500)
 
 
@@ -280,9 +399,22 @@ def _rates_to_candles(rates):
     ]
 
 
+_CHART_RATE_LIMIT = 30   # req/phút/user cho chart-data
+_TICK_RATE_LIMIT  = 60   # req/phút/user cho tick (polling)
+
+
 def chart_data_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)
+
+    cd_rate_key = f'chart:rate:{request.user.pk}'
+    try:
+        cd_count = cache.incr(cd_rate_key)
+    except ValueError:
+        cache.add(cd_rate_key, 0, 60)
+        cd_count = cache.incr(cd_rate_key)
+    if cd_count > _CHART_RATE_LIMIT:
+        return JsonResponse({'error': 'Quá nhiều yêu cầu. Vui lòng chờ.'}, status=429)
 
     symbol    = request.GET.get('symbol', 'OANDA:XAUUSD').strip()
     interval  = request.GET.get('interval', '60').strip()
@@ -316,6 +448,9 @@ class _MT5Unavailable(Exception):
 
 def _binance_candles(symbol, interval, since_ts, before_ts):
     ticker = symbol.split(':', 1)[1]
+    if not re.match(r'^[A-Z0-9]{1,20}$', ticker):
+        raise ValueError(f'Invalid Binance ticker: {ticker}')
+    ticker = urllib.parse.quote(ticker, safe='')
     bi = _BINANCE_INTERVAL.get(interval, '1h')
 
     # Cache chỉ cho request latest (không since/before)
@@ -416,6 +551,15 @@ def _mt5_candles(symbol, interval, since_ts, before_ts):
 def tick_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)
+
+    tk_rate_key = f'tick:rate:{request.user.pk}'
+    try:
+        tk_count = cache.incr(tk_rate_key)
+    except ValueError:
+        cache.add(tk_rate_key, 0, 60)
+        tk_count = cache.incr(tk_rate_key)
+    if tk_count > _TICK_RATE_LIMIT:
+        return JsonResponse({'error': 'Quá nhiều yêu cầu. Vui lòng chờ.'}, status=429)
 
     symbol   = request.GET.get('symbol', 'OANDA:XAUUSD').strip()
     interval = request.GET.get('interval', '60').strip()

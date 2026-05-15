@@ -126,7 +126,6 @@ const i18n = {
     'hero.cta2':           'Xem Demo',
     'hero.mockup.coins':   'Số dư xu',
     'hero.mockup.profit':  'Lợi nhuận tháng',
-    'hero.mockup.bots':    'Bot đang chạy',
     /* stats */
     'stat.vol':     'Giao dịch xử lý',
     'stat.success': 'Tỉ lệ thành công',
@@ -333,7 +332,6 @@ const i18n = {
     'hero.cta2':           'View Demo',
     'hero.mockup.coins':   'Coin Balance',
     'hero.mockup.profit':  'Monthly Profit',
-    'hero.mockup.bots':    'Bots Running',
     /* stats */
     'stat.vol':     'Trading Volume',
     'stat.success': 'Success Rate',

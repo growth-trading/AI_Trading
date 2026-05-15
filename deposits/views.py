@@ -47,21 +47,24 @@ def submit_txhash_view(request):
         messages.error(request, 'TxHash không hợp lệ. Định dạng đúng: 0x + 64 ký tự hex.')
         return redirect('deposit')
 
-    # Rate-limit 5 request/phút/user để hạn chế tải BscScan
+    # Rate-limit 5 request/phút/user (atomic incr — tránh race condition)
     rate_key = f'dep:rate:{request.user.pk}'
-    rate_count = cache.get(rate_key, 0)
-    if rate_count >= 5:
+    try:
+        rate_count = cache.incr(rate_key)
+    except ValueError:
+        cache.add(rate_key, 0, 60)
+        rate_count = cache.incr(rate_key)
+    if rate_count > 5:
         messages.error(request, 'Bạn đang gửi quá nhiều yêu cầu. Vui lòng chờ 1 phút và thử lại.')
         return redirect('deposit')
-    cache.set(rate_key, rate_count + 1, 60)
 
-    # Cache kết quả verify 60s tránh gọi BscScan lặp cho cùng TxHash
+    # Cache kết quả verify 60s (kể cả None) để tránh gọi BscScan lặp cho cùng TxHash
+    _MISS = object.__new__(object)
     verify_key = f'dep:verify:{tx_hash}'
-    tx_info = cache.get(verify_key)
-    if tx_info is None:
+    tx_info = cache.get(verify_key, _MISS)
+    if tx_info is _MISS:
         tx_info = verify_txhash(tx_hash)
-        if tx_info:
-            cache.set(verify_key, tx_info, 60)
+        cache.set(verify_key, tx_info, 60 if tx_info else 30)
 
     if not tx_info:
         messages.error(request, 'Không tìm thấy giao dịch hoặc giao dịch không hợp lệ. '

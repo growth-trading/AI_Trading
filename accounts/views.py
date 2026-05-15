@@ -69,7 +69,8 @@ def verify_otp_view(request):
 
     if user.is_email_verified:
         del request.session['pending_verify_user_id']
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        if not request.user.is_authenticated:
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('trading')
 
     form = OTPForm(request.POST or None)

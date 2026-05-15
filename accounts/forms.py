@@ -16,8 +16,8 @@ class RegisterForm(UserCreationForm):
             field.widget.attrs.update({'class': 'form-control'})
 
     def clean_email(self):
-        email = self.cleaned_data['email']
-        if CustomUser.objects.filter(email=email).exists():
+        email = self.cleaned_data['email'].lower()
+        if CustomUser.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('Email này đã được sử dụng.')
         return email
 

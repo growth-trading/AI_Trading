@@ -113,6 +113,11 @@ AI_PLAN_WEEK_COST  = config('AI_PLAN_WEEK_COST',  default=20,  cast=int)
 AI_PLAN_MONTH_COST = config('AI_PLAN_MONTH_COST', default=50,  cast=int)
 AI_PLAN_YEAR_COST  = config('AI_PLAN_YEAR_COST',  default=400, cast=int)
 
+# TradingView subscription plan costs (in coins)
+TV_PLAN_WEEK_COST  = config('TV_PLAN_WEEK_COST',  default=10,  cast=int)
+TV_PLAN_MONTH_COST = config('TV_PLAN_MONTH_COST', default=30,  cast=int)
+TV_PLAN_YEAR_COST  = config('TV_PLAN_YEAR_COST',  default=200, cast=int)
+
 # Cache — dùng Redis nếu REDIS_URL được set, fallback LocMemCache (chỉ dùng cho dev single-process)
 REDIS_URL = config('REDIS_URL', default='')
 if REDIS_URL:

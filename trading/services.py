@@ -2,6 +2,7 @@ import json
 import re
 import base64
 import logging
+from decimal import Decimal, InvalidOperation
 import pandas as pd
 import pandas_ta as ta
 import google.generativeai as genai
@@ -34,67 +35,20 @@ def _mock_analysis(symbol: str, current_price=None) -> dict:
     clean = _strip_exchange(symbol)
     price = float(current_price) if current_price else None
 
-    if 'XAU' in clean:
-        sig = 'BUY'
-        e, sl, tp = _mock_levels(price, sig) if price else (3318.50, 3295.00, 3368.00)
-        return {
-            'signal': sig, 'confidence': 74, 'entry': e, 'sl': sl, 'tp': tp,
-            'reasoning': (
-                '[DEMO] RSI (58.4) đang tăng, MACD histogram dương (+3.2) xác nhận đà bullish. '
-                'EMA20 nằm trên EMA50 cho thấy xu hướng tăng ngắn hạn còn duy trì. '
-                'Supertrend UP — vào BUY gần vùng hỗ trợ EMA20 với R:R ≈ 2.5.'
-            ),
-        }
-    if 'XAG' in clean:
-        sig = 'BUY'
-        e, sl, tp = _mock_levels(price, sig) if price else (32.85, 32.20, 34.20)
-        return {
-            'signal': sig, 'confidence': 61, 'entry': e, 'sl': sl, 'tp': tp,
-            'reasoning': (
-                '[DEMO] Bạc hình thành đáy cao hơn trên khung H1. RSI phân kỳ tăng. '
-                'MACD vừa cắt lên trên đường signal. Vào BUY với SL dưới vùng hỗ trợ gần nhất.'
-            ),
-        }
-    if 'EUR' in clean:
-        sig = 'SELL'
-        e, sl, tp = _mock_levels(price, sig) if price else (1.0842, 1.0890, 1.0755)
-        return {
-            'signal': sig, 'confidence': 68, 'entry': e, 'sl': sl, 'tp': tp,
-            'reasoning': (
-                '[DEMO] EURUSD phá vỡ hỗ trợ trendline tăng. RSI (42) cho thấy áp lực bán. '
-                'MACD histogram âm và mở rộng. Mục tiêu vùng hỗ trợ phía dưới.'
-            ),
-        }
-    if 'GBP' in clean:
-        sig = 'SELL'
-        e, sl, tp = _mock_levels(price, sig) if price else (1.2650, 1.2710, 1.2520)
-        return {
-            'signal': sig, 'confidence': 62, 'entry': e, 'sl': sl, 'tp': tp,
-            'reasoning': (
-                '[DEMO] GBPUSD chạm kháng cự vùng 1.2700. RSI overbought (68). '
-                'Nến rejection xuất hiện, MACD bắt đầu phân kỳ âm.'
-            ),
-        }
-    if 'BTC' in clean:
-        sig = 'BUY'
-        e, sl, tp = _mock_levels(price, sig) if price else (103_200.0, 101_000.0, 108_500.0)
-        return {
-            'signal': sig, 'confidence': 66, 'entry': e, 'sl': sl, 'tp': tp,
-            'reasoning': (
-                '[DEMO] BTC tích lũy sideway, RSI 55 cho thấy còn room tăng. '
-                'Volume nến xanh áp đảo. Supertrend UP kể từ 3 nến trước.'
-            ),
-        }
-    if 'ETH' in clean:
-        sig = 'BUY'
-        e, sl, tp = _mock_levels(price, sig) if price else (2450.0, 2380.0, 2600.0)
-        return {
-            'signal': sig, 'confidence': 58, 'entry': e, 'sl': sl, 'tp': tp,
-            'reasoning': (
-                '[DEMO] ETH đang trong uptrend ngắn hạn. EMA20 hỗ trợ tốt. '
-                'RSI (54) chưa overbought, còn dư địa tăng lên vùng kháng cự tiếp theo.'
-            ),
-        }
+    _SYMBOL_MAP = {
+        'XAU': ('BUY',  74, '[DEMO] RSI (58.4) đang tăng, MACD histogram dương (+3.2) xác nhận đà bullish. EMA20 nằm trên EMA50 cho thấy xu hướng tăng ngắn hạn còn duy trì. Supertrend UP — vào BUY gần vùng hỗ trợ EMA20 với R:R ≈ 2.5.'),
+        'XAG': ('BUY',  61, '[DEMO] Bạc hình thành đáy cao hơn trên khung H1. RSI phân kỳ tăng. MACD vừa cắt lên trên đường signal. Vào BUY với SL dưới vùng hỗ trợ gần nhất.'),
+        'EUR': ('SELL', 68, '[DEMO] EURUSD phá vỡ hỗ trợ trendline tăng. RSI (42) cho thấy áp lực bán. MACD histogram âm và mở rộng. Mục tiêu vùng hỗ trợ phía dưới.'),
+        'GBP': ('SELL', 62, '[DEMO] GBPUSD chạm kháng cự. RSI overbought (68). Nến rejection xuất hiện, MACD bắt đầu phân kỳ âm.'),
+        'BTC': ('BUY',  66, '[DEMO] BTC tích lũy sideway, RSI 55 cho thấy còn room tăng. Volume nến xanh áp đảo. Supertrend UP kể từ 3 nến trước.'),
+        'ETH': ('BUY',  58, '[DEMO] ETH đang trong uptrend ngắn hạn. EMA20 hỗ trợ tốt. RSI (54) chưa overbought, còn dư địa tăng lên vùng kháng cự tiếp theo.'),
+    }
+
+    for keyword, (sig, conf, reason) in _SYMBOL_MAP.items():
+        if keyword in clean:
+            e, sl, tp = _mock_levels(price, sig) if price else (None, None, None)
+            return {'signal': sig, 'confidence': conf, 'entry': e, 'sl': sl, 'tp': tp, 'reasoning': reason}
+
     return {
         'signal': 'HOLD', 'confidence': 48,
         'entry': None, 'sl': None, 'tp': None,
@@ -163,7 +117,7 @@ def compute_indicators_local(candles: list) -> dict:
                 }
 
         if not result:
-            logger.warning('compute_indicators_local: tất cả indicator đều None. Columns: %s', list(df.columns))
+            logger.error('compute_indicators_local: tất cả indicator đều None — có thể lỗi pandas_ta. Columns: %s', list(df.columns))
             return _mock_indicators()
         return result
 
@@ -214,7 +168,12 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
     }
 
     response = model.generate_content([prompt, image_part])
-    raw = response.text.strip()
+    try:
+        raw = response.text.strip()
+    except ValueError:
+        # Gemini blocked by safety filter or empty response
+        logger.warning('Gemini response blocked or empty for %s: %s', symbol, response.prompt_feedback)
+        return _mock_analysis(symbol, current_price=current_price)
 
     if raw.startswith('```'):
         raw = re.sub(r'^```(?:json)?\s*', '', raw)
@@ -225,7 +184,7 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
 
     return {
         'signal': str(data.get('signal', 'HOLD')).upper(),
-        'confidence': int(data.get('confidence', 0)),
+        'confidence': max(0, min(100, int(data.get('confidence', 0) or 0))),
         'entry': _to_decimal_or_none(data.get('entry')),
         'sl': _to_decimal_or_none(data.get('sl')),
         'tp': _to_decimal_or_none(data.get('tp')),
@@ -266,7 +225,9 @@ def _format_indicators(indicators: dict) -> str:
 
 
 def _to_decimal_or_none(val):
+    if val is None:
+        return None
     try:
-        return float(val) if val is not None else None
-    except (TypeError, ValueError):
+        return Decimal(str(val))
+    except (InvalidOperation, TypeError, ValueError):
         return None

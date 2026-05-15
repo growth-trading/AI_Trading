@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tổng quan dự án
 
-Ứng dụng web Django hỗ trợ giao dịch bằng AI, tích hợp nạp tiền USDT qua MetaMask, xác thực email bằng OTP, và phân tích biểu đồ bằng Gemini Vision. Người dùng chuyển USDT đến **ví Admin cố định** — backend tự động quét ví đó qua BscScan API và cộng xu vào tài khoản. Xu được dùng để mua gói AI Trading để truy cập tính năng phân tích biểu đồ.
+Ứng dụng web Django hỗ trợ giao dịch bằng AI, tích hợp nạp tiền USDT qua MetaMask, xác thực email bằng OTP, và phân tích biểu đồ bằng Gemini Vision. Người dùng chuyển USDT đến **ví Admin cố định** — backend tự động quét ví đó qua BscScan API và cộng xu vào tài khoản. Xu được dùng để mua gói AI Trading (phân tích biểu đồ Gemini) hoặc gói TradingView (nhúng chart TradingView premium).
 
 ## Các lệnh thường dùng
 
@@ -22,10 +22,14 @@ python manage.py createsuperuser
 # Chạy server phát triển
 python manage.py runserver
 
-# Kiểm thử
-python manage.py test                    # toàn bộ
-python manage.py test accounts           # một app
-python manage.py test accounts.tests.TestClass  # một class
+# Kiểm thử (hiện chưa có test files)
+python manage.py test
+python manage.py test accounts
+python manage.py test accounts.tests.TestClass
+
+# MT5 data collector (production — pre-fetch candles vào Redis cache)
+python manage.py run_mt5_collector
+python manage.py run_mt5_collector --symbols OANDA:XAUUSD,OANDA:EURUSD --intervals 60,240
 
 # File tĩnh (production)
 python manage.py collectstatic
@@ -48,9 +52,9 @@ python manage.py collectstatic
 
 ```
 aitrading/       # settings.py, urls.py, wsgi.py
-accounts/        # CustomUser, đăng ký, OTP email
+accounts/        # CustomUser, đăng ký, OTP email, EmailVerifiedMiddleware
 deposits/        # DepositTransaction, WalletScanState, tasks, views
-trading/         # landing, trang trading, subscribe, AI chart analysis
+trading/         # landing, trang trading, subscribe, AI chart analysis, MT5/Binance data, TradingView products
 profiles/        # hồ sơ, avatar, cài đặt
 templates/       # HTML phân theo app
 static/          # CSS, JS, hình ảnh
@@ -68,6 +72,9 @@ Kế thừa `AbstractUser`, thêm:
 - `ai_trading_expires_at` (DateTimeField, null) — thời điểm hết hạn gói AI
 - `has_ai_trading_access` (property) — `ai_trading_expires_at > timezone.now()`
 
+### Email Verification Middleware (`accounts/middleware.py::EmailVerifiedMiddleware`)
+Chặn **mọi URL** (trừ `/accounts/`, `/admin/`, `/static/`, `/media/`, `/trading/tradingview`, `/`) nếu user đã login nhưng chưa verify email → redirect `verify_otp`. Gate này bổ sung cho các check cụ thể trong từng view.
+
 ### OTP Email Flow
 1. Đăng ký → `user.generate_otp()` → gửi SMTP → lưu `user.pk` vào session
 2. `/accounts/verify/` → `user.is_otp_valid(code)` (`secrets.compare_digest` — constant-time) → login
@@ -75,16 +82,22 @@ Kế thừa `AbstractUser`, thêm:
 
 ### URL Structure
 ```
-/                           → landing (đã login → redirect trading)
+/                               → landing (đã login → redirect trading)
 /accounts/register|login|logout|verify|resend-otp/
-/deposit/                   → deposit_view, submit_txhash_view, check_deposit_status
-/trading/                   → trading_view (yêu cầu đăng nhập)
-/trading/subscribe/         → subscribe_ai_trading_view (POST JSON)
-/trading/analyze/           → analyze_chart_view (POST JSON)
-/profile/                   → profile_view
-/profile/settings/          → settings_view
-<bất kỳ URL khác>           → catch-all → page_not_found → 404.html
+/deposit/                       → deposit_view, submit_txhash_view, check_deposit_status/<id>/
+/trading/                       → trading_view (yêu cầu đăng nhập)
+/trading/subscribe/             → subscribe_ai_trading_view (POST JSON)
+/trading/analyze/               → analyze_chart_view (POST JSON)
+/trading/chart-data/            → chart_data_view (GET, ?symbol=&interval=&since=&before=)
+/trading/tick/                  → tick_view (GET, ?symbol=&interval=)
+/trading/tradingview/           → tradingview_view (yêu cầu đăng nhập)
+/trading/tradingview/subscribe/ → subscribe_tradingview_view (POST JSON)
+/profile/                       → profile_view
+/profile/settings/              → settings_view
+<bất kỳ URL khác>               → catch-all → page_not_found → 404.html
 ```
+
+**Điều hướng sau đăng nhập**: `LOGIN_REDIRECT_URL = '/trading/'` — redirect về trang AI Trading.
 
 ### Luồng nạp tiền (`deposits/`)
 
@@ -94,9 +107,9 @@ Kế thừa `AbstractUser`, thêm:
 
 **Tự động** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây: BscScan API → decode memo `UID-XXXX` → cộng coins bằng `F('coins') + amount`.
 
-**Thủ công** — `deposits/views.py::submit_txhash_view()`: validate regex tx_hash → BscScan lookup → kiểm tra memo == `request.user.memo_code` → cộng coins.
+**Thủ công** — `deposits/views.py::submit_txhash_view()`: validate regex tx_hash → 2-step BscScan lookup (proxy để lấy block number, rồi tokentx trong block đó) → kiểm tra memo == `request.user.memo_code` → cộng coins.
 
-**CRITICAL:** Luôn dùng `F('coins') + amount` khi cộng/trừ coins — tránh race condition.
+**CRITICAL:** Luôn dùng `F('coins') + amount` / `F('coins') - cost` khi cộng/trừ coins — tránh race condition.
 
 ### Module AI Trading (`trading/`)
 
@@ -112,9 +125,27 @@ Kế thừa `AbstractUser`, thêm:
 5. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision
 6. Lưu `ChartAnalysisLog`, trả JSON
 
-**Canvas capture** (`captureChartImage()` trong template): composite tất cả `<canvas>` của Lightweight Charts → `toDataURL('image/png')` → base64 POST. Bọc trong `try/catch` tránh `SecurityError`. Nếu thất bại → view dùng `_PNG_FALLBACK` (1×1 transparent PNG).
+**Dữ liệu nến** — `chart_data_view` / `tick_view`: ưu tiên MT5 (với `_mt5_lock` đảm bảo thread-safe), fallback Binance public API. Cache theo TTL của từng interval.
 
-**`trading/services.py`**: chỉ import `pandas`, `pandas_ta`, `google.generativeai` — **không** dùng `requests` (đã xóa TAAPI + Chart-IMG). Demo mode: nếu `GEMINI_API_KEY` rỗng → `_mock_analysis()` với `[DEMO]` label.
+**MT5 Collector** — `trading/management/commands/run_mt5_collector.py`: process độc lập kết nối MT5 một lần, liên tục làm mới cache. Dùng trong production thay vì để Django worker gọi MT5 trực tiếp.
+
+**`trading/services.py`**: chỉ import `pandas`, `pandas_ta`, `google.generativeai` — **không** dùng `requests`. Demo mode: nếu `GEMINI_API_KEY` rỗng hoặc là `'your_gemini_api_key'` → `_mock_analysis()` với `[DEMO]` label.
+
+### Module TradingView (`trading/`)
+
+Bán quyền truy cập vào các chart TradingView premium được nhúng qua iframe.
+
+**Models** (`trading/models.py`):
+- `TradingViewProduct` — sản phẩm chart: `slug` (unique), `name`, `chart_id` (TradingView chart ID từ URL), `symbol`, `interval`, `week_cost`/`month_cost`/`year_cost`, `is_active`, `sort_order`
+- `UserTVSubscription` — đăng ký của user: FK `user` + FK `product` (unique_together), `expires_at`
+
+**Quản lý sản phẩm**: qua Django Admin (`trading/admin.py`). `TradingViewProductAdmin` hỗ trợ `list_editable` để chỉnh giá/trạng thái nhanh.
+
+**Mua gói** — `subscribe_tradingview_view`: nhận `{plan, product_slug}` → lấy `product` theo slug → `select_for_update()` → trừ coins → upsert `UserTVSubscription.expires_at`. Gia hạn cộng dồn nếu còn hạn.
+
+**Hiển thị** — `tradingview_view`: query `TradingViewProduct.objects.filter(is_active=True)` + truy vấn tất cả `UserTVSubscription` còn hạn của user → render list với flag `has_access` per product.
+
+**Middleware exemption**: `/trading/tradingview` được exempt khỏi `EmailVerifiedMiddleware` — user chưa verify vẫn xem được trang sản phẩm (nhưng không thể mua).
 
 ## Biến môi trường (`.env`)
 
@@ -132,7 +163,7 @@ USDT_CONTRACT_BSC=0x55d398326f99059fF775485246999027B3197955
 BSCSCAN_API_KEY=
 USDT_TO_COINS_RATE=1
 WALLET_SCAN_INTERVAL_SECONDS=60
-DJANGO_RUN_SCHEDULER=0
+DJANGO_RUN_SCHEDULER=0          # set 1 in production
 
 MT5_ACCOUNT=
 MT5_PASSWORD=
@@ -144,7 +175,11 @@ AI_PLAN_WEEK_COST=20
 AI_PLAN_MONTH_COST=50
 AI_PLAN_YEAR_COST=400
 
-REDIS_URL=                    # vd: redis://127.0.0.1:6379/0 (để trống → dùng LocMemCache)
+TV_PLAN_WEEK_COST=10
+TV_PLAN_MONTH_COST=30
+TV_PLAN_YEAR_COST=200
+
+REDIS_URL=                       # vd: redis://127.0.0.1:6379/0 (để trống → dùng LocMemCache)
 ```
 
 ## Theme & i18n System
@@ -167,8 +202,7 @@ REDIS_URL=                    # vd: redis://127.0.0.1:6379/0 (để trống → 
 - Khi thêm text mới: thêm key vào cả `i18n.vi` và `i18n.en`
 
 ### Toggle Theme/Language
-- **Không còn** Floating Controls ở góc phải (đã xóa khỏi base.html)
-- Toggle nằm tại `/profile/settings/` — card Giao diện + card Ngôn ngữ
+- Toggle nằm tại `/profile/settings/` — card Giao diện + card Ngôn ngữ (không còn Floating Controls)
 
 ## Thiết kế & UI/UX
 

@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% block title %}TradingView — AITrading{% endblock %}
+
+{% block extra_css %}
+<style>
+.tv-page { padding-top: 80px; padding-bottom: 60px; }
+.tv-page-subtitle {
+  color: var(--text-main);
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  margin-top: 32px;
+  text-align: center;
+  letter-spacing: .01em;
+}
+.tv-accent-word { color: var(--accent); font-weight: 700; }
+
+/* Product grid */
+.tv-product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+}
+@media (max-width: 900px) { .tv-product-grid { grid-template-columns: 1fr; } }
+.tv-product-card {
+  background: #1A1A2E;
+  border: 1px solid #1E293B;
+  border-radius: 16px;
+  padding: 28px 24px;
+  display: flex; flex-direction: column;
+  transition: all .25s ease;
+  position: relative;
+}
+.tv-product-card:hover {
+  border-color: rgba(59,130,246,.4);
+  box-shadow: 0 8px 30px rgba(59,130,246,.12);
+  transform: translateY(-4px);
+}
+.tv-product-card.active-card {
+  border-color: rgba(16,185,129,.35);
+  box-shadow: 0 0 0 1px rgba(16,185,129,.15);
+}
+
+.tv-product-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 99px; margin-bottom: 16px;
+  width: fit-content;
+}
+.tv-product-status.active { background: rgba(16,185,129,.15); color: #10B981; border: 1px solid rgba(16,185,129,.3); }
+.tv-product-status.inactive { background: rgba(148,163,184,.08); color: #94A3B8; border: 1px solid rgba(148,163,184,.2); }
+
+.tv-product-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(59,130,246,.2), rgba(99,102,241,.2));
+  border: 1px solid rgba(59,130,246,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; color: #3B82F6; margin-bottom: 14px;
+}
+.tv-product-name { font-size: 1.12rem; font-weight: 700; color: #F1F5F9; margin-bottom: 8px; }
+.tv-product-desc { font-size: .875rem; color: #94A3B8; line-height: 1.6; margin-bottom: 18px; flex: 1; }
+
+.tv-product-features { list-style: none; padding: 0; margin: 0 0 20px; }
+.tv-product-features li { font-size: .84rem; color: #CBD5E1; padding: 4px 0; display: flex; align-items: center; gap: 7px; }
+.tv-product-features li i { color: #10B981; font-size: .8rem; flex-shrink: 0; }
+
+.tv-product-price-hint { font-size: .8rem; color: #64748B; margin-bottom: 16px; }
+.tv-product-price-hint strong { color: #94A3B8; }
+
+.tv-product-expiry {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .82rem; color: #64748B; margin-bottom: 16px;
+  background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.15);
+  border-radius: 8px; padding: 8px 12px;
+}
+.tv-product-expiry i { color: #10B981; }
+.tv-product-expiry strong { color: #10B981; }
+
+.tv-product-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-tv-view {
+  flex: 1; min-width: 120px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #fff; border: none; border-radius: 8px;
+  padding: 10px 18px; font-size: .9rem; font-weight: 600;
+  cursor: pointer; text-decoration: none; text-align: center;
+  transition: opacity .2s;
+}
+.btn-tv-view:hover { opacity: .88; color: #fff; }
+.btn-tv-renew-sm {
+  background: transparent; border: 1px solid rgba(59,130,246,.4);
+  color: #3B82F6; border-radius: 8px; padding: 10px 14px;
+  font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.btn-tv-renew-sm:hover { background: rgba(59,130,246,.1); }
+.btn-tv-buy {
+  flex: 1;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: #fff; border: none; border-radius: 8px;
+  padding: 10px 18px; font-size: .9rem; font-weight: 600;
+  cursor: pointer; transition: opacity .2s;
+}
+.btn-tv-buy:hover { opacity: .88; }
+
+/* Modal plan cards */
+.tv-modal-plans { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; padding: 24px; }
+@media (max-width: 600px) { .tv-modal-plans { grid-template-columns: 1fr; } }
+.tv-modal-plan {
+  background: #111827; border: 1px solid #1E293B; border-radius: 12px;
+  padding: 20px 16px; text-align: center; cursor: pointer;
+  transition: all .2s; position: relative;
+}
+.tv-modal-plan:hover, .tv-modal-plan.selected { border-color: #3B82F6; box-shadow: 0 0 0 2px rgba(59,130,246,.2); }
+.tv-modal-plan.featured { border-color: rgba(99,102,241,.5); }
+.tv-modal-plan-badge {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: #fff; font-size: .65rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; padding: 3px 12px; border-radius: 99px; white-space: nowrap;
+}
+.tv-modal-plan-name { font-size: .85rem; font-weight: 600; color: #94A3B8; margin-bottom: 8px; }
+.tv-modal-plan-price { font-size: 1.8rem; font-weight: 800; color: #F1F5F9; }
+.tv-modal-plan-price span { font-size: .85rem; font-weight: 400; color: #64748B; }
+.tv-modal-plan-period { font-size: .78rem; color: #64748B; margin-top: 4px; }
+
+.tv-coins-note { padding: 0 24px 20px; font-size: .875rem; color: #94A3B8; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tv-page">
+  <div class="container">
+
+    <p class="tv-page-subtitle">
+      Chọn layout phân tích phù hợp —
+      xem chart <span class="tv-accent-word">real-time</span>
+      với đầy đủ indicator của chuyên gia.
+    </p>
+
+    <!-- Product Grid -->
+    <div class="tv-product-grid">
+      {% for item in product_list %}
+      <div class="tv-product-card {% if item.has_access %}active-card{% endif %} animate-on-scroll">
+
+        {% if item.has_access %}
+          <div class="tv-product-status active"><i class="bi bi-check-circle-fill"></i>Đang hoạt động</div>
+        {% else %}
+          <div class="tv-product-status inactive"><i class="bi bi-lock"></i>Chưa đăng ký</div>
+        {% endif %}
+
+        <div class="tv-product-icon">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+
+        <div class="tv-product-name">{{ item.product.name }}</div>
+        <div class="tv-product-desc">{{ item.product.description }}</div>
+
+        <ul class="tv-product-features">
+          <li><i class="bi bi-check-circle-fill"></i>Chart real-time chuyên gia</li>
+          <li><i class="bi bi-check-circle-fill"></i>MACD · RSI · EMA · Supertrend</li>
+          <li><i class="bi bi-check-circle-fill"></i>Vùng hỗ trợ / kháng cự</li>
+        </ul>
+
+        {% if item.has_access %}
+          <div class="tv-product-expiry">
+            <i class="bi bi-calendar3"></i>
+            Hết hạn: <strong>{{ item.subscription.expires_at|date:"d/m/Y" }}</strong>
+          </div>
+          <div class="tv-product-actions">
+            <a href="https://www.tradingview.com/chart/{{ item.product.chart_id }}/" target="_blank" rel="noopener" class="btn-tv-view">
+              <i class="bi bi-box-arrow-up-right me-1"></i>Xem chart
+            </a>
+            <button class="btn-tv-renew-sm"
+              data-product-slug="{{ item.product.slug }}"
+              data-product-name="{{ item.product.name }}"
+              data-week-cost="{{ item.product.week_cost }}"
+              data-month-cost="{{ item.product.month_cost }}"
+              data-year-cost="{{ item.product.year_cost }}"
+              onclick="openTVBuyModal(this)">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        {% else %}
+          <div class="tv-product-price-hint">Từ <strong>{{ item.product.week_cost }} xu</strong> / tuần</div>
+          <div class="tv-product-actions">
+            <button class="btn-tv-buy"
+              data-product-slug="{{ item.product.slug }}"
+              data-product-name="{{ item.product.name }}"
+              data-week-cost="{{ item.product.week_cost }}"
+              data-month-cost="{{ item.product.month_cost }}"
+              data-year-cost="{{ item.product.year_cost }}"
+              onclick="openTVBuyModal(this)">
+              <i class="bi bi-cart-plus me-1"></i>Mua ngay
+            </button>
+          </div>
+        {% endif %}
+
+      </div>
+      {% empty %}
+      <div class="text-center py-5 text-muted" style="grid-column:1/-1">
+        <i class="bi bi-tv" style="font-size:2rem"></i>
+        <p class="mt-2">Chưa có sản phẩm nào.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+
+  </div>
+</div>
+
+<!-- Buy / Renew Modal -->
+<div class="modal fade" id="tvBuyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:640px">
+    <div class="modal-content ai-modal-content">
+      <div class="ai-modal-header">
+        <h5 class="fw-700 d-flex align-items-center gap-2 mb-0">
+          <i class="bi bi-tv text-accent"></i>
+          <span id="tvModalProductName">Mua gói TradingView</span>
+        </h5>
+        <button type="button" class="ai-modal-close" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="tv-modal-plans">
+        <!-- Week -->
+        <div class="tv-modal-plan" data-plan="week">
+          <div class="tv-modal-plan-name">Tuần</div>
+          <div class="tv-modal-plan-price"><span id="tvModalWeekCost">10</span><span> xu</span></div>
+          <div class="tv-modal-plan-period">7 ngày</div>
+        </div>
+        <!-- Month -->
+        <div class="tv-modal-plan featured" data-plan="month">
+          <div class="tv-modal-plan-badge">Phổ biến</div>
+          <div class="tv-modal-plan-name">Tháng</div>
+          <div class="tv-modal-plan-price"><span id="tvModalMonthCost">30</span><span> xu</span></div>
+          <div class="tv-modal-plan-period">30 ngày</div>
+        </div>
+        <!-- Year -->
+        <div class="tv-modal-plan" data-plan="year">
+          <div class="tv-modal-plan-name">Năm</div>
+          <div class="tv-modal-plan-price"><span id="tvModalYearCost">200</span><span> xu</span></div>
+          <div class="tv-modal-plan-period">365 ngày</div>
+        </div>
+      </div>
+
+      <div class="tv-coins-note">
+        <i class="bi bi-coin text-warning me-1"></i>
+        Số dư: <strong>{{ user.coins|floatformat:2 }}</strong> xu
+        &nbsp;·&nbsp;
+        <a href="{% url 'deposit' %}">Nạp thêm</a>
+      </div>
+
+      <div style="padding: 0 24px 24px;">
+        <button id="tvConfirmBuyBtn" class="btn-ai-buy btn-ai-buy-featured w-100" disabled>
+          <span>Chọn gói để tiếp tục</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var _tvSelectedPlan = null;
+var _tvProductSlug = null;
+
+function openTVBuyModal(btn) {
+  _tvProductSlug = btn.dataset.productSlug;
+  _tvSelectedPlan = null;
+
+  document.getElementById('tvModalProductName').textContent = btn.dataset.productName;
+  document.getElementById('tvModalWeekCost').textContent = btn.dataset.weekCost;
+  document.getElementById('tvModalMonthCost').textContent = btn.dataset.monthCost;
+  document.getElementById('tvModalYearCost').textContent = btn.dataset.yearCost;
+
+  document.querySelectorAll('.tv-modal-plan').forEach(function(p) { p.classList.remove('selected'); });
+  var confirmBtn = document.getElementById('tvConfirmBuyBtn');
+  confirmBtn.disabled = true;
+  confirmBtn.querySelector('span').textContent = 'Chọn gói để tiếp tục';
+
+  new bootstrap.Modal(document.getElementById('tvBuyModal')).show();
+}
+
+document.querySelectorAll('.tv-modal-plan').forEach(function(planEl) {
+  planEl.addEventListener('click', function() {
+    document.querySelectorAll('.tv-modal-plan').forEach(function(p) { p.classList.remove('selected'); });
+    planEl.classList.add('selected');
+    _tvSelectedPlan = planEl.dataset.plan;
+
+    var labels = { week: 'Mua gói Tuần', month: 'Mua gói Tháng', year: 'Mua gói Năm' };
+    var confirmBtn = document.getElementById('tvConfirmBuyBtn');
+    confirmBtn.disabled = false;
+    confirmBtn.querySelector('span').textContent = labels[_tvSelectedPlan] || 'Xác nhận';
+  });
+});
+
+document.getElementById('tvConfirmBuyBtn').addEventListener('click', function() {
+  if (!_tvSelectedPlan || !_tvProductSlug) return;
+  var btn = this;
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Đang xử lý...';
+
+  fetch('{% url "subscribe_tradingview" %}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+    body: JSON.stringify({ plan: _tvSelectedPlan, product_slug: _tvProductSlug }),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      var coinsEl = document.getElementById('nav-coins-val');
+      if (coinsEl) coinsEl.textContent = parseFloat(data.coins_remaining).toFixed(2);
+      location.reload();
+    } else {
+      alert(data.error || 'Mua gói thất bại.');
+      btn.disabled = false;
+      btn.querySelector('span').textContent = 'Thử lại';
+    }
+  })
+  .catch(function() {
+    alert('Lỗi kết nối. Vui lòng thử lại.');
+    btn.disabled = false;
+    btn.querySelector('span').textContent = 'Thử lại';
+  });
+});
+</script>
+{% endblock %}
