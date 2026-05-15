@@ -9,22 +9,24 @@ alwaysApply: true
 aitrading/       # settings.py, urls.py, wsgi.py
 accounts/        # CustomUser, đăng ký, OTP email
 deposits/        # DepositTransaction, WalletScanState, tasks, views
-trading/         # landing page, trang trading
+trading/         # landing page, trang trading chính, AI chart analysis
 profiles/        # hồ sơ, avatar, cài đặt (settings)
-templates/       # HTML phân theo app (landing/, accounts/, deposits/, profiles/, emails/)
-static/          # CSS, JS, web3.js, hình ảnh
+templates/       # HTML phân theo app (landing/, accounts/, deposits/, profiles/, trading/, emails/)
+static/          # CSS, JS, web3.js, lightweight-charts, hình ảnh
 ```
 
 ## URL Structure
 
 ```
-/                           → trading.landing (nếu đã login → redirect trading)
+/                               → trading.landing (nếu đã login → redirect trading)
 /accounts/register|login|logout|verify|resend-otp/
-/deposit/                   → deposits.deposit_view, submit_txhash_view, check_deposit_status
-/trading/                   → trading.trading_view (yêu cầu đăng nhập)
-/profile/                   → profiles.profile_view
-/profile/settings/          → profiles.settings_view
-<bất kỳ URL nào khác>       → catch-all re_path → page_not_found → templates/404.html
+/deposit/                       → deposits.deposit_view, submit_txhash_view, check_deposit_status
+/trading/                       → trading.trading_view (yêu cầu đăng nhập)
+/trading/subscribe/             → trading.subscribe_ai_trading_view (POST, JSON)
+/trading/analyze/               → trading.analyze_chart_view (POST, JSON)
+/profile/                       → profiles.profile_view
+/profile/settings/              → profiles.settings_view
+<bất kỳ URL nào khác>           → catch-all re_path → page_not_found → templates/404.html
 ```
 
 **Catch-all 404** (`aitrading/urls.py`): `re_path(r'^.*$', lambda r, **kw: page_not_found(r, None))` đặt cuối `urlpatterns`. Đảm bảo mọi URL không khớp đều hiện trang 404 tùy chỉnh, kể cả khi `DEBUG=True`. Media files được prepend trước catch-all khi `DEBUG=True`.
@@ -45,6 +47,8 @@ Kế thừa `AbstractUser`, thêm:
 - `memo_code` (property) — trả về `f"UID-{self.pk:04d}"`
 - `phone` (CharField max 20, blank=True) — số điện thoại
 - `address` (CharField max 255, blank=True) — địa chỉ
+- `ai_trading_expires_at` (DateTimeField, null/blank) — thời điểm hết hạn gói AI Trading
+- `has_ai_trading_access` (property) — trả `True` nếu `ai_trading_expires_at > timezone.now()`
 
 ## OTP Email Flow
 
@@ -63,10 +67,13 @@ Kế thừa `AbstractUser`, thêm:
 ## Quyền truy cập
 
 - `trading_view` (`trading/views.py`) — redirect về `login` nếu chưa đăng nhập
-- `deposit_view` kiểm tra `request.user.is_email_verified` trước khi hiển thị trang nạp tiền
-- `login_view` kiểm tra `is_email_verified` — nếu chưa verify → redirect `verify_otp`
+- `deposit_view` — kiểm tra `is_email_verified` trước khi hiển thị trang nạp tiền
+- `login_view` — nếu chưa verify email → redirect `verify_otp`
+- `subscribe_ai_trading_view` — yêu cầu `is_authenticated` + `is_email_verified` + đủ `coins`
+- `analyze_chart_view` — yêu cầu `is_authenticated` + `is_email_verified` + `has_ai_trading_access`
 - Các view nội bộ dùng `@login_required`
-- Các view yêu cầu trả phí phải kiểm tra `is_email_verified` **và** đủ `coins`
+
+**CRITICAL — cộng/trừ coins:** luôn dùng `F('coins') ± amount` khi update, không dùng `user.coins ± amount` (race condition).
 
 ## Navbar (base.html)
 

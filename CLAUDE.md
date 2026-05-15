@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tổng quan dự án
 
-Ứng dụng web Django hỗ trợ giao dịch bằng AI, tích hợp nạp tiền USDT qua MetaMask, xác thực email bằng OTP, và quản lý bot giao dịch AI. Người dùng chuyển USDT đến **ví Admin cố định** — backend tự động quét ví đó qua BscScan API và cộng xu vào tài khoản, hoặc người dùng có thể tự nhập TxHash.
+Ứng dụng web Django hỗ trợ giao dịch bằng AI, tích hợp nạp tiền USDT qua MetaMask, xác thực email bằng OTP, và phân tích biểu đồ bằng Gemini Vision. Người dùng chuyển USDT đến **ví Admin cố định** — backend tự động quét ví đó qua BscScan API và cộng xu vào tài khoản. Xu được dùng để mua gói AI Trading để truy cập tính năng phân tích biểu đồ.
 
 ## Các lệnh thường dùng
 
@@ -35,10 +35,14 @@ python manage.py collectstatic
 
 - **Backend**: Django 4.2, Python 3.11+, `python-decouple` (`.env`)
 - **Database**: SQLite (dev), `psycopg2-binary` có sẵn cho PostgreSQL
-- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2, Web3.js (MetaMask)
-- **Tác vụ nền**: `django-apscheduler` — scheduler khởi động trong `DepositsConfig.ready()`, không dùng Celery
+- **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2, Web3.js (MetaMask), Lightweight Charts (biểu đồ nến)
+- **Tác vụ nền**: `django-apscheduler` — scheduler trong `DepositsConfig.ready()`, không dùng Celery
 - **Email**: Django SMTP (Gmail)
 - **Blockchain**: BscScan API (BSC/BEP-20 USDT)
+- **AI Analysis**: `google-generativeai` (Gemini 2.5 Flash Vision) — phân tích ảnh biểu đồ
+- **Chỉ báo kỹ thuật**: `pandas>=2.0` + `pandas-ta>=0.3.14b` — tính RSI/MACD/EMA/Supertrend cục bộ
+- **Dữ liệu thị trường**: MetaTrader5 (primary), fallback Binance public API
+- **Cache**: `django-redis` + Redis (self-hosted), fallback `LocMemCache`
 
 ## Cấu trúc project
 
@@ -46,10 +50,10 @@ python manage.py collectstatic
 aitrading/       # settings.py, urls.py, wsgi.py
 accounts/        # CustomUser, đăng ký, OTP email
 deposits/        # DepositTransaction, WalletScanState, tasks, views
-trading/         # landing page, trang trading
-profiles/        # hồ sơ, avatar, cài đặt (settings)
-templates/       # HTML phân theo app (landing/, accounts/, deposits/, profiles/, emails/)
-static/          # CSS, JS, web3.js, hình ảnh
+trading/         # landing, trang trading, subscribe, AI chart analysis
+profiles/        # hồ sơ, avatar, cài đặt
+templates/       # HTML phân theo app
+static/          # CSS, JS, hình ảnh
 ```
 
 ## Kiến trúc & Luồng xử lý chính
@@ -57,155 +61,131 @@ static/          # CSS, JS, web3.js, hình ảnh
 ### Model người dùng (`accounts/models.py::CustomUser`)
 Kế thừa `AbstractUser`, thêm:
 - `coins` (DecimalField 18,2) — số dư nội bộ
-- `is_email_verified` (BooleanField) — gate cho nạp tiền và tính năng AI
-- `otp_code`, `otp_created_at` — OTP lưu trực tiếp trên user, hết hạn sau 10 phút
-- `memo_code` (property) — trả về `f"UID-{self.pk:04d}"`
-- `phone` (CharField max 20, blank=True), `address` (CharField max 255, blank=True)
+- `is_email_verified` (BooleanField) — gate cho nạp tiền và AI
+- `otp_code`, `otp_created_at` — OTP trực tiếp trên user, hết hạn 10 phút
+- `memo_code` (property) — `f"UID-{self.pk:04d}"`
+- `phone`, `address` — thông tin hồ sơ
+- `ai_trading_expires_at` (DateTimeField, null) — thời điểm hết hạn gói AI
+- `has_ai_trading_access` (property) — `ai_trading_expires_at > timezone.now()`
 
 ### OTP Email Flow
-1. Đăng ký → `user.generate_otp()` → gửi SMTP (`_send_otp_email` trả `True`/`False`, lỗi hiện ra user) → lưu `user.pk` vào session `pending_verify_user_id`
-2. `/accounts/verify/` → `user.is_otp_valid(code)` (dùng `secrets.compare_digest()` — tránh timing attack) → set `is_email_verified=True`, clear `otp_code`/`otp_created_at` → login
-3. `login_view`: sau `authenticate()` thành công, kiểm tra `is_email_verified` — nếu False → redirect `verify_otp`
-4. `login()` gọi trực tiếp (không qua `authenticate()`) phải truyền `backend='django.contrib.auth.backends.ModelBackend'`
+1. Đăng ký → `user.generate_otp()` → gửi SMTP → lưu `user.pk` vào session
+2. `/accounts/verify/` → `user.is_otp_valid(code)` (`secrets.compare_digest` — constant-time) → login
+3. `login_view`: sau `authenticate()`, nếu `is_email_verified=False` → redirect `verify_otp`
+
+### URL Structure
+```
+/                           → landing (đã login → redirect trading)
+/accounts/register|login|logout|verify|resend-otp/
+/deposit/                   → deposit_view, submit_txhash_view, check_deposit_status
+/trading/                   → trading_view (yêu cầu đăng nhập)
+/trading/subscribe/         → subscribe_ai_trading_view (POST JSON)
+/trading/analyze/           → analyze_chart_view (POST JSON)
+/profile/                   → profile_view
+/profile/settings/          → settings_view
+<bất kỳ URL khác>           → catch-all → page_not_found → 404.html
+```
 
 ### Luồng nạp tiền (`deposits/`)
 
 **Models:**
-- `DepositTransaction`: `user` (FK nullable), `tx_hash` (unique), `amount_usdt`, `coins_credited`, `status` (PENDING/COMPLETED/FAILED), `memo`, `network`, `confirmed_at`
-- `WalletScanState`: lưu `last_scanned_block` theo `network` trong DB (không phải `.env`)
+- `DepositTransaction`: `tx_hash` (unique) — ngăn double-credit; `user` (FK nullable)
+- `WalletScanState`: lưu `last_scanned_block` trong DB theo `network`
 
-**Hai cách nạp tiền:**
+**Tự động** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây: BscScan API → decode memo `UID-XXXX` → cộng coins bằng `F('coins') + amount`.
 
-1. **Tự động (background scan)** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây:
-   - Gọi BscScan API `tokentx` từ `last_scanned_block + 1`
-   - Decode memo từ `input` hex (`UID-XXXX`) → map sang user qua `CustomUser.objects.get(pk=uid)`
-   - Cộng coins: `F('coins') + coins_credited` (atomic DB expression, tránh race condition)
-   - Cập nhật `WalletScanState.last_scanned_block`
+**Thủ công** — `deposits/views.py::submit_txhash_view()`: validate regex tx_hash → BscScan lookup → kiểm tra memo == `request.user.memo_code` → cộng coins.
 
-2. **Thủ công (submit TxHash)** — `deposits/views.py::submit_txhash_view()`:
-   - Kiểm tra `is_email_verified` trước (ngăn bypass qua direct POST)
-   - Validate TxHash bằng regex `^0x[0-9a-fA-F]{64}$`
-   - `verify_txhash()` tra BscScan → trả `{tx_hash, amount_usdt, memo, ...}`
-   - **Kiểm tra memo**: nếu memo != `request.user.memo_code` → từ chối (ngăn TxHash theft)
-   - Cộng coins bằng `F('coins') + coins_credited`
+**CRITICAL:** Luôn dùng `F('coins') + amount` khi cộng/trừ coins — tránh race condition.
 
-**CRITICAL — cộng coins:** luôn dùng `F('coins') + amount`, không dùng `user.coins + amount` (race condition).
+### Module AI Trading (`trading/`)
 
-**Scheduler:** `DepositsConfig.ready()` chỉ chạy khi `RUN_MAIN=true` (dev `runserver`) hoặc `DJANGO_RUN_SCHEDULER=1` (production). Không chạy khi `migrate`, `test`, v.v.
+**Model `ChartAnalysisLog`**: lưu mỗi lần phân tích — `user`, `symbol`, `interval`, `signal` (BUY/SELL/HOLD), `confidence`, `entry`, `sl`, `tp`, `reasoning`.
 
-**Tỷ lệ quy đổi:** `USDT_TO_COINS_RATE` (int, mặc định 1) — `coins_credited = amount_usdt * USDT_TO_COINS_RATE`
+**Mua gói** — `subscribe_ai_trading_view`: atomic `select_for_update()` → trừ coins → set `ai_trading_expires_at`. Gia hạn cộng dồn nếu còn hạn.
 
-### URL Structure
-```
-/                           → trading.landing (đã login → redirect trading)
-/accounts/register|login|logout|verify|resend-otp/
-/deposit/                   → deposits.deposit_view, submit_txhash_view, check_deposit_status
-/trading/                   → trading.trading_view (yêu cầu đăng nhập)
-/profile/                   → profiles.profile_view
-/profile/settings/          → profiles.settings_view
-<bất kỳ URL nào khác>       → catch-all → page_not_found → templates/404.html
-```
+**Phân tích** — `analyze_chart_view`:
+1. Check `is_authenticated` + `is_email_verified` + `has_ai_trading_access`
+2. Rate-limit 5 req/phút/user (atomic `cache.incr`)
+3. Validate: symbol regex, interval whitelist, candles ≤ 500, chart_image ≤ 2MB + PNG magic bytes
+4. `compute_indicators_local(candles)` — tính RSI/MACD/EMA20/EMA50/Supertrend bằng pandas-ta (không API)
+5. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision
+6. Lưu `ChartAnalysisLog`, trả JSON
 
-**Catch-all 404**: `re_path(r'^.*$', lambda r, **kw: page_not_found(r, None))` đặt cuối `urlpatterns` trong `aitrading/urls.py`. Hoạt động kể cả khi `DEBUG=True`. Media files prepend trước khi `DEBUG=True` để không bị chặn bởi catch-all.
+**Canvas capture** (`captureChartImage()` trong template): composite tất cả `<canvas>` của Lightweight Charts → `toDataURL('image/png')` → base64 POST. Bọc trong `try/catch` tránh `SecurityError`. Nếu thất bại → view dùng `_PNG_FALLBACK` (1×1 transparent PNG).
 
-### Điều hướng sau đăng nhập
-- `LOGIN_REDIRECT_URL = '/profile/'` trong `settings.py`
-- Sau login thành công: redirect `next` param — validate bằng `url_has_allowed_host_and_scheme()` (chặn open redirect); fallback `profile`
-
-### Quyền truy cập
-- `trading_view` — redirect về `login` nếu chưa đăng nhập
-- `deposit_view` kiểm tra `request.user.is_email_verified` trước khi hiển thị
-- `login_view` chặn user chưa verify email — redirect `verify_otp`
-- Các view nội bộ dùng `@login_required`
+**`trading/services.py`**: chỉ import `pandas`, `pandas_ta`, `google.generativeai` — **không** dùng `requests` (đã xóa TAAPI + Chart-IMG). Demo mode: nếu `GEMINI_API_KEY` rỗng → `_mock_analysis()` với `[DEMO]` label.
 
 ## Biến môi trường (`.env`)
 
 ```
 SECRET_KEY=
 DEBUG=True
-ALLOWED_HOSTS=*                         # production: yourdomain.com,www.yourdomain.com
+ALLOWED_HOSTS=*
+
 EMAIL_HOST=smtp.gmail.com
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
+
 ADMIN_WALLET_ADDRESS=0x...
 USDT_CONTRACT_BSC=0x55d398326f99059fF775485246999027B3197955
 BSCSCAN_API_KEY=
 USDT_TO_COINS_RATE=1
 WALLET_SCAN_INTERVAL_SECONDS=60
-DJANGO_RUN_SCHEDULER=0                  # set 1 in production to start wallet scanner
+DJANGO_RUN_SCHEDULER=0
+
+MT5_ACCOUNT=
+MT5_PASSWORD=
+MT5_SERVER=
+
+GEMINI_API_KEY=
+
+AI_PLAN_WEEK_COST=20
+AI_PLAN_MONTH_COST=50
+AI_PLAN_YEAR_COST=400
+
+REDIS_URL=                    # vd: redis://127.0.0.1:6379/0 (để trống → dùng LocMemCache)
 ```
 
 ## Theme & i18n System
 
 ### Dark / Light Theme
 - CSS custom properties trên `:root`; override bằng `[data-theme="light"]` trên `<html>`
-- **Anti-flash**: inline script trong `<head>` đọc `localStorage('ait-theme')` và set `data-theme` trước khi CSS render
-- `applyTheme(theme)` trong `static/js/main.js` — chỉ cập nhật `data-theme` và localStorage (không còn cập nhật icon/label vì floating controls đã xóa)
+- **Anti-flash**: inline script trong `<head>` đọc `localStorage('ait-theme')` và set `data-theme` trước CSS render
+- `applyTheme(theme)` trong `static/js/main.js` — cập nhật `data-theme` và `localStorage`
 
 ### Đa ngôn ngữ VI / EN (client-side)
-- Không dùng Django i18n. Text đánh dấu bằng `data-i18n="key"` trên element HTML
-- Placeholder input: `data-i18n-placeholder="key"` — `applyLang` gán `el.setAttribute('placeholder', ...)`
-- `const i18n = { vi: {...}, en: {...} }` trong `static/js/main.js` — ~120+ keys, nhóm theo prefix:
-  - `nav.*`, `footer.*` — navbar/footer (base.html)
+- Không dùng Django i18n. Text đánh dấu bằng `data-i18n="key"` trên HTML
+- `const i18n = { vi: {...}, en: {...} }` trong `static/js/main.js` — ~120+ keys theo prefix:
+  - `nav.*`, `footer.*` — base.html
   - `hero.*`, `stat.*`, `feat*`, `how.*`, `cta.*` — landing page
-  - `auth.login.*`, `auth.register.*`, `auth.label.*`, `auth.otp.*`, `auth.btn.*` — auth forms
-  - `dep.*` — trang nạp tiền; `prof.*` — hồ sơ; `trad.*` — trang AI Trading; `settings.*` — trang cài đặt
-  - `com.th.*`, `com.coins_unit`, `com.no_tx` — dùng chung (table headers, đơn vị)
-  - `err404.*` — trang 404
-- `applyLang(lang)` query `[data-i18n]` → `textContent`; query `[data-i18n-placeholder]` → `placeholder`
-- **Button có icon**: đặt `data-i18n` trên `<span>` bên trong, không đặt trực tiếp lên `<button>` (textContent xóa mất icon `<i>`)
-- Khi thêm text mới: thêm key vào cả `i18n.vi` và `i18n.en`, gán attribute vào HTML
+  - `auth.*` — auth forms; `dep.*` — nạp tiền; `prof.*` — hồ sơ
+  - `trad.*` — AI Trading; `settings.*` — cài đặt; `err404.*` — 404
+  - `com.*` — dùng chung
+- `applyLang(lang)` — set `textContent` cho `[data-i18n]`, `placeholder` cho `[data-i18n-placeholder]`
+- **Button có icon**: đặt `data-i18n` trên `<span>` bên trong, không trực tiếp lên `<button>`
+- Khi thêm text mới: thêm key vào cả `i18n.vi` và `i18n.en`
 
-### Theme & Language Toggle
-- Floating Controls (nút góc phải) **đã bị xóa** khỏi `base.html`
-- Toggle chuyển vào trang `/profile/settings/` — hai card: Giao diện (Dark/Light) + Ngôn ngữ (VI/EN)
-- JS dùng `addEventListener`, gọi global `applyTheme()` / `applyLang()` — không override bằng inline onclick
-- `applyTheme(theme)`: chỉ cập nhật `data-theme` và localStorage (không còn cập nhật icon/label)
-- `syncSettingsUI()`: đọc localStorage để highlight card option đang active
+### Toggle Theme/Language
+- **Không còn** Floating Controls ở góc phải (đã xóa khỏi base.html)
+- Toggle nằm tại `/profile/settings/` — card Giao diện + card Ngôn ngữ
 
 ## Thiết kế & UI/UX
 
-Dark-theme SaaS hiện đại — tham khảo `Design.jpg`.
+Dark-theme SaaS hiện đại.
 
 ### Bảng màu
 ```
-Nền chính:        #0D0D0D / #0F1117
-Nền card/section: #1A1A2E / #16213E
-Accent chính:     #3B82F6  (CTA, highlight, border active)
-Accent phụ:       #6366F1  (gradient với accent chính)
-Text chính:       #F1F5F9
-Text phụ:         #94A3B8
-Border/divider:   #1E293B
-Thành công:       #10B981  (COMPLETED)
-Cảnh báo/Chờ:    #F59E0B  (PENDING)
-Lỗi:             #EF4444  (FAILED)
+Nền chính:     #0D0D0D / #0F1117      Accent chính: #3B82F6
+Nền card:      #1A1A2E / #16213E      Accent phụ:   #6366F1
+Text chính:    #F1F5F9                 Border:       #1E293B
+Text phụ:      #94A3B8                Thành công:   #10B981
+                                       Cảnh báo:     #F59E0B
+                                       Lỗi:          #EF4444
 ```
 
-### Typography
-- Font: `Inter` (Google Fonts)
-- Hero headline: `3.5rem / weight 800`
-- Section headline: `2rem / weight 700`
-- Body: `1rem / weight 400`, màu text phụ
-- Badge/label: `0.75rem / weight 600`, uppercase + letter-spacing
-
-### Components tái sử dụng
-- **Card**: bg `#1A1A2E`, border `#1E293B`, radius `12px`, padding `24px`, hover `translateY(-4px)` + shadow xanh
-- **Button primary**: gradient `#3B82F6 → #6366F1`, radius `8px`, padding `12px 28px`
-- **Button secondary**: transparent + border `#3B82F6`
-- **Badge/Status**: pill shape, màu theo trạng thái
-- **Input**: bg `#1E293B`, border `#334155`, focus ring accent
-- **Table**: bg `#111827`, header `#1F2937`, row hover `#1E2A3A`
-
-### Animation
-- Default transition: `all 0.2s ease`
-- **Scroll fade-in**: class `animate-on-scroll` + `IntersectionObserver`
-  - CSS: `@keyframes scrollFadeUp` (không dùng `transition`) — animation có thể restart
-  - JS: `classList.remove('visible')` → `void el.offsetWidth` (force reflow) → `classList.add('visible')` mỗi lần scroll vào; remove khi scroll ra
-  - Exception: `.error-page .animate-on-scroll { opacity: 1; }` — trang 404 không cần scroll
-- `.btn-ghost-sm` hover: viền accent xuất hiện (`border: 1px solid transparent` → `border-color: var(--accent)`)
-- Loading: skeleton screen
+### Scroll fade-in
+Class `animate-on-scroll` + `IntersectionObserver`. CSS dùng `@keyframes scrollFadeUp` (không dùng `transition`) để animation restart được. Exception: `.error-page .animate-on-scroll { opacity: 1; }`.
 
 ### Responsive
-- Mobile-first, breakpoints: `sm:640px md:768px lg:1024px xl:1280px`
-- Navbar mobile: hamburger + slide-in drawer
-- Dashboard sidebar: collapse thành bottom nav trên mobile
+Mobile-first, breakpoints: `sm:640px md:768px lg:1024px xl:1280px`. Navbar mobile: hamburger + slide-in drawer.
