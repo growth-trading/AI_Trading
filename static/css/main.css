@@ -1857,7 +1857,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: error-icon-float 3s ease-in-out infinite;
   line-height: 1;
   flex-shrink: 0;
 }
@@ -1869,7 +1868,7 @@ body {
 /* 404 number */
 .error-code {
   font-size: clamp(5rem, 18vw, 10rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   background: linear-gradient(135deg, var(--danger), var(--warning));
   -webkit-background-clip: text;
