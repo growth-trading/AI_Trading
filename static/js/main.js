@@ -276,6 +276,37 @@ const i18n = {
     'trad.sub.renew':        'Gia hạn',
     'trad.sub.renew_title':  'Gia hạn AI Trading',
     'trad.sub.renew_note':   'Gia hạn từ ngày hết hạn hiện tại',
+    /* tradingview */
+    'tv.subtitle':        'Chọn layout phân tích phù hợp — xem chart real-time với đầy đủ indicator của chuyên gia.',
+    'tv.status.active':   'Đang hoạt động',
+    'tv.status.inactive': 'Chưa đăng ký',
+    'tv.feat.realtime':   'Chart real-time chuyên gia',
+    'tv.feat.indicators': 'MACD · RSI · EMA · Supertrend',
+    'tv.feat.levels':     'Vùng hỗ trợ / kháng cự',
+    'tv.expiry':          'Hết hạn:',
+    'tv.btn.view':        'Xem chart',
+    'tv.btn.buy':         'Mua ngay',
+    'tv.price.from':      'Từ',
+    'tv.price.week':      'xu / tuần',
+    'tv.empty':           'Chưa có sản phẩm nào.',
+    'tv.modal.title':     'Mua gói TradingView',
+    'tv.plan.week':       'Tuần',
+    'tv.plan.month':      'Tháng',
+    'tv.plan.year':       'Năm',
+    'tv.plan.days7':      '7 ngày',
+    'tv.plan.days30':     '30 ngày',
+    'tv.plan.days365':    '365 ngày',
+    'tv.plan.popular':    'Phổ biến',
+    'tv.modal.coins':     'Số dư:',
+    'tv.modal.topup':     'Nạp thêm',
+    'tv.modal.select':    'Chọn gói để tiếp tục',
+    'tv.modal.buy_week':  'Mua gói Tuần',
+    'tv.modal.buy_month': 'Mua gói Tháng',
+    'tv.modal.buy_year':  'Mua gói Năm',
+    'tv.modal.processing':'Đang xử lý...',
+    'tv.modal.retry':     'Thử lại',
+    'tv.modal.err':       'Mua gói thất bại.',
+    'tv.modal.err_conn':  'Lỗi kết nối. Vui lòng thử lại.',
     /* settings */
     'settings.title':                  'Cài đặt',
     'settings.appearance.title':       'Giao diện',
@@ -482,6 +513,37 @@ const i18n = {
     'trad.sub.renew':        'Renew',
     'trad.sub.renew_title':  'Renew AI Trading',
     'trad.sub.renew_note':   'Extended from current expiry date',
+    /* tradingview */
+    'tv.subtitle':        'Choose your analysis layout — view real-time charts with expert-grade indicators.',
+    'tv.status.active':   'Active',
+    'tv.status.inactive': 'Not subscribed',
+    'tv.feat.realtime':   'Expert real-time chart',
+    'tv.feat.indicators': 'MACD · RSI · EMA · Supertrend',
+    'tv.feat.levels':     'Support / resistance zones',
+    'tv.expiry':          'Expires:',
+    'tv.btn.view':        'View chart',
+    'tv.btn.buy':         'Buy now',
+    'tv.price.from':      'From',
+    'tv.price.week':      'coins / week',
+    'tv.empty':           'No products available.',
+    'tv.modal.title':     'Buy TradingView Package',
+    'tv.plan.week':       'Weekly',
+    'tv.plan.month':      'Monthly',
+    'tv.plan.year':       'Yearly',
+    'tv.plan.days7':      '7 days',
+    'tv.plan.days30':     '30 days',
+    'tv.plan.days365':    '365 days',
+    'tv.plan.popular':    'Popular',
+    'tv.modal.coins':     'Balance:',
+    'tv.modal.topup':     'Top up',
+    'tv.modal.select':    'Select a plan to continue',
+    'tv.modal.buy_week':  'Buy Weekly Plan',
+    'tv.modal.buy_month': 'Buy Monthly Plan',
+    'tv.modal.buy_year':  'Buy Yearly Plan',
+    'tv.modal.processing':'Processing...',
+    'tv.modal.retry':     'Retry',
+    'tv.modal.err':       'Purchase failed.',
+    'tv.modal.err_conn':  'Connection error. Please try again.',
     /* settings */
     'settings.title':                  'Settings',
     'settings.appearance.title':       'Appearance',
@@ -514,6 +576,7 @@ const i18n = {
     'copied': 'Copied!',
   },
 };
+window.i18n = i18n;
 
 // Apply translations to all [data-i18n] elements
 function applyLang(lang) {
@@ -546,6 +609,14 @@ function applyTheme(theme) {
   applyTheme(theme);
   applyLang(lang);
 })();
+
+// Re-apply when browser restores page from bfcache (back/forward navigation)
+window.addEventListener('pageshow', function (e) {
+  if (e.persisted) {
+    applyTheme(localStorage.getItem('ait-theme') || 'dark');
+    applyLang(localStorage.getItem('ait-lang') || 'vi');
+  }
+});
 
 // Sidebar toggle
 (function () {

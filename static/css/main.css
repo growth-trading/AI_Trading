@@ -1581,7 +1581,7 @@ body {
   border-color: transparent;
   color: #fff;
 }
-.btn-ai-buy-featured:hover { opacity: 0.88; }
+.btn-ai-buy-featured:hover { background: linear-gradient(135deg, var(--accent), var(--accent-2)); opacity: 0.88; }
 .btn-ai-buy-featured:disabled { opacity: 0.5; }
 
 .ai-sub-coins-note { font-size: 0.875rem; color: var(--text-sub); }

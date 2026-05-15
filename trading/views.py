@@ -553,7 +553,7 @@ def _mt5_candles(symbol, interval, since_ts, before_ts):
             ttl = _CACHE_TTL.get(interval, 180)
             cache.set(latest_key, candles, ttl)
             # Cập nhật tick cùng lúc
-            cache.set(f'mt5:tick:{symbol}:{interval}', candles[-1], 2)
+            cache.set(f'mt5:tick:{symbol}:{interval}', candles[-1], 1)
 
         return candles
 
@@ -590,7 +590,7 @@ def tick_view(request):
                     'time': int(d[0]) // 1000, 'open': float(d[1]),
                     'high': float(d[2]), 'low': float(d[3]), 'close': float(d[4]),
                 }
-                cache.set(tick_cache_key, candle, 2)
+                cache.set(tick_cache_key, candle, 1)
         else:
             tick_key = f'mt5:tick:{symbol}:{interval}'
             cached = cache.get(tick_key)
@@ -620,7 +620,7 @@ def tick_view(request):
                     'low':   round(float(r['low']),   6),
                     'close': round(float(r['close']), 6),
                 }
-                cache.set(tick_key, candle, 2)
+                cache.set(tick_key, candle, 1)
 
         return JsonResponse({'success': True, 'candle': candle})
 

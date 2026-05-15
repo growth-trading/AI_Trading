@@ -6,7 +6,9 @@ from django.utils import timezone
 class TradingViewProduct(models.Model):
     slug = models.SlugField(unique=True, max_length=50)
     name = models.CharField(max_length=100)
+    name_en = models.CharField(max_length=100, blank=True, help_text='English name (optional)')
     description = models.TextField(blank=True)
+    description_en = models.TextField(blank=True, help_text='English description (optional)')
     chart_id = models.CharField(max_length=50, help_text='TradingView chart ID from URL')
     symbol = models.CharField(max_length=50, default='OANDA:XAUUSD')
     interval = models.CharField(max_length=10, default='60')
