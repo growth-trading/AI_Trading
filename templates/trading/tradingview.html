@@ -4,17 +4,20 @@
 {% block extra_css %}
 <style>
 .tv-page { padding-top: 80px; padding-bottom: 60px; }
-.tv-page-subtitle {
-  color: var(--text-main);
-  font-size: 1.35rem;
-  font-weight: 500;
-  line-height: 1.7;
-  margin-bottom: 32px;
-  margin-top: 32px;
+.tv-hero-sub {
   text-align: center;
-  letter-spacing: .01em;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.85;
+  color: var(--text-sub);
+  margin: 28px 0 40px;
+  animation: tvSubFadeUp .65s cubic-bezier(.22,1,.36,1) both;
 }
-.tv-accent-word { color: var(--accent); font-weight: 700; }
+@keyframes tvSubFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tv-kw-accent { color: var(--accent); font-weight: 600; }
 
 /* Product grid */
 .tv-product-grid {
@@ -164,10 +167,15 @@
 <div class="tv-page">
   <div class="container">
 
-    <p class="tv-page-subtitle" data-i18n="tv.subtitle">
-      Chọn layout phân tích phù hợp —
-      xem chart <span class="tv-accent-word">real-time</span>
-      với đầy đủ indicator của chuyên gia.
+    <p class="tv-hero-sub">
+      <span class="tv-content-vi">
+        Chọn layout phân tích phù hợp — xem chart <span class="tv-kw-accent">real-time</span>
+        với đầy đủ <span class="tv-kw-accent">indicator</span> của chuyên gia.
+      </span>
+      <span class="tv-content-en">
+        Choose your analysis layout — view <span class="tv-kw-accent">real-time</span>
+        charts with expert-grade <span class="tv-kw-accent">indicators</span>.
+      </span>
     </p>
 
     <!-- Product Grid -->
