@@ -113,7 +113,7 @@ Tính 5 chỉ báo từ OHLCV cục bộ bằng pandas-ta. Không cần internet
 
 ```python
 # Yêu cầu: candles >= 60 phần tử, mỗi phần tử có key open/high/low/close
-# Nếu < 60 → trả _mock_indicators() + log warning
+# Nếu < 60 → trả {} (empty dict) + log warning — không fake data
 df = pd.DataFrame(candles)[['open','high','low','close']].astype(float)
 df.ta.rsi(length=14, append=True)          # → RSI_14
 df.ta.macd(fast=12, slow=26, signal=9)     # → MACD_12_26_9, MACDs_*, MACDh_*
@@ -126,7 +126,7 @@ df.ta.supertrend(length=10, multiplier=3.0)# → SUPERT_10_3.0, SUPERTd_10_3.0
 
 **Direction**: `(st_dir or 0) > 0` → `'long'`, ngược lại → `'short'`.
 
-**Fallback**: Nếu tất cả indicator đều None sau tính toán → log warning + trả `_mock_indicators()`.
+**Fallback**: Nếu thiếu nến / tất cả indicator đều None / exception → trả `{}` (empty dict). `_format_indicators({})` → `'(Không có dữ liệu indicator)'` trong prompt Gemini. Gemini vẫn phân tích được từ ảnh. **Không dùng số giả** — tránh để Gemini trích dẫn giá trị fake trong reasoning.
 
 ### `analyze_with_gemini(image_bytes, indicators, symbol, interval, current_price) -> dict`
 
@@ -134,6 +134,7 @@ df.ta.supertrend(length=10, multiplier=3.0)# → SUPERT_10_3.0, SUPERTd_10_3.0
 - Model: `gemini-2.5-flash`
 - Gửi: prompt text (symbol, interval, indicator values) + ảnh PNG
 - Parse JSON response; strip markdown fence `` ```json `` nếu có bằng `re.sub`
+- **Gemini safety filter** / **non-JSON response** → `raise RuntimeError(...)` — view bắt exception, trả 500 + hoàn rate slot. Không trả fake data cho khách trả tiền.
 - Trả về: `{ signal, confidence, entry, sl, tp, reasoning }`
 
 **Free tier**: Gemini 2.5 Flash = 1.500 req/ngày. 100 user × 5 req/phút max = ~250 req/ngày tối đa → không bao giờ vượt giới hạn free.

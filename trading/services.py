@@ -12,15 +12,6 @@ logger = logging.getLogger(__name__)
 
 _DEMO_KEYS = {'your_gemini_api_key', ''}
 
-def _mock_indicators() -> dict:
-    return {
-        'rsi':        {'value': 58.4},
-        'macd':       {'valueMACD': 12.5, 'valueMACDSignal': 9.3, 'valueMACDHist': 3.2},
-        'ema20':      {'value': 3288.50},
-        'ema50':      {'value': 3241.00},
-        'supertrend': {'value': 3265.00, 'valueAdvice': 'long'},
-    }
-
 def _mock_levels(price: float, signal: str) -> tuple:
     """Tính entry/SL/TP tương đối theo giá thực."""
     p = float(price)
@@ -65,8 +56,8 @@ def _strip_exchange(symbol: str) -> str:
 def compute_indicators_local(candles: list) -> dict:
     """Tính RSI/MACD/EMA/Supertrend từ OHLCV cục bộ — không gọi API ngoài."""
     if len(candles) < 60:
-        logger.warning('compute_indicators_local: chỉ có %d nến, cần >= 60', len(candles))
-        return _mock_indicators()
+        logger.warning('compute_indicators_local: chỉ có %d nến, cần >= 60; bỏ qua indicator', len(candles))
+        return {}
 
     try:
         df = pd.DataFrame(candles)[['open', 'high', 'low', 'close']].astype(float)
@@ -118,12 +109,12 @@ def compute_indicators_local(candles: list) -> dict:
 
         if not result:
             logger.error('compute_indicators_local: tất cả indicator đều None — có thể lỗi pandas_ta. Columns: %s', list(df.columns))
-            return _mock_indicators()
+            return {}
         return result
 
     except Exception:
-        logger.exception('compute_indicators_local thất bại, dùng mock')
-        return _mock_indicators()
+        logger.exception('compute_indicators_local thất bại')
+        return {}
 
 
 
@@ -171,9 +162,8 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
     try:
         raw = response.text.strip()
     except ValueError:
-        # Gemini blocked by safety filter or empty response
         logger.warning('Gemini response blocked or empty for %s: %s', symbol, response.prompt_feedback)
-        return _mock_analysis(symbol, current_price=current_price)
+        raise RuntimeError('Gemini response blocked by safety filter')
 
     if raw.startswith('```'):
         raw = re.sub(r'^```(?:json)?\s*', '', raw)
@@ -184,7 +174,7 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
         data = json.loads(raw)
     except json.JSONDecodeError:
         logger.warning('Gemini returned non-JSON for %s: %.200s', symbol, raw)
-        return _mock_analysis(symbol, current_price=current_price)
+        raise RuntimeError('Gemini returned non-JSON response')
 
     return {
         'signal': str(data.get('signal', 'HOLD')).upper(),

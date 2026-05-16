@@ -41,14 +41,7 @@ from django.utils import timezone
 
 from accounts.models import CustomUser
 from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription
-from .services import compute_indicators_local, analyze_with_gemini, _mock_analysis
-
-# 1×1 transparent PNG — dùng khi canvas capture thất bại
-_PNG_FALLBACK = (
-    b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01'
-    b'\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f'
-    b'\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82'
-)
+from .services import compute_indicators_local, analyze_with_gemini
 
 
 @require_GET
@@ -291,27 +284,22 @@ def analyze_chart_view(request):
             return None
 
     try:
-        using_fallback_image = False
-        if chart_image_b64:
-            try:
-                image_bytes = base64.b64decode(chart_image_b64, validate=True)
-                if not image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
-                    raise ValueError('not png')
-            except (ValueError, binascii.Error):
-                image_bytes = _PNG_FALLBACK
-                using_fallback_image = True
-        else:
-            image_bytes = _PNG_FALLBACK
-            using_fallback_image = True
+        # Validate ảnh biểu đồ — nếu không có ảnh thật thì trả lỗi, không mock
+        if not chart_image_b64:
+            cache.decr(rate_key)
+            return JsonResponse({'error': 'Không chụp được ảnh biểu đồ. Vui lòng thử lại.'}, status=400)
+        try:
+            image_bytes = base64.b64decode(chart_image_b64, validate=True)
+            if not image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
+                raise ValueError('not png')
+        except (ValueError, binascii.Error):
+            cache.decr(rate_key)
+            return JsonResponse({'error': 'Ảnh biểu đồ không hợp lệ. Vui lòng thử lại.'}, status=400)
 
         indicators = compute_indicators_local(candles if isinstance(candles, list) else [])
 
-        # Không gọi Gemini khi không có ảnh thật — tránh lãng phí quota với PNG 1×1
-        if using_fallback_image:
-            result = _mock_analysis(symbol, current_price=current_price)
-        else:
-            result = analyze_with_gemini(image_bytes, indicators, symbol, interval,
-                                         current_price=current_price)
+        result = analyze_with_gemini(image_bytes, indicators, symbol, interval,
+                                     current_price=current_price)
 
         # Sanitize Gemini output before persisting
         if result.get('signal') not in _ALLOWED_SIGNALS:

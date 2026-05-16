@@ -135,9 +135,9 @@ Gate này bổ sung cho các check cụ thể trong từng view.
 1. Check `is_authenticated` + `is_email_verified` + `has_ai_trading_access`
 2. Rate-limit 5 req/phút/user (atomic `cache.incr`); rate counter được **hoàn trả** (`cache.decr`) nếu xử lý thất bại do lỗi hệ thống
 3. Validate: symbol regex, interval whitelist, candles ≤ 500, chart_image ≤ 2MB + PNG magic bytes
-4. `compute_indicators_local(candles)` — tính RSI/MACD/EMA20/EMA50/Supertrend bằng pandas-ta (không API)
-5. Nếu canvas capture thất bại (PNG fallback 1×1) → dùng `_mock_analysis()` thay vì Gemini, tránh lãng phí quota
-6. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision (chỉ khi có ảnh thật)
+4. `compute_indicators_local(candles)` — tính RSI/MACD/EMA20/EMA50/Supertrend bằng pandas-ta (không API); thiếu nến / lỗi → trả `{}` thay vì số giả, Gemini nhận "(Không có dữ liệu indicator)"
+5. Không có PNG fallback hay mock — ảnh thiếu/không hợp lệ → trả 400 + hoàn rate slot
+6. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision; safety filter / non-JSON → `raise RuntimeError` (view bắt → 500 + hoàn rate slot)
 7. Lưu `ChartAnalysisLog` với `Decimal` (precision đầy đủ); serialize JSON: `Decimal → float` chỉ khi trả response
 
 **Dữ liệu nến** — `chart_data_view` / `tick_view` (yêu cầu `is_email_verified`):
