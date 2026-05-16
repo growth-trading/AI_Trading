@@ -1,14 +1,20 @@
 import secrets
 import string
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
 
+def _avatar_upload_to(instance, filename):
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'jpg'
+    return f'avatars/{uuid.uuid4().hex}.{ext}'
+
+
 class CustomUser(AbstractUser):
     # unique=True ở DB level — chặn race condition 2 user đăng ký cùng email đồng thời
     email = models.EmailField(unique=True)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    avatar = models.ImageField(upload_to=_avatar_upload_to, null=True, blank=True)
     coins = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     is_email_verified = models.BooleanField(default=False)
     otp_code = models.CharField(max_length=6, blank=True)

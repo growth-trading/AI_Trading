@@ -99,7 +99,7 @@ ADMIN_WALLET_ADDRESS = config('ADMIN_WALLET_ADDRESS', default='')
 USDT_CONTRACT_BSC = config('USDT_CONTRACT_BSC', default='0x55d398326f99059fF775485246999027B3197955')
 BSCSCAN_API_KEY = config('BSCSCAN_API_KEY', default='')
 USDT_TO_COINS_RATE = config('USDT_TO_COINS_RATE', default=1, cast=int)
-WALLET_SCAN_INTERVAL_SECONDS = config('WALLET_SCAN_INTERVAL_SECONDS', default=60, cast=int)
+WALLET_SCAN_INTERVAL_SECONDS = max(10, config('WALLET_SCAN_INTERVAL_SECONDS', default=60, cast=int))
 
 # AI Chart Analysis
 MT5_ACCOUNT  = config('MT5_ACCOUNT',  default='')
@@ -151,6 +151,15 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+if not DEBUG and not REDIS_URL:
+    import warnings
+    warnings.warn(
+        'PRODUCTION without REDIS_URL: rate limiting and cache will not work across workers. '
+        'Set REDIS_URL in .env (e.g. redis://127.0.0.1:6379/0).',
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 25

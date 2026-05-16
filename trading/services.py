@@ -224,6 +224,7 @@ def _to_decimal_or_none(val):
     if val is None:
         return None
     try:
-        return Decimal(str(val))
+        d = Decimal(str(val))
+        return d if d.is_finite() else None
     except (InvalidOperation, TypeError, ValueError):
         return None

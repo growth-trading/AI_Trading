@@ -9,8 +9,6 @@ import urllib.parse
 import urllib.request
 from datetime import timedelta, datetime as _dt, timezone as _tz
 from decimal import Decimal, InvalidOperation
-from functools import lru_cache
-
 from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
@@ -84,7 +82,11 @@ def tradingview_view(request):
 
 
 
-_TV_PLAN_DAYS = {'week': 7, 'month': 30, 'year': 365}
+_PLAN_DAYS = {'week': 7, 'month': 30, 'year': 365}
+
+
+class _InsufficientCoins(Exception):
+    pass
 
 
 @require_POST
@@ -102,7 +104,7 @@ def subscribe_tradingview_view(request):
     plan = body.get('plan')
     product_slug = body.get('product_slug', '')
 
-    if plan not in _TV_PLAN_DAYS:
+    if plan not in _PLAN_DAYS:
         return JsonResponse({'error': 'Gói không hợp lệ'}, status=400)
 
     try:
@@ -111,14 +113,14 @@ def subscribe_tradingview_view(request):
         return JsonResponse({'error': 'Sản phẩm không tồn tại'}, status=404)
 
     cost = getattr(product, f'{plan}_cost')
-    days = _TV_PLAN_DAYS[plan]
+    days = _PLAN_DAYS[plan]
     now = timezone.now()
 
     try:
         with transaction.atomic():
             user = CustomUser.objects.select_for_update().get(pk=request.user.pk)
             if user.coins < cost:
-                return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
+                raise _InsufficientCoins()
 
             sub, _ = UserTVSubscription.objects.get_or_create(
                 user=user,
@@ -137,7 +139,7 @@ def subscribe_tradingview_view(request):
                 pk=user.pk, coins__gte=cost
             ).update(coins=F('coins') - cost)
             if not updated:
-                return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
+                raise _InsufficientCoins()
             UserTVSubscription.objects.filter(pk=sub.pk).update(expires_at=new_expiry)
 
         user.refresh_from_db(fields=['coins'])
@@ -146,6 +148,8 @@ def subscribe_tradingview_view(request):
             'expires_at': new_expiry.isoformat(),
             'coins_remaining': float(user.coins),
         })
+    except _InsufficientCoins:
+        return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
     except Exception:
         logger.exception('subscribe_tradingview failed for user %s', request.user.pk)
         return JsonResponse({'error': 'Đăng ký thất bại, vui lòng thử lại.'}, status=500)
@@ -169,9 +173,6 @@ def trading_view(request):
     })
 
 
-_AI_PLAN_DAYS = {'week': 7, 'month': 30, 'year': 365}
-
-
 @require_POST
 def subscribe_ai_trading_view(request):
     if not request.user.is_authenticated:
@@ -185,7 +186,7 @@ def subscribe_ai_trading_view(request):
         return JsonResponse({'error': 'Dữ liệu không hợp lệ'}, status=400)
 
     plan = body.get('plan')
-    if plan not in _AI_PLAN_DAYS:
+    if plan not in _PLAN_DAYS:
         return JsonResponse({'error': 'Gói không hợp lệ'}, status=400)
 
     plan_costs = {
@@ -194,7 +195,7 @@ def subscribe_ai_trading_view(request):
         'year':  settings.AI_PLAN_YEAR_COST,
     }
     cost = plan_costs[plan]
-    days = _AI_PLAN_DAYS[plan]
+    days = _PLAN_DAYS[plan]
     now = timezone.now()
 
     try:
@@ -286,14 +287,12 @@ def analyze_chart_view(request):
     try:
         # Validate ảnh biểu đồ — nếu không có ảnh thật thì trả lỗi, không mock
         if not chart_image_b64:
-            cache.decr(rate_key)
             return JsonResponse({'error': 'Không chụp được ảnh biểu đồ. Vui lòng thử lại.'}, status=400)
         try:
             image_bytes = base64.b64decode(chart_image_b64, validate=True)
             if not image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
                 raise ValueError('not png')
         except (ValueError, binascii.Error):
-            cache.decr(rate_key)
             return JsonResponse({'error': 'Ảnh biểu đồ không hợp lệ. Vui lòng thử lại.'}, status=400)
 
         indicators = compute_indicators_local(candles if isinstance(candles, list) else [])
@@ -345,13 +344,19 @@ _MT5_SYMBOLS = {
     'NASDAQ:TSLA':  'TSLA',
 }
 
-@lru_cache(maxsize=100)
-def _mt5_resolve_symbol(base):
+_mt5_symbol_cache: dict = {}
+
+
+def _mt5_resolve_symbol(base: str) -> str:
+    if base in _mt5_symbol_cache:
+        return _mt5_symbol_cache[base]
     for suffix in ('', 'm', '.', 'pro', 'c', 'n'):
         name = base + suffix
         if _mt5.symbol_info(name) is not None:
             _mt5.symbol_select(name, True)
+            _mt5_symbol_cache[base] = name
             return name
+    _mt5_symbol_cache[base] = base
     return base
 
 _BINANCE_INTERVAL = {
@@ -373,7 +378,10 @@ def _mt5_connect():
     password = settings.MT5_PASSWORD
     server   = settings.MT5_SERVER
     if account and password and server:
-        return _mt5.login(int(account), password=password, server=server)
+        result = _mt5.login(int(account), password=password, server=server)
+        if result:
+            _mt5_symbol_cache.clear()
+        return result
     return False
 
 
@@ -418,6 +426,7 @@ _CHART_RATE_LIMIT = 30   # req/phút/user cho chart-data
 _TICK_RATE_LIMIT  = 60   # req/phút/user cho tick (polling)
 
 
+@require_GET
 def chart_data_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)
@@ -572,6 +581,7 @@ def _mt5_candles(symbol, interval, since_ts, before_ts):
         return candles
 
 
+@require_GET
 def tick_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)

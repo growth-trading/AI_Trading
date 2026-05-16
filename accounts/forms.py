@@ -46,6 +46,7 @@ class LoginForm(forms.Form):
 class OTPForm(forms.Form):
     otp = forms.CharField(
         label='Mã xác thực',
+        min_length=6,
         max_length=6,
         widget=forms.TextInput(attrs={
             'class': 'form-control otp-input',

@@ -8,82 +8,117 @@ from django.db import transaction, IntegrityError
 from django.db.models import F
 
 logger = logging.getLogger(__name__)
-
 _scheduler_started = False
+
+# BSC public RPC — không cần API key, thử lần lượt khi endpoint lỗi
+# bsc-rpc.publicnode.com: hỗ trợ eth_getLogs (cần cho scan_admin_wallet)
+# bsc-dataseed*: hỗ trợ eth_getTransactionByHash (nhanh hơn cho verify_txhash)
+_BSC_RPC_URLS = [
+    'https://bsc-rpc.publicnode.com',
+    'https://bsc-dataseed.binance.org/',
+    'https://bsc-dataseed1.binance.org/',
+    'https://bsc-dataseed2.binance.org/',
+]
+_TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+_USDT_DECIMALS = 18
+_MEMO_MAX_HEX_LEN = 200  # 100 bytes — đủ để decode memo UID-XXXX
+
+
+def _rpc(method, params):
+    """Gọi JSON-RPC đến BSC node. Thử lần lượt các endpoint đến khi thành công."""
+    for url in _BSC_RPC_URLS:
+        try:
+            r = requests.post(
+                url,
+                json={'jsonrpc': '2.0', 'method': method, 'params': params, 'id': 1},
+                timeout=15,
+            )
+            data = r.json()
+            if 'error' not in data:
+                return data.get('result')
+            logger.warning('BSC RPC %s error from %s: %s', method, url, data['error'])
+        except Exception as e:
+            logger.warning('BSC RPC request failed (%s %s): %s', method, url, e)
+    return None
+
+
+def _usdt_amount(data_hex: str) -> Decimal:
+    try:
+        return Decimal(int(data_hex, 16)) / Decimal(10 ** _USDT_DECIMALS)
+    except Exception:
+        return Decimal('0')
 
 
 def scan_admin_wallet():
-    """Quét ví Admin tìm giao dịch USDT mới trên BSC."""
+    """Quét sự kiện Transfer USDT đến ví Admin qua BSC public RPC."""
     from .models import DepositTransaction, WalletScanState
     from accounts.models import CustomUser
 
     admin_wallet = settings.ADMIN_WALLET_ADDRESS.lower()
     usdt_contract = settings.USDT_CONTRACT_BSC.lower()
-    api_key = settings.BSCSCAN_API_KEY
-
-    if not admin_wallet or not api_key:
-        return
 
     state, _ = WalletScanState.objects.get_or_create(
-        network='BSC',
-        defaults={'last_scanned_block': 0},
+        network='BSC', defaults={'last_scanned_block': 0},
     )
 
-    try:
-        resp = requests.get(
-            'https://api.bscscan.com/api',
-            params={
-                'module': 'account',
-                'action': 'tokentx',
-                'contractaddress': usdt_contract,
-                'address': admin_wallet,
-                'startblock': state.last_scanned_block + 1,
-                'sort': 'asc',
-                'apikey': api_key,
-            },
-            timeout=15,
-        )
-        data = resp.json()
-    except Exception as e:
-        logger.error('BscScan API error: %s', e)
+    latest_hex = _rpc('eth_blockNumber', [])
+    if not latest_hex:
+        return
+    latest_block = int(latest_hex, 16)
+    from_block = state.last_scanned_block + 1
+    if from_block > latest_block:
+        return
+    to_block = min(latest_block, from_block + 4999)  # max 5000 blocks / scan
+
+    # Topic filter: Transfer(_, admin_wallet) trên USDT contract
+    admin_topic = '0x000000000000000000000000' + admin_wallet[2:]
+    logs = _rpc('eth_getLogs', [{
+        'address': usdt_contract,
+        'topics': [_TRANSFER_TOPIC, None, admin_topic],
+        'fromBlock': hex(from_block),
+        'toBlock': hex(to_block),
+    }])
+    if logs is None:
+        logger.error('eth_getLogs failed — will retry on next scan')
         return
 
-    if data.get('status') != '1':
-        if data.get('message') != 'No transactions found':
-            logger.warning('BscScan scan error: %s', data.get('message'))
-        return
-
-    all_results = data.get('result', [])
-
-    # Batch fetch để tránh N+1 queries (một query thay vì một query mỗi tx)
-    all_hashes = [tx.get('hash', '').lower() for tx in all_results]
+    # Batch-check existing hashes để tránh N+1 queries
+    all_hashes = [log.get('transactionHash', '').lower() for log in logs]
     existing_hashes = set(
         DepositTransaction.objects.filter(tx_hash__in=all_hashes).values_list('tx_hash', flat=True)
     )
 
-    max_block = state.last_scanned_block
-    for tx in all_results:
-        tx_hash = tx.get('hash', '').lower()   # normalize lowercase
-        to_addr = tx.get('to', '').lower()
-        block_number = int(tx.get('blockNumber', 0))
-        raw_value = int(tx.get('value', 0))
-        decimals = int(tx.get('tokenDecimal', 18))
-        amount_usdt = Decimal(raw_value) / Decimal(10 ** decimals)
+    new_max_block = to_block  # advance đến cuối range nếu không có lỗi
 
-        if to_addr != admin_wallet:
-            max_block = max(max_block, block_number)
-            continue
+    for log in logs:
+        if log.get('removed'):
+            continue  # block bị reorg
+
+        tx_hash = log.get('transactionHash', '').lower()
+        block_number = int(log.get('blockNumber', '0x0'), 16)
+
         if tx_hash in existing_hashes:
-            max_block = max(max_block, block_number)
-            continue
+            continue  # đã xử lý
 
+        topics = log.get('topics', [])
+        if len(topics) < 3:
+            continue
+        amount_usdt = _usdt_amount(log.get('data', '0x0'))
+
+        # Fetch tx để đọc memo từ input field
+        tx = _rpc('eth_getTransactionByHash', [tx_hash])
+        if tx is None:
+            # RPC fail tạm thời — không advance qua block này để retry lần sau
+            new_max_block = min(new_max_block, block_number - 1)
+            continue
         memo = _decode_memo(tx.get('input', ''))
         user = _resolve_user_from_memo(memo)
 
-        # Tx không decode được memo → PENDING, chờ admin xử lý thủ công
+        # Tx không có memo hợp lệ → PENDING, user cần tự nộp TxHash thủ công
         status = DepositTransaction.STATUS_COMPLETED if user else DepositTransaction.STATUS_PENDING
         confirmed = timezone.now() if user else None
 
+        success = False
         try:
             with transaction.atomic():
                 dep = DepositTransaction.objects.create(
@@ -100,105 +135,68 @@ def scan_admin_wallet():
                     CustomUser.objects.filter(pk=user.pk).update(
                         coins=F('coins') + dep.coins_credited
                     )
-            # Chỉ advance block khi xử lý thành công
-            max_block = max(max_block, block_number)
+            success = True
             logger.info('Processed deposit %s: %s USDT → user %s (status=%s)', tx_hash, amount_usdt, user, status)
         except IntegrityError:
-            # Race condition với manual submit hoặc scan chạy song song — bỏ qua
-            max_block = max(max_block, block_number)
+            success = True  # race condition — tx đã tồn tại, không phải lỗi thật
             logger.warning('Duplicate tx skipped in scan: %s', tx_hash)
         except Exception:
-            # Lỗi không xác định — không advance block để retry ở scan sau
             logger.exception('Failed to process tx %s — will retry on next scan', tx_hash)
 
-    if max_block > state.last_scanned_block:
-        state.last_scanned_block = max_block
+        if not success:
+            # Không advance qua block bị lỗi để retry ở lần scan sau
+            new_max_block = min(new_max_block, block_number - 1)
+
+    if new_max_block > state.last_scanned_block:
+        state.last_scanned_block = new_max_block
         state.save()
 
 
 def verify_txhash(tx_hash: str):
-    """Xác minh TxHash qua BscScan dùng 2 bước — hỗ trợ mọi TX kể cả rất cũ."""
+    """Xác minh TxHash qua BSC public RPC — không cần API key."""
     admin_wallet = settings.ADMIN_WALLET_ADDRESS.lower()
     usdt_contract = settings.USDT_CONTRACT_BSC.lower()
-    api_key = settings.BSCSCAN_API_KEY
 
-    # Bước 1: Lấy block number qua proxy (không bị giới hạn 10000 record lịch sử)
-    try:
-        resp = requests.get(
-            'https://api.bscscan.com/api',
-            params={
-                'module': 'proxy',
-                'action': 'eth_getTransactionByHash',
-                'txhash': tx_hash,
-                'apikey': api_key,
-            },
-            timeout=15,
-        )
-        proxy_data = resp.json()
-    except Exception as e:
-        logger.error('BscScan proxy error: %s', e)
+    tx = _rpc('eth_getTransactionByHash', [tx_hash])
+    if not tx or not tx.get('blockNumber'):
+        return None  # không tìm thấy hoặc chưa confirmed (pending)
+
+    receipt = _rpc('eth_getTransactionReceipt', [tx_hash])
+    if not receipt:
         return None
 
-    tx_result = proxy_data.get('result')
-    if not tx_result or tx_result == 'null' or not isinstance(tx_result, dict):
-        return None
+    block_number = int(tx['blockNumber'], 16)
+    memo = _decode_memo(tx.get('input', ''))
 
-    block_hex = tx_result.get('blockNumber')
-    if not block_hex:
-        return None
-    try:
-        block_number = int(block_hex, 16)
-    except (ValueError, TypeError):
-        return None
-
-    # Bước 2: Query tokentx trong đúng block đó để lấy thông tin token transfer
-    try:
-        resp = requests.get(
-            'https://api.bscscan.com/api',
-            params={
-                'module': 'account',
-                'action': 'tokentx',
-                'contractaddress': usdt_contract,
-                'address': admin_wallet,
-                'startblock': block_number,
-                'endblock': block_number,
-                'sort': 'asc',
-                'apikey': api_key,
-            },
-            timeout=15,
-        )
-        data = resp.json()
-    except Exception as e:
-        logger.error('BscScan tokentx error: %s', e)
-        return None
-
-    for tx in data.get('result', []):
-        if tx.get('hash', '').lower() != tx_hash.lower():
+    for log in receipt.get('logs', []):
+        if log.get('address', '').lower() != usdt_contract:
             continue
-        if tx.get('to', '').lower() != admin_wallet:
-            return None
-        decimals = int(tx.get('tokenDecimal', 18))
-        amount = Decimal(int(tx.get('value', 0))) / Decimal(10 ** decimals)
+        topics = log.get('topics', [])
+        if len(topics) < 3 or topics[0].lower() != _TRANSFER_TOPIC:
+            continue
+        to_addr = '0x' + topics[2][-40:]
+        if to_addr.lower() != admin_wallet:
+            continue
+        from_addr = '0x' + topics[1][-40:]
+        amount_usdt = _usdt_amount(log.get('data', '0x0'))
         return {
-            'tx_hash': tx.get('hash', '').lower(),
-            'amount_usdt': amount,
+            'tx_hash': tx_hash.lower(),
+            'amount_usdt': amount_usdt,
             'block_number': block_number,
-            'from_address': tx.get('from', '').lower(),
-            'memo': _decode_memo(tx.get('input', '')),
+            'from_address': from_addr.lower(),
+            'memo': memo,
         }
 
-    return None
+    return None  # không tìm thấy USDT transfer đến admin_wallet trong tx này
 
 
 def _decode_memo(input_hex: str) -> str:
     try:
         if input_hex and input_hex != '0x':
-            # Giới hạn 200 hex chars (~100 bytes) — memo UID-XXXX chỉ cần vài byte đầu
-            hex_str = input_hex.replace('0x', '')[:200]
+            hex_str = input_hex.replace('0x', '')[:_MEMO_MAX_HEX_LEN]
             raw = bytes.fromhex(hex_str)
             text = raw.decode('utf-8', errors='ignore').strip()
-            # Strict: chỉ khớp UID- theo sau là chữ số, không chấp nhận ký tự thừa
-            m = re.match(r'^(UID-\d{1,10})', text)  # giới hạn 10 chữ số tránh OverflowError
+            m = re.match(r'^(UID-\d{1,10})', text)
             if m:
                 return m.group(1)
     except Exception:
