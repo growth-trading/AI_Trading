@@ -1,5 +1,6 @@
 import base64
 import binascii
+import io
 import json
 import logging
 import re
@@ -10,6 +11,7 @@ import urllib.request
 from datetime import timedelta, datetime as _dt, timezone as _tz
 from decimal import Decimal, InvalidOperation
 from django.core.cache import cache
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -248,6 +250,7 @@ def analyze_chart_view(request):
     interval        = body.get('interval', '60').strip()
     chart_image_b64 = body.get('chart_image') or ''
     candles         = body.get('candles')
+    lang            = body.get('lang', 'vi') if body.get('lang') in ('vi', 'en') else 'vi'
 
     try:
         cp = float(body.get('current_price') or 0)
@@ -265,16 +268,39 @@ def analyze_chart_view(request):
         if len(candles) > 500:
             return JsonResponse({'error': 'Quá nhiều nến'}, status=400)
         required_keys = {'open', 'high', 'low', 'close'}
-        if candles and not all(isinstance(c, dict) and required_keys.issubset(c) for c in candles[:5]):
+        if candles and not all(isinstance(c, dict) and required_keys.issubset(c) for c in candles):
             candles = None
 
-    # Rate-limit sau validation — tối đa 5 lần / phút / user (atomic incr tránh race condition)
-    rate_key = f'ai:analyze:rate:{request.user.pk}'
+    # Validate ảnh trước rate-limit — tránh consume slot cho request lỗi của client
+    if not chart_image_b64:
+        return JsonResponse({'error': 'Không chụp được ảnh biểu đồ. Vui lòng thử lại.'}, status=400)
     try:
+        image_bytes = base64.b64decode(chart_image_b64, validate=True)
+        if not image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
+            raise ValueError('not png')
+    except (ValueError, binascii.Error):
+        return JsonResponse({'error': 'Ảnh biểu đồ không hợp lệ. Vui lòng thử lại.'}, status=400)
+
+    # Nén ảnh xuống tối đa 640px JPEG để giảm token Gemini (token tính theo pixel)
+    try:
+        img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+        if img.width > 640:
+            new_h = int(img.height * 640 / img.width)
+            img = img.resize((640, new_h), Image.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, format='JPEG', quality=80, optimize=True)
+        image_bytes = buf.getvalue()
+        image_mime  = 'image/jpeg'
+    except Exception:
+        image_mime = 'image/png'  # giữ nguyên ảnh gốc nếu PIL thất bại
+
+    # Rate-limit — tối đa 5 lần / phút / user
+    # cache.add trả False nếu key đã tồn tại → incr; True nếu vừa tạo → rate_count = 1
+    rate_key = f'ai:analyze:rate:{request.user.pk}'
+    if not cache.add(rate_key, 1, 60):
         rate_count = cache.incr(rate_key)
-    except ValueError:
-        cache.add(rate_key, 0, 60)
-        rate_count = cache.incr(rate_key)
+    else:
+        rate_count = 1
     if rate_count > 5:
         return JsonResponse({'error': 'Bạn đang phân tích quá nhanh. Vui lòng chờ 1 phút.'}, status=429)
 
@@ -296,22 +322,11 @@ def analyze_chart_view(request):
             pass
 
     try:
-        # Validate ảnh biểu đồ — nếu không có ảnh thật thì trả lỗi, không mock
-        if not chart_image_b64:
-            _decr_rate()
-            return JsonResponse({'error': 'Không chụp được ảnh biểu đồ. Vui lòng thử lại.'}, status=400)
-        try:
-            image_bytes = base64.b64decode(chart_image_b64, validate=True)
-            if not image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
-                raise ValueError('not png')
-        except (ValueError, binascii.Error):
-            _decr_rate()
-            return JsonResponse({'error': 'Ảnh biểu đồ không hợp lệ. Vui lòng thử lại.'}, status=400)
-
         indicators = compute_indicators_local(candles if isinstance(candles, list) else [])
 
         result = analyze_with_gemini(image_bytes, indicators, symbol, interval,
-                                     current_price=current_price)
+                                     current_price=current_price, lang=lang,
+                                     image_mime=image_mime)
 
         # Sanitize Gemini output before persisting
         if result.get('signal') not in _ALLOWED_SIGNALS:
@@ -337,13 +352,16 @@ def analyze_chart_view(request):
         }
         return JsonResponse({'success': True, 'data': json_result})
 
+    except RuntimeError as e:
+        _decr_rate()
+        msg = str(e)
+        if 'quá tải' in msg or 'quota' in msg.lower():
+            return JsonResponse({'error': msg}, status=429)
+        logger.warning('analyze_chart RuntimeError for user %s: %s', request.user.pk, msg)
+        return JsonResponse({'error': 'Phân tích thất bại, vui lòng thử lại.'}, status=500)
     except Exception:
         logger.exception('analyze_chart failed for user %s symbol %s', request.user.pk, symbol)
-        # Hoàn trả rate-limit slot khi xử lý thất bại (không phải lỗi của user)
-        try:
-            cache.decr(rate_key)
-        except Exception:
-            logger.debug('Failed to decrement rate counter for key %s', rate_key, exc_info=True)
+        _decr_rate()
         return JsonResponse({'error': 'Phân tích thất bại, vui lòng thử lại.'}, status=500)
 
 

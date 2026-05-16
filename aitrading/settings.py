@@ -10,6 +10,7 @@ _allowed_hosts = config('ALLOWED_HOSTS', default='*')
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',')]
 
 INSTALLED_APPS = [
+    'aitrading.apps.AitradingConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,6 +83,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -118,30 +121,29 @@ TV_PLAN_WEEK_COST  = config('TV_PLAN_WEEK_COST',  default=10,  cast=int)
 TV_PLAN_MONTH_COST = config('TV_PLAN_MONTH_COST', default=30,  cast=int)
 TV_PLAN_YEAR_COST  = config('TV_PLAN_YEAR_COST',  default=200, cast=int)
 
-# Cache — dùng Redis nếu REDIS_URL được set, fallback LocMemCache (chỉ dùng cho dev single-process)
+# Cache — Redis bắt buộc, không có fallback LocMemCache
 REDIS_URL = config('REDIS_URL', default='')
-if REDIS_URL:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': REDIS_URL,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'SOCKET_CONNECT_TIMEOUT': 5,
-                'SOCKET_TIMEOUT': 5,
-                'IGNORE_EXCEPTIONS': True,
-            },
-            'KEY_PREFIX': 'ait',
-            'TIMEOUT': 300,
-        }
+if not REDIS_URL:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured(
+        'REDIS_URL chưa được cấu hình trong .env. '
+        'Hãy set REDIS_URL=redis://127.0.0.1:6379/0 và đảm bảo Redis đang chạy.'
+    )
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'SOCKET_CONNECT_TIMEOUT': 3,
+            'SOCKET_TIMEOUT': 5,
+            'IGNORE_EXCEPTIONS': False,
+        },
+        'KEY_PREFIX': 'ait',
+        'TIMEOUT': 300,
     }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'ait-mt5',
-        }
-    }
+}
 
 # Security settings cho production (HTTPS required)
 if not DEBUG:
@@ -151,15 +153,6 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-if not DEBUG and not REDIS_URL:
-    import warnings
-    warnings.warn(
-        'PRODUCTION without REDIS_URL: rate limiting and cache will not work across workers. '
-        'Set REDIS_URL in .env (e.g. redis://127.0.0.1:6379/0).',
-        RuntimeWarning,
-        stacklevel=2,
-    )
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 25

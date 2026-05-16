@@ -10,45 +10,8 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-_DEMO_KEYS = {'your_gemini_api_key', ''}
 _GEMINI_CONFIGURED = False
 
-def _mock_levels(price: float, signal: str) -> tuple:
-    """Tính entry/SL/TP tương đối theo giá thực."""
-    p = float(price)
-    if signal == 'BUY':
-        return round(p, 5), round(p * 0.9940, 5), round(p * 1.0150, 5)
-    if signal == 'SELL':
-        return round(p, 5), round(p * 1.0060, 5), round(p * 0.9850, 5)
-    return None, None, None  # HOLD
-
-
-def _mock_analysis(symbol: str, current_price=None) -> dict:
-    clean = _strip_exchange(symbol)
-    price = float(current_price) if current_price else None
-
-    _SYMBOL_MAP = {
-        'XAU': ('BUY',  74, '[DEMO] RSI (58.4) đang tăng, MACD histogram dương (+3.2) xác nhận đà bullish. EMA20 nằm trên EMA50 cho thấy xu hướng tăng ngắn hạn còn duy trì. Supertrend UP — vào BUY gần vùng hỗ trợ EMA20 với R:R ≈ 2.5.'),
-        'XAG': ('BUY',  61, '[DEMO] Bạc hình thành đáy cao hơn trên khung H1. RSI phân kỳ tăng. MACD vừa cắt lên trên đường signal. Vào BUY với SL dưới vùng hỗ trợ gần nhất.'),
-        'EUR': ('SELL', 68, '[DEMO] EURUSD phá vỡ hỗ trợ trendline tăng. RSI (42) cho thấy áp lực bán. MACD histogram âm và mở rộng. Mục tiêu vùng hỗ trợ phía dưới.'),
-        'GBP': ('SELL', 62, '[DEMO] GBPUSD chạm kháng cự. RSI overbought (68). Nến rejection xuất hiện, MACD bắt đầu phân kỳ âm.'),
-        'BTC': ('BUY',  66, '[DEMO] BTC tích lũy sideway, RSI 55 cho thấy còn room tăng. Volume nến xanh áp đảo. Supertrend UP kể từ 3 nến trước.'),
-        'ETH': ('BUY',  58, '[DEMO] ETH đang trong uptrend ngắn hạn. EMA20 hỗ trợ tốt. RSI (54) chưa overbought, còn dư địa tăng lên vùng kháng cự tiếp theo.'),
-    }
-
-    for keyword, (sig, conf, reason) in _SYMBOL_MAP.items():
-        if keyword in clean:
-            e, sl, tp = _mock_levels(price, sig) if price else (None, None, None)
-            return {'signal': sig, 'confidence': conf, 'entry': e, 'sl': sl, 'tp': tp, 'reasoning': reason}
-
-    return {
-        'signal': 'HOLD', 'confidence': 48,
-        'entry': None, 'sl': None, 'tp': None,
-        'reasoning': (
-            '[DEMO] Tín hiệu hiện tại chưa rõ ràng. RSI ở vùng trung tính (50±5), '
-            'MACD chưa có giao cắt xác nhận. Chờ breakout rõ ràng trước khi vào lệnh.'
-        ),
-    }
 
 def _strip_exchange(symbol: str) -> str:
     return symbol.split(':', 1)[1] if ':' in symbol else symbol
@@ -121,10 +84,8 @@ def compute_indicators_local(candles: list) -> dict:
 
 
 def analyze_with_gemini(image_bytes: bytes, indicators: dict, symbol: str, interval: str,
-                        current_price=None) -> dict:
+                        current_price=None, lang: str = 'vi', image_mime: str = 'image/png') -> dict:
     """Gọi Gemini 2.5 Flash Vision, trả về dict tín hiệu."""
-    if settings.GEMINI_API_KEY in _DEMO_KEYS:
-        return _mock_analysis(symbol, current_price=current_price)
     global _GEMINI_CONFIGURED
     if not _GEMINI_CONFIGURED:
         genai.configure(api_key=settings.GEMINI_API_KEY)
@@ -140,12 +101,21 @@ def analyze_with_gemini(image_bytes: bytes, indicators: dict, symbol: str, inter
 
     indicator_text = _format_indicators(indicators)
 
-    prompt = f"""Bạn là chuyên gia phân tích kỹ thuật trading. Hãy phân tích biểu đồ {clean_symbol} khung {tv_interval_label}.
+    if lang == 'en':
+        price_line = f'\nCurrent price: {current_price}' if current_price else ''
+        lang_instruction = 'Write the reasoning in English.'
+        reasoning_hint = '2-3 sentence explanation in English based on chart pattern and indicators'
+    else:
+        price_line = f'\nGiá hiện tại: {current_price}' if current_price else ''
+        lang_instruction = 'Viết reasoning bằng tiếng Việt.'
+        reasoning_hint = 'chuỗi giải thích ngắn gọn 2-3 câu bằng tiếng Việt dựa trên pattern chart và indicator'
+
+    prompt = f"""Bạn là chuyên gia phân tích kỹ thuật trading. Hãy phân tích biểu đồ {clean_symbol} khung {tv_interval_label}.{price_line}
 
 Dữ liệu indicator chính xác từ hệ thống:
 {indicator_text}
 
-Nhìn vào biểu đồ và kết hợp với các chỉ số trên, hãy đưa ra phân tích và tín hiệu giao dịch.
+Nhìn vào biểu đồ và kết hợp với các chỉ số trên, hãy đưa ra phân tích và tín hiệu giao dịch. Entry/SL/TP phải sát với giá hiện tại.
 
 Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đúng format sau:
 {{
@@ -154,20 +124,28 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
   "entry": số thực (giá vào lệnh đề xuất, null nếu HOLD),
   "sl": số thực (stop loss, null nếu HOLD),
   "tp": số thực (take profit, null nếu HOLD),
-  "reasoning": "chuỗi giải thích ngắn gọn 2-3 câu dựa trên pattern chart và indicator"
-}}"""
+  "reasoning": "{reasoning_hint}"
+}}
+{lang_instruction}"""
 
     image_part = {
-        'mime_type': 'image/png',
+        'mime_type': image_mime,
         'data': base64.b64encode(image_bytes).decode('utf-8'),
     }
 
-    response = model.generate_content([prompt, image_part])
+    try:
+        response = model.generate_content([prompt, image_part])
+    except Exception as e:
+        err_str = str(e)
+        if 'ResourceExhausted' in type(e).__name__ or 'quota' in err_str.lower() or '429' in err_str:
+            raise RuntimeError('Gemini đang quá tải, vui lòng thử lại sau ít phút.') from e
+        raise
+
     try:
         raw = response.text.strip()
-    except ValueError:
-        logger.warning('Gemini response blocked or empty for %s: %s', symbol, response.prompt_feedback)
-        raise RuntimeError('Gemini response blocked by safety filter')
+    except (ValueError, AttributeError, IndexError) as e:
+        logger.warning('Gemini response unavailable for %s: %s', symbol, e)
+        raise RuntimeError('Gemini response blocked or empty')
 
     if raw.startswith('```'):
         raw = re.sub(r'^```(?:json)?\s*', '', raw)
@@ -180,9 +158,15 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
         logger.warning('Gemini returned non-JSON for %s: %.200s', symbol, raw)
         raise RuntimeError('Gemini returned non-JSON response')
 
+    def _safe_confidence(v):
+        try:
+            return max(0, min(100, int(float(str(v).rstrip('%').strip()))))
+        except (TypeError, ValueError):
+            return 0
+
     return {
         'signal': str(data.get('signal', 'HOLD')).upper(),
-        'confidence': max(0, min(100, int(data.get('confidence', 0) or 0))),
+        'confidence': _safe_confidence(data.get('confidence', 0)),
         'entry': _to_decimal_or_none(data.get('entry')),
         'sl': _to_decimal_or_none(data.get('sl')),
         'tp': _to_decimal_or_none(data.get('tp')),
@@ -205,11 +189,12 @@ def _format_indicators(indicators: dict) -> str:
     if 'macd' in indicators:
         m = indicators['macd']
         if m.get('valueMACD') is not None:
-            lines.append(
-                f"- MACD: value={_safe_num(m.get('valueMACD'), '.4f')}, "
-                f"signal={_safe_num(m.get('valueMACDSignal'), '.4f')}, "
-                f"hist={_safe_num(m.get('valueMACDHist'), '.4f')}"
-            )
+            parts = [f"value={_safe_num(m.get('valueMACD'), '.4f')}"]
+            if m.get('valueMACDSignal') is not None:
+                parts.append(f"signal={_safe_num(m.get('valueMACDSignal'), '.4f')}")
+            if m.get('valueMACDHist') is not None:
+                parts.append(f"hist={_safe_num(m.get('valueMACDHist'), '.4f')}")
+            lines.append(f"- MACD: {', '.join(parts)}")
     if 'ema20' in indicators:
         lines.append(f"- EMA(20): {_safe_num(indicators['ema20'].get('value'), '.4f')}")
     if 'ema50' in indicators:

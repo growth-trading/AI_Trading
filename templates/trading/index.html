@@ -365,9 +365,7 @@
       </div>
 
       <div class="ai-reasoning" id="aiReasoning"></div>
-      <div class="ai-disclaimer" data-i18n="trad.ai.disclaimer">
-        ⚠️ Tín hiệu chỉ mang tính tham khảo, không phải khuyến nghị đầu tư. Giao dịch luôn có rủi ro.
-      </div>
+      <div class="ai-disclaimer"><span data-i18n="trad.ai.disclaimer">⚠️ Tín hiệu chỉ mang tính tham khảo, không phải khuyến nghị đầu tư. Giao dịch luôn có rủi ro.</span></div>
     </div>
 
     <div class="ai-result-error" id="aiError" style="display:none">
@@ -570,7 +568,7 @@
       },
       crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
       rightPriceScale: { borderColor: isDark ? '#1E293B' : '#374151' },
-      timeScale: { borderColor: isDark ? '#1E293B' : '#E5E7EB', timeVisible: true, secondsVisible: false, tickMarkFormatter: _makeTickMarkFormatter() },
+      timeScale: { borderColor: isDark ? '#1E293B' : '#E5E7EB', timeVisible: true, secondsVisible: false, rightOffset: 5, tickMarkFormatter: _makeTickMarkFormatter() },
       localization: { timeFormatter: _makeTimeFormatter() },
     });
     candleSeries = chart.addCandlestickSeries({
@@ -990,11 +988,14 @@
       var container = document.getElementById('lwChart');
       var canvases  = Array.from(container.querySelectorAll('canvas'));
       if (!canvases.length) return null;
-      var w = container.clientWidth, h = 600;
+      var cRect = container.getBoundingClientRect();
       var tmp = document.createElement('canvas');
-      tmp.width = w; tmp.height = h;
+      tmp.width = container.clientWidth; tmp.height = 600;
       var ctx = tmp.getContext('2d');
-      canvases.forEach(function(c) { ctx.drawImage(c, 0, 0); });
+      canvases.forEach(function(c) {
+        var r = c.getBoundingClientRect();
+        ctx.drawImage(c, r.left - cRect.left, r.top - cRect.top);
+      });
       return tmp.toDataURL('image/png').split(',')[1];
     } catch (e) {
       return null;
@@ -1011,27 +1012,40 @@
     content.style.display = 'none';
     error.style.display   = 'none';
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    fetch('{% url "analyze_chart" %}', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        symbol: currentSymbol,
-        interval: currentInterval,
-        current_price: chartCandles.length ? chartCandles[chartCandles.length - 1].close : null,
-        chart_image: captureChartImage(),
-        candles: chartCandles,
-      }),
-    })
-    .then(function (res) { return res.json(); })
-    .then(function (json) {
+    var csrf = getCookie('csrftoken');
+    if (!csrf) {
       loading.style.display = 'none';
-      if (json.success) { renderResult(json.data); content.style.display = 'block'; }
-      else              { showAiError(json.error || 'Đã xảy ra lỗi'); }
-    })
-    .catch(function () {
-      loading.style.display = 'none';
-      showAiError('Không thể kết nối. Vui lòng thử lại.');
-    });
+      showAiError('Phiên đăng nhập hết hạn, vui lòng tải lại trang.');
+      return;
+    }
+    // Kéo chart về nến mới nhất, chờ 2 frame để canvas render xong rồi mới chụp
+    if (chart) chart.timeScale().scrollToRealTime();
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        fetch('{% url "analyze_chart" %}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+          body: JSON.stringify({
+            symbol: currentSymbol,
+            interval: currentInterval,
+            current_price: chartCandles.length ? chartCandles[chartCandles.length - 1].close : null,
+            chart_image: captureChartImage(),
+            candles: chartCandles,
+            lang: localStorage.getItem('ait-lang') || 'vi',
+          }),
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          loading.style.display = 'none';
+          if (json.success) { renderResult(json.data); content.style.display = 'block'; }
+          else              { showAiError(json.error || 'Đã xảy ra lỗi'); }
+        })
+        .catch(function () {
+          loading.style.display = 'none';
+          showAiError('Không thể kết nối. Vui lòng thử lại.');
+        });
+      }); // requestAnimationFrame inner
+    }); // requestAnimationFrame outer
   }
 
   function renderResult(data) {
@@ -1049,14 +1063,18 @@
       var e = parseFloat(data.entry), s = parseFloat(data.sl), t = parseFloat(data.tp);
       var slDist = Math.abs(e - s), tpDist = Math.abs(t - e);
       var slPct  = (slDist / e * 100).toFixed(2), tpPct = (tpDist / e * 100).toFixed(2);
-      var rr     = slDist > 0 ? (tpDist / slDist).toFixed(1) : '—';
       var isBuy  = signal === 'BUY';
       document.getElementById('aiSLDist').textContent = (isBuy ? '↓ ' : '↑ ') + formatPrice(slDist) + ' (' + slPct + '%)';
       document.getElementById('aiTPDist').textContent = (isBuy ? '↑ ' : '↓ ') + formatPrice(tpDist) + ' (' + tpPct + '%)';
       var rrEl  = document.getElementById('aiRR');
-      var rrNum = parseFloat(rr);
-      rrEl.textContent = '1 : ' + rr;
-      rrEl.className   = 'ai-price-val fw-700 ' + (rrNum >= 2 ? 'text-success' : rrNum >= 1.5 ? 'text-warning' : 'text-danger');
+      if (slDist > 0) {
+        var rrNum = tpDist / slDist;
+        rrEl.textContent = '1 : ' + rrNum.toFixed(1);
+        rrEl.className   = 'ai-price-val fw-700 ' + (rrNum >= 2 ? 'text-success' : rrNum >= 1.5 ? 'text-warning' : 'text-danger');
+      } else {
+        rrEl.textContent = '—';
+        rrEl.className   = 'ai-price-val fw-700';
+      }
       lastAnalysisLevels = { entry: data.entry, sl: data.sl, tp: data.tp };
       drawLevels(data.entry, data.sl, data.tp);
       document.querySelector('.trading-chart-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1106,7 +1124,7 @@
           horzLines: { color: isDark ? '#1E293B' : '#E5E7EB' },
         },
         rightPriceScale: { borderColor: isDark ? '#1E293B' : '#374151' },
-        timeScale: { borderColor: isDark ? '#1E293B' : '#E5E7EB', timeVisible: true, secondsVisible: false, tickMarkFormatter: _makeTickMarkFormatter() },
+        timeScale: { borderColor: isDark ? '#1E293B' : '#E5E7EB', timeVisible: true, secondsVisible: false, rightOffset: 5, tickMarkFormatter: _makeTickMarkFormatter() },
         localization: { timeFormatter: _makeTimeFormatter() },
       });
     });
