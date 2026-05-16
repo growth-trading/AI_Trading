@@ -205,7 +205,6 @@ def subscribe_ai_trading_view(request):
             user = CustomUser.objects.select_for_update().get(pk=request.user.pk)
             if user.coins < cost:
                 return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
-
             new_expiry = (
                 user.ai_trading_expires_at + timedelta(days=days)
                 if user.ai_trading_expires_at and user.ai_trading_expires_at > now
@@ -263,7 +262,7 @@ def analyze_chart_view(request):
     if interval not in {'1', '5', '15', '30', '60', '120', '240', 'D', 'W'}:
         return JsonResponse({'error': 'Interval không hợp lệ'}, status=400)
     if chart_image_b64 and len(chart_image_b64) > 2_000_000:
-        chart_image_b64 = ''
+        return JsonResponse({'error': 'Ảnh chụp biểu đồ quá lớn (>1.5MB). Vui lòng thử lại.'}, status=400)
     if isinstance(candles, list):
         if len(candles) > 500:
             return JsonResponse({'error': 'Quá nhiều nến'}, status=400)
