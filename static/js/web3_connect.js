@@ -1,4 +1,4 @@
-/* AITrading — MetaMask / Web3 Connection */
+/* RichAITrading — MetaMask / Web3 Connection */
 
 const BSC_CHAIN_ID = '0x38'; // BSC Mainnet = 56 dec
 

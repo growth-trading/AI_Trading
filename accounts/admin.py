@@ -8,7 +8,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = ['username', 'email', 'coins', 'is_email_verified', 'date_joined']
     list_filter = ['is_email_verified', 'is_staff']
     fieldsets = UserAdmin.fieldsets + (
-        ('Thông tin AITrading', {'fields': (
+        ('Thông tin RichAITrading', {'fields': (
             'avatar', 'coins', 'is_email_verified',
             'phone', 'address', 'ai_trading_expires_at',
         )}),

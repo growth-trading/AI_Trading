@@ -137,7 +137,7 @@ def resend_otp_view(request):
 
 
 def _send_otp_email(user, otp):
-    subject = '[AITrading] Mã xác thực tài khoản của bạn'
+    subject = '[RichAITrading] Mã xác thực tài khoản của bạn'
     html_message = render_to_string('emails/otp_email.html', {'user': user, 'otp': otp})
     try:
         send_mail(

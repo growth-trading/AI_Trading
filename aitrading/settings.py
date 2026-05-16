@@ -93,7 +93,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER', default='noreply@aitrading.vn')
+DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER', default='noreply@richaitrading.vn')
 
 ADMIN_WALLET_ADDRESS = config('ADMIN_WALLET_ADDRESS', default='')
 USDT_CONTRACT_BSC = config('USDT_CONTRACT_BSC', default='0x55d398326f99059fF775485246999027B3197955')

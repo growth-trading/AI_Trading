@@ -1,4 +1,4 @@
-/* AITrading — Main JS */
+/* RichRichAITrading — Main JS */
 
 // Navbar scroll effect
 const nav = document.getElementById('mainNav');
@@ -133,7 +133,7 @@ const i18n = {
     'stat.uptime':  'Hoạt động liên tục',
     /* features */
     'feat.badge':    'Tính năng',
-    'feat.title':    'Tại sao chọn AITrading?',
+    'feat.title':    'Tại sao chọn RichAITrading?',
     'feat.subtitle': 'Công nghệ AI tối tân kết hợp với chiến lược giao dịch đã được kiểm chứng',
     'feat.popular':  'Phổ biến nhất',
     'feat1.title': 'Thuật toán AI tiên tiến',
@@ -162,12 +162,12 @@ const i18n = {
     'step3.desc':  'Chọn chiến lược, kết nối tài khoản Exness/GTC, bot tự động giao dịch 24/7.',
     /* cta */
     'cta.title':    'Bắt đầu giao dịch thông minh hôm nay',
-    'cta.subtitle': 'Tham gia cùng 500+ traders đang tin dùng AITrading để tối ưu lợi nhuận mỗi ngày.',
+    'cta.subtitle': 'Tham gia cùng 500+ traders đang tin dùng RichAITrading để tối ưu lợi nhuận mỗi ngày.',
     'cta.btn1':     'Đăng ký ngay',
     'cta.btn2':     'Tìm hiểu thêm',
     /* auth — login */
     'auth.login.title':   'Chào mừng trở lại',
-    'auth.login.sub':     'Đăng nhập để sử dụng tất cả các dịch vụ của AITrading',
+    'auth.login.sub':     'Đăng nhập để sử dụng tất cả các dịch vụ của RichAITrading',
     'auth.btn.login':     'Đăng nhập',
     'auth.or':            'hoặc',
     'auth.no_account':    'Chưa có tài khoản?',
@@ -370,7 +370,7 @@ const i18n = {
     'stat.uptime':  'Always Online',
     /* features */
     'feat.badge':    'Features',
-    'feat.title':    'Why Choose AITrading?',
+    'feat.title':    'Why Choose RichAITrading?',
     'feat.subtitle': 'Cutting-edge AI technology combined with proven trading strategies',
     'feat.popular':  'Most Popular',
     'feat1.title': 'Advanced AI Algorithm',
@@ -399,12 +399,12 @@ const i18n = {
     'step3.desc':  'Choose a strategy, connect your Exness/GTC account, bot trades 24/7 automatically.',
     /* cta */
     'cta.title':    'Start Smart Trading Today',
-    'cta.subtitle': 'Join 500+ traders who trust AITrading to maximize their daily profits.',
+    'cta.subtitle': 'Join 500+ traders who trust RichAITrading to maximize their daily profits.',
     'cta.btn1':     'Sign Up Now',
     'cta.btn2':     'Learn More',
     /* auth — login */
     'auth.login.title':   'Welcome Back',
-    'auth.login.sub':     'Sign in to use all AITrading services',
+    'auth.login.sub':     'Sign in to use all RichAITrading services',
     'auth.btn.login':     'Login',
     'auth.or':            'or',
     'auth.no_account':    "Don't have an account?",
