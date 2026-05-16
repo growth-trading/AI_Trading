@@ -8,6 +8,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import timedelta, datetime as _dt, timezone as _tz
+from decimal import Decimal, InvalidOperation
+from functools import lru_cache
 
 from django.core.cache import cache
 
@@ -39,7 +41,7 @@ from django.utils import timezone
 
 from accounts.models import CustomUser
 from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription
-from .services import compute_indicators_local, analyze_with_gemini
+from .services import compute_indicators_local, analyze_with_gemini, _mock_analysis
 
 # 1×1 transparent PNG — dùng khi canvas capture thất bại
 _PNG_FALLBACK = (
@@ -49,6 +51,7 @@ _PNG_FALLBACK = (
 )
 
 
+@require_GET
 def landing(request):
     if request.user.is_authenticated:
         return redirect('trading')
@@ -136,8 +139,13 @@ def subscribe_tradingview_view(request):
                 if sub.expires_at > now
                 else now + timedelta(days=days)
             )
+            # coins__gte=cost đảm bảo atomic check+update, bảo vệ cả SQLite lẫn PostgreSQL
+            updated = CustomUser.objects.filter(
+                pk=user.pk, coins__gte=cost
+            ).update(coins=F('coins') - cost)
+            if not updated:
+                return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
             UserTVSubscription.objects.filter(pk=sub.pk).update(expires_at=new_expiry)
-            CustomUser.objects.filter(pk=user.pk).update(coins=F('coins') - cost)
 
         user.refresh_from_db(fields=['coins'])
         return JsonResponse({
@@ -150,6 +158,7 @@ def subscribe_tradingview_view(request):
         return JsonResponse({'error': 'Đăng ký thất bại, vui lòng thử lại.'}, status=500)
 
 
+@require_GET
 def trading_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -206,11 +215,15 @@ def subscribe_ai_trading_view(request):
                 if user.ai_trading_expires_at and user.ai_trading_expires_at > now
                 else now + timedelta(days=days)
             )
-            # F() đảm bảo atomic deduction kể cả khi select_for_update là no-op (SQLite)
-            CustomUser.objects.filter(pk=user.pk).update(
+            # coins__gte=cost đảm bảo atomic check+update, bảo vệ cả SQLite lẫn PostgreSQL
+            updated = CustomUser.objects.filter(
+                pk=user.pk, coins__gte=cost
+            ).update(
                 coins=F('coins') - cost,
                 ai_trading_expires_at=new_expiry,
             )
+            if not updated:
+                return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
 
         user.refresh_from_db(fields=['coins', 'ai_trading_expires_at'])
         return JsonResponse({
@@ -272,12 +285,13 @@ def analyze_chart_view(request):
         if v is None:
             return None
         try:
-            f = float(v)
-            return None if abs(f) > max_val else f  # trả float để JSON serializable
-        except (TypeError, ValueError):
+            d = Decimal(str(v))
+            return None if abs(d) > max_val else d
+        except (TypeError, ValueError, InvalidOperation):
             return None
 
     try:
+        using_fallback_image = False
         if chart_image_b64:
             try:
                 image_bytes = base64.b64decode(chart_image_b64, validate=True)
@@ -285,12 +299,19 @@ def analyze_chart_view(request):
                     raise ValueError('not png')
             except (ValueError, binascii.Error):
                 image_bytes = _PNG_FALLBACK
+                using_fallback_image = True
         else:
             image_bytes = _PNG_FALLBACK
+            using_fallback_image = True
 
         indicators = compute_indicators_local(candles if isinstance(candles, list) else [])
-        result      = analyze_with_gemini(image_bytes, indicators, symbol, interval,
-                                          current_price=current_price)
+
+        # Không gọi Gemini khi không có ảnh thật — tránh lãng phí quota với PNG 1×1
+        if using_fallback_image:
+            result = _mock_analysis(symbol, current_price=current_price)
+        else:
+            result = analyze_with_gemini(image_bytes, indicators, symbol, interval,
+                                         current_price=current_price)
 
         # Sanitize Gemini output before persisting
         if result.get('signal') not in _ALLOWED_SIGNALS:
@@ -307,7 +328,14 @@ def analyze_chart_view(request):
             **result,
         )
 
-        return JsonResponse({'success': True, 'data': result})
+        # Chuyển Decimal sang float chỉ khi serialize JSON (giữ precision cho DB)
+        json_result = {
+            **result,
+            'entry': float(result['entry']) if result['entry'] is not None else None,
+            'sl':    float(result['sl'])    if result['sl']    is not None else None,
+            'tp':    float(result['tp'])    if result['tp']    is not None else None,
+        }
+        return JsonResponse({'success': True, 'data': json_result})
 
     except Exception:
         logger.exception('analyze_chart failed for user %s symbol %s', request.user.pk, symbol)
@@ -329,15 +357,11 @@ _MT5_SYMBOLS = {
     'NASDAQ:TSLA':  'TSLA',
 }
 
-_mt5_symbol_cache = {}
-
+@lru_cache(maxsize=100)
 def _mt5_resolve_symbol(base):
-    if base in _mt5_symbol_cache:
-        return _mt5_symbol_cache[base]
     for suffix in ('', 'm', '.', 'pro', 'c', 'n'):
         name = base + suffix
         if _mt5.symbol_info(name) is not None:
-            _mt5_symbol_cache[base] = name
             _mt5.symbol_select(name, True)
             return name
     return base
@@ -409,6 +433,8 @@ _TICK_RATE_LIMIT  = 60   # req/phút/user cho tick (polling)
 def chart_data_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)
+    if not request.user.is_email_verified:
+        return JsonResponse({'error': 'Chưa xác thực email'}, status=403)
 
     cd_rate_key = f'chart:rate:{request.user.pk}'
     try:
@@ -561,6 +587,8 @@ def _mt5_candles(symbol, interval, since_ts, before_ts):
 def tick_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)
+    if not request.user.is_email_verified:
+        return JsonResponse({'error': 'Chưa xác thực email'}, status=403)
 
     tk_rate_key = f'tick:rate:{request.user.pk}'
     try:

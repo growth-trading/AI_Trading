@@ -1,4 +1,6 @@
 from django.shortcuts import redirect
+from django.contrib import messages
+from django.http import JsonResponse
 
 
 class EmailVerifiedMiddleware:
@@ -15,6 +17,14 @@ class EmailVerifiedMiddleware:
             and request.path not in self.EXEMPT_EXACT
             and not any(request.path.startswith(p) for p in self.EXEMPT_PREFIXES)
         ):
+            # POST và AJAX request trả JSON 403 thay vì redirect để tránh mất dữ liệu form
+            is_ajax = (
+                request.headers.get('Accept', '').startswith('application/json')
+                or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            if request.method == 'POST' or is_ajax:
+                return JsonResponse({'error': 'Chưa xác thực email. Vui lòng xác thực tài khoản.'}, status=403)
             request.session['pending_verify_user_id'] = request.user.pk
+            messages.warning(request, 'Vui lòng xác thực email trước khi truy cập tính năng này.')
             return redirect('verify_otp')
         return self.get_response(request)

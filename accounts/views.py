@@ -2,6 +2,7 @@ import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.template.loader import render_to_string
@@ -79,17 +80,28 @@ def verify_otp_view(request):
         return redirect('trading')
 
     form = OTPForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        if user.is_otp_valid(form.cleaned_data['otp']):
-            user.is_email_verified = True
-            user.otp_code = ''
-            user.otp_created_at = None
-            user.save(update_fields=['is_email_verified', 'otp_code', 'otp_created_at'])
-            del request.session['pending_verify_user_id']
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            messages.success(request, 'Xác thực email thành công! Chào mừng bạn.')
-            return redirect('trading')
-        messages.error(request, 'Mã OTP không đúng hoặc đã hết hạn.')
+    if request.method == 'POST':
+        # Rate-limit: 5 lần thử / 15 phút / user — chặn brute-force OTP 6 chữ số
+        otp_rate_key = f'otp:verify:{user.pk}'
+        try:
+            otp_attempts = cache.incr(otp_rate_key)
+        except ValueError:
+            cache.add(otp_rate_key, 0, 900)
+            otp_attempts = cache.incr(otp_rate_key)
+        if otp_attempts > 5:
+            messages.error(request, 'Quá nhiều lần thử sai. Vui lòng yêu cầu mã mới sau 15 phút.')
+        elif form.is_valid():
+            if user.is_otp_valid(form.cleaned_data['otp']):
+                user.is_email_verified = True
+                user.otp_code = ''
+                user.otp_created_at = None
+                user.save(update_fields=['is_email_verified', 'otp_code', 'otp_created_at'])
+                del request.session['pending_verify_user_id']
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                messages.success(request, 'Xác thực email thành công! Chào mừng bạn.')
+                return redirect('trading')
+            else:
+                messages.error(request, 'Mã OTP không đúng hoặc đã hết hạn.')
 
     # Tính thời gian còn lại của OTP từ server để frontend sync đúng
     seconds_left = 0
@@ -108,6 +120,10 @@ def resend_otp_view(request):
     user_id = request.session.get('pending_verify_user_id')
     if not user_id:
         return redirect('login')
+    # Rate-limit: 1 request / 60s — chặn spam SMTP
+    if not cache.add(f'otp:resend:{user_id}', 1, 60):
+        messages.warning(request, 'Vui lòng chờ 1 phút trước khi gửi lại OTP.')
+        return redirect('verify_otp')
     try:
         user = CustomUser.objects.get(pk=user_id)
         otp = user.generate_otp()

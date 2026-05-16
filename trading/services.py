@@ -7,7 +7,6 @@ import pandas as pd
 import pandas_ta  # noqa: F401  # registers df.ta accessor on pandas DataFrame
 import google.generativeai as genai
 from django.conf import settings
-from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -211,21 +210,23 @@ def _format_indicators(indicators: dict) -> str:
         lines.append(f"- RSI(14): {_safe_num(indicators['rsi'].get('value'))}")
     if 'macd' in indicators:
         m = indicators['macd']
-        lines.append(
-            f"- MACD: value={_safe_num(m.get('valueMACD'), '.4f')}, "
-            f"signal={_safe_num(m.get('valueMACDSignal'), '.4f')}, "
-            f"hist={_safe_num(m.get('valueMACDHist'), '.4f')}"
-        )
+        if m.get('valueMACD') is not None:
+            lines.append(
+                f"- MACD: value={_safe_num(m.get('valueMACD'), '.4f')}, "
+                f"signal={_safe_num(m.get('valueMACDSignal'), '.4f')}, "
+                f"hist={_safe_num(m.get('valueMACDHist'), '.4f')}"
+            )
     if 'ema20' in indicators:
         lines.append(f"- EMA(20): {_safe_num(indicators['ema20'].get('value'), '.4f')}")
     if 'ema50' in indicators:
         lines.append(f"- EMA(50): {_safe_num(indicators['ema50'].get('value'), '.4f')}")
     if 'supertrend' in indicators:
         st = indicators['supertrend']
-        lines.append(
-            f"- Supertrend: value={_safe_num(st.get('value'), '.4f')}, "
-            f"trend={'UP' if st.get('valueAdvice') == 'long' else 'DOWN'}"
-        )
+        if st.get('value') is not None:
+            lines.append(
+                f"- Supertrend: value={_safe_num(st.get('value'), '.4f')}, "
+                f"trend={'UP' if st.get('valueAdvice') == 'long' else 'DOWN'}"
+            )
     return '\n'.join(lines) if lines else '(Không có dữ liệu indicator)'
 
 

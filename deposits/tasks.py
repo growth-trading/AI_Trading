@@ -53,8 +53,16 @@ def scan_admin_wallet():
             logger.warning('BscScan scan error: %s', data.get('message'))
         return
 
+    all_results = data.get('result', [])
+
+    # Batch fetch để tránh N+1 queries (một query thay vì một query mỗi tx)
+    all_hashes = [tx.get('hash', '').lower() for tx in all_results]
+    existing_hashes = set(
+        DepositTransaction.objects.filter(tx_hash__in=all_hashes).values_list('tx_hash', flat=True)
+    )
+
     max_block = state.last_scanned_block
-    for tx in data.get('result', []):
+    for tx in all_results:
         tx_hash = tx.get('hash', '').lower()   # normalize lowercase
         to_addr = tx.get('to', '').lower()
         block_number = int(tx.get('blockNumber', 0))
@@ -63,8 +71,9 @@ def scan_admin_wallet():
         amount_usdt = Decimal(raw_value) / Decimal(10 ** decimals)
 
         if to_addr != admin_wallet:
+            max_block = max(max_block, block_number)
             continue
-        if DepositTransaction.objects.filter(tx_hash=tx_hash).exists():
+        if tx_hash in existing_hashes:
             max_block = max(max_block, block_number)
             continue
 
@@ -81,7 +90,7 @@ def scan_admin_wallet():
                     user=user,
                     tx_hash=tx_hash,
                     amount_usdt=amount_usdt,
-                    coins_credited=amount_usdt * settings.USDT_TO_COINS_RATE,
+                    coins_credited=amount_usdt * Decimal(str(settings.USDT_TO_COINS_RATE)),
                     status=status,
                     memo=memo,
                     network='BSC',
@@ -91,12 +100,16 @@ def scan_admin_wallet():
                     CustomUser.objects.filter(pk=user.pk).update(
                         coins=F('coins') + dep.coins_credited
                     )
+            # Chỉ advance block khi xử lý thành công
+            max_block = max(max_block, block_number)
+            logger.info('Processed deposit %s: %s USDT → user %s (status=%s)', tx_hash, amount_usdt, user, status)
         except IntegrityError:
             # Race condition với manual submit hoặc scan chạy song song — bỏ qua
+            max_block = max(max_block, block_number)
             logger.warning('Duplicate tx skipped in scan: %s', tx_hash)
-
-        max_block = max(max_block, block_number)
-        logger.info('Processed deposit %s: %s USDT → user %s (status=%s)', tx_hash, amount_usdt, user, status)
+        except Exception:
+            # Lỗi không xác định — không advance block để retry ở scan sau
+            logger.exception('Failed to process tx %s — will retry on next scan', tx_hash)
 
     if max_block > state.last_scanned_block:
         state.last_scanned_block = max_block
@@ -185,7 +198,7 @@ def _decode_memo(input_hex: str) -> str:
             raw = bytes.fromhex(hex_str)
             text = raw.decode('utf-8', errors='ignore').strip()
             # Strict: chỉ khớp UID- theo sau là chữ số, không chấp nhận ký tự thừa
-            m = re.match(r'^(UID-\d+)', text)
+            m = re.match(r'^(UID-\d{1,10})', text)  # giới hạn 10 chữ số tránh OverflowError
             if m:
                 return m.group(1)
     except Exception:
@@ -199,7 +212,7 @@ def _resolve_user_from_memo(memo: str):
         try:
             uid = int(memo.split('-', 1)[1])
             return CustomUser.objects.get(pk=uid)
-        except (ValueError, IndexError, CustomUser.DoesNotExist):
+        except (ValueError, IndexError, OverflowError, CustomUser.DoesNotExist):
             pass
     return None
 

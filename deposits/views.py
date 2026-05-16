@@ -1,5 +1,6 @@
 import re
 import logging
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -60,6 +61,11 @@ def submit_txhash_view(request):
         messages.error(request, 'Bạn đang gửi quá nhiều yêu cầu. Vui lòng chờ 1 phút và thử lại.')
         return redirect('deposit')
 
+    # Kiểm tra sớm trước khi gọi BscScan — tránh lãng phí API quota
+    if DepositTransaction.objects.filter(tx_hash=tx_hash).exists():
+        messages.error(request, 'Giao dịch này đã được xử lý.')
+        return redirect('deposit')
+
     # Cache kết quả verify 60s (kể cả None) để tránh gọi BscScan lặp cho cùng TxHash
     verify_key = f'dep:verify:{tx_hash}'
     tx_info = cache.get(verify_key, _VERIFY_MISS)
@@ -79,7 +85,7 @@ def submit_txhash_view(request):
                                  'Hãy chắc chắn bạn đã ghi đúng mã memo khi chuyển.')
         return redirect('deposit')
 
-    coins_to_credit = tx_info['amount_usdt'] * settings.USDT_TO_COINS_RATE
+    coins_to_credit = tx_info['amount_usdt'] * Decimal(str(settings.USDT_TO_COINS_RATE))
 
     try:
         with transaction.atomic():
