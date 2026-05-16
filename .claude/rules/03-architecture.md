@@ -24,6 +24,10 @@ static/          # CSS, JS, web3.js, lightweight-charts, hình ảnh
 /trading/                       → trading.trading_view (yêu cầu đăng nhập)
 /trading/subscribe/             → trading.subscribe_ai_trading_view (POST, JSON)
 /trading/analyze/               → trading.analyze_chart_view (POST, JSON)
+/trading/chart-data/            → trading.chart_data_view (GET, ?symbol=&interval=&since=&before=)
+/trading/tick/                  → trading.tick_view (GET, ?symbol=&interval=)
+/trading/tradingview/           → trading.tradingview_view (yêu cầu đăng nhập + email verified)
+/trading/tradingview/subscribe/ → trading.subscribe_tradingview_view (POST, JSON)
 /profile/                       → profiles.profile_view
 /profile/settings/              → profiles.settings_view
 <bất kỳ URL nào khác>           → catch-all re_path → page_not_found → templates/404.html
@@ -53,27 +57,36 @@ Kế thừa `AbstractUser`, thêm:
 ## OTP Email Flow
 
 1. Đăng ký → `user.generate_otp()` → gửi SMTP (`_send_otp_email` trả `True`/`False`) → lưu `user.pk` vào session `pending_verify_user_id`
-2. `/accounts/verify/` → `user.is_otp_valid(code)` (dùng `secrets.compare_digest()` — constant-time, tránh timing attack) → set `is_email_verified=True`, clear `otp_code` + `otp_created_at` → login
-3. Đăng nhập (`login_view`): sau `authenticate()`, nếu `is_email_verified=False` → redirect `verify_otp` (không login thẳng)
-4. Trang verify OTP có **countdown 10 phút** — disable nút submit khi hết giờ, hiện thông báo hết hạn
+2. `/accounts/verify/` → **rate-limit 5 lần thử / 15 phút** (atomic `cache.incr` key `otp:verify:{pk}`) → `user.is_otp_valid(code)` (`secrets.compare_digest()` — constant-time) → set `is_email_verified=True`, clear OTP → login
+3. Đăng nhập (`login_view`): sau `authenticate()`, nếu `is_email_verified=False` → redirect `verify_otp`
+4. `resend_otp_view`: **rate-limit 1 req / 60s** (atomic `cache.add` key `otp:resend:{user_id}`) — fails nếu key tồn tại → chặn spam SMTP
+5. Trang verify OTP có **countdown 10 phút** — disable nút submit khi hết giờ
+
+## Email Verification Middleware (`accounts/middleware.py`)
+
+Chặn mọi URL (trừ `/accounts/`, `/admin/`, `/static/`, `/media/`, `/`, `/favicon.ico`) khi user login nhưng chưa verify email:
+- **POST / AJAX** (`Accept: application/json` hoặc `X-Requested-With: XMLHttpRequest`) → `JsonResponse({'error': ...}, status=403)` — tránh mất dữ liệu form
+- **GET** → lưu `pending_verify_user_id` vào session + redirect `verify_otp`
 
 ## Điều hướng sau đăng nhập
 
-- `LOGIN_REDIRECT_URL = '/profile/'` trong `settings.py`
-- `login_view`: redirect `next` param sau login thành công — dùng `url_has_allowed_host_and_scheme()` để chặn open redirect; fallback về `profile`
+- `LOGIN_REDIRECT_URL = '/trading/'` trong `settings.py`
+- `login_view`: redirect `next` param sau login thành công — dùng `url_has_allowed_host_and_scheme()` để chặn open redirect; fallback về `trading`
 - `login()` phải truyền `backend='django.contrib.auth.backends.ModelBackend'` khi gọi trực tiếp (không qua `authenticate()`)
-- `landing`: nếu user đã đăng nhập → redirect `trading` (không hiện landing page)
+- `landing`: nếu user đã đăng nhập → redirect `trading`
 
 ## Quyền truy cập
 
-- `trading_view` (`trading/views.py`) — redirect về `login` nếu chưa đăng nhập
-- `deposit_view` — kiểm tra `is_email_verified` trước khi hiển thị trang nạp tiền
-- `login_view` — nếu chưa verify email → redirect `verify_otp`
+- `landing`, `trading_view` — `@require_GET`
+- `subscribe_*`, `analyze_chart_view` — `@require_POST`
+- `trading_view` — redirect `login` nếu chưa đăng nhập
+- `deposit_view` — kiểm tra `is_email_verified`
+- `chart_data_view`, `tick_view` — yêu cầu `is_authenticated` + `is_email_verified`
+- `tradingview_view` — yêu cầu `is_authenticated` + `is_email_verified`
 - `subscribe_ai_trading_view` — yêu cầu `is_authenticated` + `is_email_verified` + đủ `coins`
 - `analyze_chart_view` — yêu cầu `is_authenticated` + `is_email_verified` + `has_ai_trading_access`
-- Các view nội bộ dùng `@login_required`
 
-**CRITICAL — cộng/trừ coins:** luôn dùng `F('coins') ± amount` khi update, không dùng `user.coins ± amount` (race condition).
+**CRITICAL — cộng/trừ coins:** dùng `filter(pk=user.pk, coins__gte=cost).update(coins=F('coins')-cost)` — WHERE clause kiểm tra đủ tiền atomically. `updated == 0` → trả 402. Không dùng `user.coins - cost` (race condition).
 
 ## Navbar (base.html)
 

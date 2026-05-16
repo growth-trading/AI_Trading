@@ -7,10 +7,11 @@ globs:
 
 ## Tổng quan module
 
-`trading/` chứa toàn bộ tính năng AI Trading:
+`trading/` chứa toàn bộ tính năng AI Trading và TradingView:
 - Hiển thị biểu đồ nến real-time (Lightweight Charts + MT5/Binance)
-- Mua gói đăng ký (xu → thời hạn truy cập)
+- Mua gói AI Trading (xu → thời hạn phân tích Gemini)
 - Phân tích biểu đồ bằng Gemini Vision + chỉ báo kỹ thuật cục bộ
+- Mua gói TradingView (xu → nhúng chart TradingView premium qua iframe)
 
 ## Model `ChartAnalysisLog` (`trading/models.py`)
 
@@ -24,27 +25,40 @@ Lưu lịch sử mỗi lần phân tích:
 - `reasoning` (TextField) — giải thích ngắn từ Gemini
 - `created_at` (auto)
 
+## Models TradingView (`trading/models.py`)
+
+**`TradingViewProduct`**
+- `slug` (unique), `name`, `name_en` (optional), `description`, `description_en` (optional)
+- `chart_id` (TradingView chart ID từ URL), `symbol`, `interval`
+- `week_cost`, `month_cost`, `year_cost` (PositiveIntegerField)
+- `is_active` (BooleanField), `sort_order` (PositiveSmallIntegerField)
+- Ordering: `['sort_order', 'pk']`
+
+**`UserTVSubscription`**
+- FK `user` + FK `product` (unique_together)
+- `expires_at` (DateTimeField)
+- Property `is_active`: `expires_at > timezone.now()`
+
 ## Gói đăng ký AI Trading
 
-### Luồng mua gói (`trading/views.py::subscribe_ai_trading_view`)
+### Luồng mua gói (`trading/views.py::subscribe_ai_trading_view`, `subscribe_tradingview_view`)
+
+Cả hai view đều dùng pattern atomic check+update:
 
 ```
-POST /trading/subscribe/
-Body: { "plan": "week" | "month" | "year" }
+POST /trading/subscribe/ (AI) hoặc /trading/tradingview/subscribe/ (TV)
+Body: { "plan": "week" | "month" | "year" } (+ "product_slug" cho TV)
 
 1. Kiểm tra is_authenticated + is_email_verified
-2. Parse plan, lấy cost từ settings (AI_PLAN_WEEK/MONTH/YEAR_COST)
+2. Parse plan, lấy cost
 3. transaction.atomic() + select_for_update():
    a. Lấy user với row lock
-   b. Kiểm tra user.coins >= cost → nếu không: 402
-   c. Tính new_expiry:
-      - Nếu còn hạn: ai_trading_expires_at + timedelta(days)  ← cộng dồn
-      - Nếu hết hạn: timezone.now() + timedelta(days)
-   d. filter().update(coins=F('coins') - cost, ai_trading_expires_at=new_expiry)
+   b. Tính new_expiry (cộng dồn nếu còn hạn, tính từ now nếu hết hạn)
+   c. filter(pk=user.pk, coins__gte=cost).update(coins=F('coins') - cost, ...)
+      → WHERE coins >= cost đảm bảo atomic check+update trên cả SQLite lẫn PostgreSQL
+   d. Nếu updated == 0: trả 402 (không đủ xu)
 4. Trả về { success, expires_at (ISO), coins_remaining }
 ```
-
-**Lưu ý:** `select_for_update()` + `F()` đảm bảo atomic trên PostgreSQL. Trên SQLite (dev) `select_for_update` là no-op nhưng `F()` vẫn đúng.
 
 ### Chi phí gói (đơn vị: xu, cấu hình trong `.env`)
 
@@ -77,15 +91,18 @@ Validation (trả 400/429 nếu sai):
   7. candles thiếu key open/high/low/close → set candles = None
 
 Processing:
-  A. Chart image:
+  A. Chart image (bắt buộc có ảnh thật):
+     - chart_image_b64 rỗng → decr rate counter + trả 400
      - Decode base64 → validate PNG magic bytes \x89PNG\r\n\x1a\n
-     - Nếu fail: dùng _PNG_FALLBACK (1×1 transparent PNG)
-  B. Indicators:
-     - compute_indicators_local(candles) nếu candles hợp lệ
-     - Nếu candles=None hoặc len<60: trả _mock_indicators() (xem services.py)
+     - Nếu fail → decr rate counter + trả 400
+     - Không có PNG fallback/mock — nếu không có ảnh thì báo lỗi rõ ràng
+  B. Indicators: compute_indicators_local(candles) — candles=None hoặc <60 → _mock_indicators()
   C. analyze_with_gemini(image_bytes, indicators, symbol, interval, current_price)
-  D. ChartAnalysisLog.objects.create(...)
-  E. Trả về { success: true, data: { signal, confidence, entry, sl, tp, reasoning } }
+  D. Sanitize output: signal ∈ {BUY,SELL,HOLD}, confidence clamp 0–100
+     _clamp_price(v): trả Decimal (không phải float) — giữ precision cho DB
+  E. ChartAnalysisLog.objects.create(...) với Decimal values
+  F. Serialize JSON: Decimal → float chỉ khi trả response (không ảnh hưởng DB)
+  G. Trả về { success: true, data: { signal, confidence, entry, sl, tp, reasoning } }
 ```
 
 ## `trading/services.py` — không gọi API ngoài trừ Gemini
@@ -165,10 +182,14 @@ if rate_count > 5:
 
 **Tại sao dùng `incr` thay vì `get/set`**: `cache.get` + `cache.set` có race condition khi 2 request đến đồng thời cùng đọc count = 4, cả 2 đều pass, cả 2 đều set = 5 → thực tế 6 request được phép. `incr` là atomic ở cả Redis lẫn Memcache.
 
-## Dữ liệu nến (`trading/views.py::_rates_to_candles`, `_get_candles_mt5`, `_get_candles_binance`)
+## Dữ liệu nến (`trading/views.py`)
 
-- **Ưu tiên**: MT5 (nếu `MT5_ACCOUNT` được set và `MetaTrader5` import thành công)
-- **Fallback**: Binance public REST API (không cần API key)
-- **Cache**: TTL theo interval (1m=15s, 5m=45s, 1h=180s, ...) để tránh gọi MT5/Binance liên tục
-- **MT5 thread-safety**: `_mt5_lock` (threading.Lock) đảm bảo chỉ 1 thread dùng MT5 cùng lúc
-- Candles gửi về client dưới dạng `[{time, open, high, low, close}, ...]` — `time` là Unix timestamp (giây)
+**`chart_data_view` / `tick_view`**: yêu cầu `is_authenticated` + `is_email_verified` + rate-limit (30/60 req/phút)
+
+- **Ưu tiên**: MT5 (nếu `MetaTrader5` import thành công)
+- **Fallback**: Binance public REST API (không cần API key); symbol `BINANCE:*` → đi thẳng Binance
+- **MT5 thread-safety**: `_mt5_lock` (threading.Lock) đảm bảo chỉ 1 thread dùng MT5 cùng lúc; double-check sau khi acquire lock
+- **Symbol resolution**: `@lru_cache(maxsize=100)` — thử suffix `('', 'm', '.', 'pro', 'c', 'n')`, cache kết quả vào memory, tránh gọi `symbol_info` lặp
+- **Cache TTL**: 1m=15s, 5m=45s, 15m=90s, 30m=120s, 1h=180s, 2h=360s, 4h=600s, D=1800s, W=3600s
+- Historical data (`before_ts`): cache 600s
+- Candles format: `[{time, open, high, low, close}, ...]` — `time` là Unix timestamp (giây)

@@ -5,7 +5,9 @@ alwaysApply: true
 
 ## Tổng quan dự án
 
-Ứng dụng web Django hỗ trợ giao dịch bằng AI, tích hợp nạp tiền USDT qua MetaMask, xác thực email bằng OTP. Người dùng chuyển USDT đến **ví Admin cố định** — backend tự động quét ví đó qua BscScan API và cộng xu vào tài khoản, hoặc người dùng có thể tự nhập TxHash. Xu được dùng để mua gói AI Trading — hệ thống phân tích biểu đồ bằng Gemini Vision kết hợp chỉ báo kỹ thuật tính cục bộ.
+Ứng dụng web Django hỗ trợ giao dịch bằng AI, tích hợp nạp tiền USDT qua MetaMask, xác thực email bằng OTP. Người dùng chuyển USDT đến **ví Admin cố định** — backend tự động quét ví đó qua BscScan API và cộng xu vào tài khoản, hoặc người dùng có thể tự nhập TxHash. Xu dùng để mua:
+- **Gói AI Trading** — phân tích biểu đồ bằng Gemini Vision + chỉ báo kỹ thuật cục bộ
+- **Gói TradingView** — nhúng chart TradingView premium qua iframe
 
 ## Công nghệ sử dụng
 
@@ -52,6 +54,11 @@ GEMINI_API_KEY=
 AI_PLAN_WEEK_COST=20
 AI_PLAN_MONTH_COST=50
 AI_PLAN_YEAR_COST=400
+
+# Gói TradingView (đơn vị: xu — mặc định per-product, có thể override trong DB)
+TV_PLAN_WEEK_COST=10
+TV_PLAN_MONTH_COST=30
+TV_PLAN_YEAR_COST=200
 
 # Redis cache — để trống nếu dùng LocMemCache (dev single-process)
 REDIS_URL=                              # vd: redis://127.0.0.1:6379/0

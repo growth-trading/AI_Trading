@@ -73,12 +73,17 @@ Kế thừa `AbstractUser`, thêm:
 - `has_ai_trading_access` (property) — `ai_trading_expires_at > timezone.now()`
 
 ### Email Verification Middleware (`accounts/middleware.py::EmailVerifiedMiddleware`)
-Chặn **mọi URL** (trừ prefix `/accounts/`, `/admin/`, `/static/`, `/media/` và exact path `/`, `/favicon.ico`) nếu user đã login nhưng chưa verify email → redirect `verify_otp`. Gate này bổ sung cho các check cụ thể trong từng view.
+Chặn **mọi URL** (trừ prefix `/accounts/`, `/admin/`, `/static/`, `/media/` và exact path `/`, `/favicon.ico`) nếu user đã login nhưng chưa verify email:
+- **POST hoặc AJAX** (detect qua `Accept: application/json` hoặc `X-Requested-With: XMLHttpRequest`) → trả `JsonResponse({'error': '...'}, status=403)` để tránh mất dữ liệu form
+- **GET thông thường** → lưu `pending_verify_user_id` vào session + `messages.warning` + redirect `verify_otp`
+
+Gate này bổ sung cho các check cụ thể trong từng view.
 
 ### OTP Email Flow
 1. Đăng ký → `user.generate_otp()` → gửi SMTP → lưu `user.pk` vào session
-2. `/accounts/verify/` → `user.is_otp_valid(code)` (`secrets.compare_digest` — constant-time) → login
+2. `/accounts/verify/` → rate-limit 5 lần thử / 15 phút / user (atomic `cache.incr` key `otp:verify:{pk}`) → `user.is_otp_valid(code)` (`secrets.compare_digest` — constant-time) → login
 3. `login_view`: sau `authenticate()`, nếu `is_email_verified=False` → redirect `verify_otp`
+4. `resend_otp_view`: rate-limit 1 req / 60s / user (atomic `cache.add` key `otp:resend:{user_id}` — fails if exists) → chặn spam SMTP
 
 ### URL Structure
 ```
@@ -105,7 +110,11 @@ Chặn **mọi URL** (trừ prefix `/accounts/`, `/admin/`, `/static/`, `/media/
 - `DepositTransaction`: `tx_hash` (unique, lowercase normalized) — ngăn double-credit; `user` (FK nullable, SET_NULL)
 - `WalletScanState`: lưu `last_scanned_block` trong DB theo `network`
 
-**Tự động** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây: BscScan API → decode memo `UID-XXXX` → cộng coins bằng `F('coins') + amount`. Tx không decode được memo → `STATUS_PENDING`, chờ admin xử lý thủ công.
+**Tự động** — `deposits/tasks.py::scan_admin_wallet()` chạy mỗi `WALLET_SCAN_INTERVAL_SECONDS` giây:
+- BscScan API → batch-fetch existing hashes (`filter(tx_hash__in=all_hashes)`) để tránh N+1 query
+- Decode memo `UID-XXXX` (regex `^(UID-\d{1,10})` — giới hạn 10 chữ số tránh OverflowError)
+- `F('coins') + amount` — atomic. Tx không decode được memo → `STATUS_PENDING`, chờ admin thủ công
+- `max_block` chỉ advance **trong** try/except IntegrityError — tx lỗi khác không advance, sẽ retry ở scan sau
 
 **Thủ công** — `deposits/views.py::submit_txhash_view()`:
 - Rate-limit 5 req/phút/user (atomic `cache.incr`)
@@ -120,19 +129,20 @@ Chặn **mọi URL** (trừ prefix `/accounts/`, `/admin/`, `/static/`, `/media/
 
 **Model `ChartAnalysisLog`**: lưu mỗi lần phân tích — `user`, `symbol`, `interval`, `signal` (BUY/SELL/HOLD), `confidence`, `entry`, `sl`, `tp`, `reasoning`.
 
-**Mua gói** — `subscribe_ai_trading_view`: atomic `select_for_update()` → trừ coins → set `ai_trading_expires_at`. Gia hạn cộng dồn nếu còn hạn.
+**Mua gói** — `subscribe_ai_trading_view` / `subscribe_tradingview_view`: `select_for_update()` lấy row lock → tính `new_expiry` → `filter(pk=user.pk, coins__gte=cost).update(coins=F('coins')-cost, ...)` — WHERE clause đảm bảo atomic check+update trên cả SQLite lẫn PostgreSQL. Nếu `updated == 0` → 402. Gia hạn cộng dồn nếu còn hạn.
 
-**Phân tích** — `analyze_chart_view`:
+**Phân tích** — `analyze_chart_view` (`@require_POST`):
 1. Check `is_authenticated` + `is_email_verified` + `has_ai_trading_access`
 2. Rate-limit 5 req/phút/user (atomic `cache.incr`); rate counter được **hoàn trả** (`cache.decr`) nếu xử lý thất bại do lỗi hệ thống
 3. Validate: symbol regex, interval whitelist, candles ≤ 500, chart_image ≤ 2MB + PNG magic bytes
 4. `compute_indicators_local(candles)` — tính RSI/MACD/EMA20/EMA50/Supertrend bằng pandas-ta (không API)
-5. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision
-6. Lưu `ChartAnalysisLog`, trả JSON
+5. Nếu canvas capture thất bại (PNG fallback 1×1) → dùng `_mock_analysis()` thay vì Gemini, tránh lãng phí quota
+6. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision (chỉ khi có ảnh thật)
+7. Lưu `ChartAnalysisLog` với `Decimal` (precision đầy đủ); serialize JSON: `Decimal → float` chỉ khi trả response
 
-**Dữ liệu nến** — `chart_data_view` / `tick_view`:
+**Dữ liệu nến** — `chart_data_view` / `tick_view` (yêu cầu `is_email_verified`):
 - Symbol prefix `BINANCE:` → đi thẳng vào Binance API path; các symbol khác đi vào MT5 path
-- MT5 với `_mt5_lock` đảm bảo thread-safe; symbol resolution thử các suffix `('', 'm', '.', 'pro', 'c', 'n')` và cache kết quả
+- MT5 với `_mt5_lock` đảm bảo thread-safe; `_mt5_resolve_symbol` dùng `@lru_cache(maxsize=100)` — thử các suffix `('', 'm', '.', 'pro', 'c', 'n')`
 - Cache theo TTL của từng interval; historical data (`before_ts`) cache 600s
 - `chart_data_view` rate-limit 30 req/phút/user; `tick_view` rate-limit 60 req/phút/user
 
@@ -145,8 +155,8 @@ Chặn **mọi URL** (trừ prefix `/accounts/`, `/admin/`, `/static/`, `/media/
 Bán quyền truy cập vào các chart TradingView premium được nhúng qua iframe.
 
 **Models** (`trading/models.py`):
-- `TradingViewProduct` — sản phẩm chart: `slug` (unique), `name`, `chart_id` (TradingView chart ID từ URL), `symbol`, `interval`, `week_cost`/`month_cost`/`year_cost`, `is_active`, `sort_order`
-- `UserTVSubscription` — đăng ký của user: FK `user` + FK `product` (unique_together), `expires_at`
+- `TradingViewProduct` — sản phẩm chart: `slug` (unique), `name`, `name_en` (optional), `description`, `description_en` (optional), `chart_id` (TradingView chart ID từ URL), `symbol`, `interval`, `week_cost`/`month_cost`/`year_cost`, `is_active`, `sort_order`
+- `UserTVSubscription` — đăng ký của user: FK `user` + FK `product` (unique_together), `expires_at`; property `is_active`
 
 **Quản lý sản phẩm**: qua Django Admin (`trading/admin.py`). `TradingViewProductAdmin` hỗ trợ `list_editable` để chỉnh giá/trạng thái nhanh.
 
