@@ -11,6 +11,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 _DEMO_KEYS = {'your_gemini_api_key', ''}
+_GEMINI_CONFIGURED = False
 
 def _mock_levels(price: float, signal: str) -> tuple:
     """Tính entry/SL/TP tương đối theo giá thực."""
@@ -50,7 +51,7 @@ def _mock_analysis(symbol: str, current_price=None) -> dict:
     }
 
 def _strip_exchange(symbol: str) -> str:
-    return symbol.split(':')[1] if ':' in symbol else symbol
+    return symbol.split(':', 1)[1] if ':' in symbol else symbol
 
 
 def compute_indicators_local(candles: list) -> dict:
@@ -124,7 +125,10 @@ def analyze_with_gemini(image_bytes: bytes, indicators: dict, symbol: str, inter
     """Gọi Gemini 2.5 Flash Vision, trả về dict tín hiệu."""
     if settings.GEMINI_API_KEY in _DEMO_KEYS:
         return _mock_analysis(symbol, current_price=current_price)
-    genai.configure(api_key=settings.GEMINI_API_KEY)
+    global _GEMINI_CONFIGURED
+    if not _GEMINI_CONFIGURED:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        _GEMINI_CONFIGURED = True
     model = genai.GenerativeModel('gemini-2.5-flash')
 
     clean_symbol = _strip_exchange(symbol)

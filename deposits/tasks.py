@@ -57,7 +57,7 @@ def scan_admin_wallet():
     admin_wallet = settings.ADMIN_WALLET_ADDRESS.lower()
     usdt_contract = settings.USDT_CONTRACT_BSC.lower()
 
-    state, _ = WalletScanState.objects.get_or_create(
+    state, created = WalletScanState.objects.get_or_create(
         network='BSC', defaults={'last_scanned_block': 0},
     )
 
@@ -65,10 +65,17 @@ def scan_admin_wallet():
     if not latest_hex:
         return
     latest_block = int(latest_hex, 16)
+
+    # Lần đầu khởi tạo: set cursor về block hiện tại để tránh scan từ genesis
+    if created or state.last_scanned_block == 0:
+        state.last_scanned_block = latest_block
+        state.save()
+        return
+
     from_block = state.last_scanned_block + 1
     if from_block > latest_block:
         return
-    to_block = min(latest_block, from_block + 4999)  # max 5000 blocks / scan
+    to_block = min(latest_block, from_block + 1999)  # max 2000 blocks / scan (phù hợp public RPC)
 
     # Topic filter: Transfer(_, admin_wallet) trên USDT contract
     admin_topic = '0x000000000000000000000000' + admin_wallet[2:]
@@ -88,7 +95,14 @@ def scan_admin_wallet():
         DepositTransaction.objects.filter(tx_hash__in=all_hashes).values_list('tx_hash', flat=True)
     )
 
-    new_max_block = to_block  # advance đến cuối range nếu không có lỗi
+    # Sort ascending để xử lý theo thứ tự block — đảm bảo cursor nhất quán
+    logs.sort(key=lambda l: (
+        int(l.get('blockNumber', '0x0'), 16),
+        int(l.get('logIndex', '0x0'), 16),
+    ))
+
+    had_failure = False
+    fail_block = to_block  # block nơi failure xảy ra (dùng nếu had_failure=True)
 
     for log in logs:
         if log.get('removed'):
@@ -108,9 +122,10 @@ def scan_admin_wallet():
         # Fetch tx để đọc memo từ input field
         tx = _rpc('eth_getTransactionByHash', [tx_hash])
         if tx is None:
-            # RPC fail tạm thời — không advance qua block này để retry lần sau
-            new_max_block = min(new_max_block, block_number - 1)
-            continue
+            # RPC fail tạm thời — dừng và retry từ block này ở lần scan sau
+            had_failure = True
+            fail_block = block_number
+            break
         memo = _decode_memo(tx.get('input', ''))
         user = _resolve_user_from_memo(memo)
 
@@ -144,9 +159,11 @@ def scan_admin_wallet():
             logger.exception('Failed to process tx %s — will retry on next scan', tx_hash)
 
         if not success:
-            # Không advance qua block bị lỗi để retry ở lần scan sau
-            new_max_block = min(new_max_block, block_number - 1)
+            had_failure = True
+            fail_block = block_number
+            break
 
+    new_max_block = to_block if not had_failure else fail_block - 1
     if new_max_block > state.last_scanned_block:
         state.last_scanned_block = new_max_block
         state.save()

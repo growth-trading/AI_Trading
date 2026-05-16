@@ -74,7 +74,7 @@ def verify_otp_view(request):
         return redirect('login')
 
     if user.is_email_verified:
-        del request.session['pending_verify_user_id']
+        request.session.pop('pending_verify_user_id', None)
         if not request.user.is_authenticated:
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('trading')
@@ -96,7 +96,7 @@ def verify_otp_view(request):
                 user.otp_code = ''
                 user.otp_created_at = None
                 user.save(update_fields=['is_email_verified', 'otp_code', 'otp_created_at'])
-                del request.session['pending_verify_user_id']
+                request.session.pop('pending_verify_user_id', None)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.success(request, 'Xác thực email thành công! Chào mừng bạn.')
                 return redirect('trading')

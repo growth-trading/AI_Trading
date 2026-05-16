@@ -11,7 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.cache import cache
 from .models import DepositTransaction
-from .tasks import verify_txhash
+from .tasks import verify_txhash, _resolve_user_from_memo
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +78,19 @@ def submit_txhash_view(request):
         messages.error(request, 'Không tìm thấy giao dịch hoặc giao dịch không hợp lệ. '
                                  'Hãy đảm bảo bạn đã chuyển USDT đến đúng địa chỉ ví.')
         return redirect('deposit')
+
+    # Nếu tx có memo → kiểm tra memo thuộc về user hiện tại (ngăn user A claim tx MetaMask của user B)
+    # Nếu tx không có memo (gửi từ sàn) → cho phép claim bình thường
+    tx_memo = tx_info.get('memo', '')
+    if tx_memo:
+        memo_user = _resolve_user_from_memo(tx_memo)
+        if memo_user is None or memo_user.pk != request.user.pk:
+            messages.error(
+                request,
+                'Giao dịch này có memo không khớp với tài khoản của bạn. '
+                'Vui lòng sử dụng đúng mã nạp tiền (UID) khi gửi từ MetaMask.'
+            )
+            return redirect('deposit')
 
     coins_to_credit = tx_info['amount_usdt'] * Decimal(str(settings.USDT_TO_COINS_RATE))
 

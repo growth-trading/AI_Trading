@@ -246,9 +246,14 @@ def analyze_chart_view(request):
 
     symbol          = body.get('symbol', 'OANDA:XAUUSD').strip().upper()
     interval        = body.get('interval', '60').strip()
-    current_price   = body.get('current_price')
     chart_image_b64 = body.get('chart_image') or ''
     candles         = body.get('candles')
+
+    try:
+        cp = float(body.get('current_price') or 0)
+        current_price = cp if 0 < cp < 10 ** 10 else None
+    except (TypeError, ValueError):
+        current_price = None
 
     if not re.match(r'^[A-Z0-9_:.]{1,50}$', symbol):
         return JsonResponse({'error': 'Symbol không hợp lệ'}, status=400)
@@ -284,15 +289,23 @@ def analyze_chart_view(request):
         except (TypeError, ValueError, InvalidOperation):
             return None
 
+    def _decr_rate():
+        try:
+            cache.decr(rate_key)
+        except Exception:
+            pass
+
     try:
         # Validate ảnh biểu đồ — nếu không có ảnh thật thì trả lỗi, không mock
         if not chart_image_b64:
+            _decr_rate()
             return JsonResponse({'error': 'Không chụp được ảnh biểu đồ. Vui lòng thử lại.'}, status=400)
         try:
             image_bytes = base64.b64decode(chart_image_b64, validate=True)
             if not image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
                 raise ValueError('not png')
         except (ValueError, binascii.Error):
+            _decr_rate()
             return JsonResponse({'error': 'Ảnh biểu đồ không hợp lệ. Vui lòng thử lại.'}, status=400)
 
         indicators = compute_indicators_local(candles if isinstance(candles, list) else [])
@@ -350,6 +363,8 @@ _mt5_symbol_cache: dict = {}
 def _mt5_resolve_symbol(base: str) -> str:
     if base in _mt5_symbol_cache:
         return _mt5_symbol_cache[base]
+    if len(_mt5_symbol_cache) >= 200:
+        _mt5_symbol_cache.clear()
     for suffix in ('', 'm', '.', 'pro', 'c', 'n'):
         name = base + suffix
         if _mt5.symbol_info(name) is not None:
@@ -611,7 +626,10 @@ def tick_view(request):
                 url = f'https://api.binance.com/api/v3/klines?symbol={ticker}&interval={bi}&limit=1'
                 req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=5) as r:
-                    d = json.loads(r.read())[0]
+                    raw_data = json.loads(r.read())
+                if not isinstance(raw_data, list) or not raw_data:
+                    raise ValueError('Binance returned empty or invalid data')
+                d = raw_data[0]
                 candle = {
                     'time': int(d[0]) // 1000, 'open': float(d[1]),
                     'high': float(d[2]), 'low': float(d[3]), 'close': float(d[4]),

@@ -85,8 +85,15 @@ function showToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `alert-toast alert-toast-${type}`;
   const icon = type === 'success' ? 'check-circle-fill' : 'x-circle-fill';
-  toast.innerHTML = `<i class="bi bi-${icon} me-2"></i>${message}
-    <button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  const msgSpan = document.createElement('span');
+  msgSpan.textContent = message;
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'toast-close';
+  closeBtn.textContent = '×';
+  closeBtn.onclick = () => toast.remove();
+  toast.innerHTML = `<i class="bi bi-${icon} me-2"></i>`;
+  toast.appendChild(msgSpan);
+  toast.appendChild(closeBtn);
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 3500);
 }
