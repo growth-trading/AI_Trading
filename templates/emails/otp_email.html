@@ -2,32 +2,143 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Inter, Arial, sans-serif; background: #0D0D0D; color: #F1F5F9; margin: 0; padding: 20px; }
-    .container { max-width: 480px; margin: 0 auto; background: #1A1A2E; border-radius: 16px; border: 1px solid #1E293B; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #3B82F6, #6366F1); padding: 32px; text-align: center; }
-    .header h1 { margin: 0; font-size: 1.5rem; color: #fff; }
-    .body { padding: 32px; text-align: center; }
-    .otp-box { background: #0D0D0D; border: 2px solid #3B82F6; border-radius: 12px; padding: 24px; margin: 24px 0; }
-    .otp-code { font-size: 2.5rem; font-weight: 800; letter-spacing: 0.5rem; color: #3B82F6; }
-    .note { color: #94A3B8; font-size: 0.875rem; }
-    .footer { padding: 16px 32px; border-top: 1px solid #1E293B; text-align: center; color: #94A3B8; font-size: 0.75rem; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Inter, -apple-system, Arial, sans-serif; background: #0A0A0F; color: #F1F5F9; padding: 32px 16px; }
+    .wrapper { max-width: 520px; margin: 0 auto; }
+
+    .header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3B82F6 50%, #6366F1 100%);
+      border-radius: 20px 20px 0 0;
+      padding: 36px 32px 32px;
+      text-align: center;
+    }
+    .brand-name { font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+    .brand-tagline { font-size: 0.75rem; color: rgba(255,255,255,0.75); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .body { background: #12121E; border: 1px solid #1E293B; border-top: none; padding: 36px 32px; text-align: center; }
+
+    .verify-badge {
+      display: inline-block;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 0.75rem;
+      color: #93c5fd;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .body h2 { font-size: 1.4rem; font-weight: 700; color: #F1F5F9; margin-bottom: 10px; }
+    .body p { color: #94A3B8; font-size: 0.9rem; line-height: 1.6; }
+    .body p strong { color: #CBD5E1; }
+
+    .otp-wrapper {
+      background: #0D0D1A;
+      border: 2px solid #3B82F6;
+      border-top: 3px solid #60A5FA;
+      border-radius: 16px;
+      padding: 28px 24px 24px;
+      margin: 28px 0;
+      text-align: center;
+    }
+    .otp-label {
+      font-size: 0.68rem;
+      color: #64748B;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .otp-code {
+      display: block;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: 0.55rem;
+      color: #60A5FA;
+      text-align: center;
+      padding-left: 0.55rem;
+    }
+    .otp-timer {
+      display: inline-block;
+      margin-top: 16px;
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      color: #FCD34D;
+      font-weight: 500;
+    }
+
+    .divider { height: 1px; background: #1E293B; margin: 28px 0; }
+
+    .tips { text-align: left; }
+    .tip { display: table; width: 100%; padding: 8px 0; }
+    .tip-icon { display: table-cell; width: 36px; font-size: 18px; vertical-align: top; padding-top: 2px; }
+    .tip-text { display: table-cell; font-size: 0.83rem; color: #64748B; line-height: 1.55; vertical-align: top; }
+    .tip-text strong { color: #94A3B8; font-weight: 600; }
+
+    .footer {
+      background: #0D0D16;
+      border: 1px solid #1E293B;
+      border-top: none;
+      border-radius: 0 0 20px 20px;
+      padding: 20px 32px;
+      text-align: center;
+      color: #475569;
+      font-size: 0.75rem;
+      line-height: 1.7;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="wrapper">
+
+    <!-- Header -->
     <div class="header">
-      <h1>🤖 RichAITrading</h1>
+      <div class="brand-name">RichAITrading</div>
+      <div class="brand-tagline">Giao dịch thông minh với AI</div>
     </div>
+
+    <!-- Body -->
     <div class="body">
-      <h2>Mã xác thực của bạn</h2>
-      <p>Xin chào <strong>{{ user.username }}</strong>, đây là mã OTP để xác thực tài khoản:</p>
-      <div class="otp-box">
+      <div class="verify-badge">🔐 &nbsp;Xác thực tài khoản</div>
+      <h2>Mã OTP của bạn</h2>
+      <p>Xin chào <strong>{{ user.username }}</strong>,<br>
+      Dùng mã bên dưới để hoàn tất xác thực tài khoản.</p>
+
+      <!-- OTP Box -->
+      <div class="otp-wrapper">
+        <div class="otp-label">Mã xác thực một lần</div>
         <div class="otp-code">{{ otp }}</div>
+        <div class="otp-timer">⏱&nbsp; Có hiệu lực trong <strong>10 phút</strong></div>
       </div>
-      <p class="note">Mã có hiệu lực trong <strong>10 phút</strong>. Không chia sẻ mã này với bất kỳ ai.</p>
+
+      <div class="divider"></div>
+
+      <!-- Security Tips -->
+      <div class="tips">
+        <div class="tip">
+          <div class="tip-icon">🚫</div>
+          <div class="tip-text"><strong>Không chia sẻ mã này</strong> với bất kỳ ai — kể cả nhân viên hỗ trợ RichAITrading.</div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">🛡️</div>
+          <div class="tip-text">Nếu bạn <strong>không thực hiện yêu cầu này</strong>, hãy bỏ qua email và đổi mật khẩu ngay.</div>
+        </div>
+      </div>
     </div>
-    <div class="footer">© 2026 RichAITrading. Nếu bạn không đăng ký, hãy bỏ qua email này.</div>
+
+    <!-- Footer -->
+    <div class="footer">
+      © 2026 RichAITrading. All rights reserved.<br>
+      Bạn nhận email này vì có ai đó đăng ký tài khoản bằng địa chỉ này.
+    </div>
+
   </div>
 </body>
 </html>

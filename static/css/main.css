@@ -37,6 +37,7 @@ body {
 .text-success  { color: var(--success) !important; }
 .text-warning  { color: var(--warning) !important; }
 .text-danger   { color: var(--danger) !important; }
+.text-sub      { color: var(--text-sub) !important; }
 .fw-600 { font-weight: 600; }
 .fw-700 { font-weight: 700; }
 .fw-800 { font-weight: 800; }
@@ -499,6 +500,23 @@ body {
 }
 .form-control::placeholder { color: var(--border-2) !important; }
 .form-error { color: var(--danger); font-size: 0.8rem; margin-top: 4px; }
+.pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-sub);
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  z-index: 2;
+  transition: color 0.2s;
+}
+.pw-toggle:hover { color: var(--accent); }
+.form-control.pw-with-toggle { padding-right: 2.8rem !important; }
 
 /* OTP Input */
 .otp-input {
@@ -1770,6 +1788,11 @@ body {
 [data-theme="light"] .alert-toast      { background: #FFFFFF; border-color: var(--border-2); color: #0F172A; }
 [data-theme="light"] .btn-outline-light-custom { border-color: rgba(0,0,0,0.15); color: #0F172A; background: rgba(0,0,0,0.04); }
 [data-theme="light"] .btn-outline-light-custom:hover { background: rgba(0,0,0,0.08); }
+[data-theme="light"] .nav-coins { background: rgba(0,0,0,0.04); border-color: #E2E8F0; }
+[data-theme="light"] .sidebar-link:hover { background: rgba(0,0,0,0.04); }
+[data-theme="light"] .table-dark-custom tbody tr:hover { background: rgba(0,0,0,0.03); }
+[data-theme="light"] .network-badge { background: rgba(0,0,0,0.04); border-color: #E2E8F0; }
+[data-theme="light"] .info-box { background: rgba(0,0,0,0.02); border-color: #E2E8F0; }
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 991px) {

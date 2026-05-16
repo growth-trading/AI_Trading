@@ -60,15 +60,15 @@
 
       <!-- Quick links -->
       <div class="error-links animate-on-scroll">
-        <span class="text-muted small me-1" data-i18n="err404.suggest">Trang gợi ý:</span>
+        <span class="text-sub small me-1" data-i18n="err404.suggest">Trang gợi ý:</span>
         <a href="{% url 'trading' %}" class="error-link" data-i18n="nav.ai-trading">AI Trading</a>
-        <span class="text-muted">·</span>
+        <span class="text-sub">·</span>
         <a href="{% url 'deposit' %}" class="error-link" data-i18n="nav.deposit">Nạp tiền</a>
         {% if user.is_authenticated %}
-        <span class="text-muted">·</span>
+        <span class="text-sub">·</span>
         <a href="{% url 'profile' %}" class="error-link" data-i18n="nav.profile">Hồ sơ</a>
         {% else %}
-        <span class="text-muted">·</span>
+        <span class="text-sub">·</span>
         <a href="{% url 'register' %}" class="error-link" data-i18n="nav.register">Đăng ký</a>
         {% endif %}
       </div>

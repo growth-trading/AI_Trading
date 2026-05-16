@@ -14,6 +14,16 @@ class RegisterForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
+        self.fields['password1'].widget.attrs.update({'autocomplete': 'new-password', 'id': 'id_password1', 'class': 'form-control pw-with-toggle'})
+        self.fields['password2'].widget.attrs.update({'autocomplete': 'new-password', 'id': 'id_password2', 'class': 'form-control pw-with-toggle'})
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get('password1')
+        p2 = cleaned_data.get('password2')
+        if p1 and p2 and p1 != p2:
+            self.add_error('password2', 'Mật khẩu xác nhận không khớp.')
+        return cleaned_data
 
     def clean_email(self):
         email = self.cleaned_data['email'].lower()
@@ -30,6 +40,7 @@ class LoginForm(forms.Form):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
+        self.fields['password'].widget.attrs.update({'class': 'form-control pw-with-toggle', 'id': 'id_password'})
 
 
 class OTPForm(forms.Form):

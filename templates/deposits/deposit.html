@@ -130,7 +130,7 @@
             <i class="bi bi-shield-check text-success me-2"></i>
             <div>
               <strong data-i18n="dep.security.title">Bảo mật tuyệt đối</strong><br>
-              <span class="text-muted small" data-i18n="dep.security.desc">Hệ thống kiểm tra TxHash trực tiếp qua BscScan API. Mỗi TxHash chỉ được xử lý một lần.</span>
+              <span class="text-sub small" data-i18n="dep.security.desc">Hệ thống kiểm tra TxHash trực tiếp qua BscScan API. Mỗi TxHash chỉ được xử lý một lần.</span>
             </div>
           </div>
         </div>
@@ -155,14 +155,14 @@
           <tbody>
             {% for tx in recent_txs %}
             <tr>
-              <td class="font-mono text-muted">
+              <td class="font-mono text-sub">
                 {{ tx.tx_hash|slice:":14" }}...
                 <button class="btn-copy" onclick="copyText('{{ tx.tx_hash }}')"><i class="bi bi-copy"></i></button>
               </td>
               <td class="text-accent fw-600">{{ tx.amount_usdt }}</td>
               <td class="text-success fw-600">+{{ tx.coins_credited }}</td>
               <td><span class="status-badge status-{{ tx.status|lower }}">{{ tx.get_status_display }}</span></td>
-              <td class="text-muted small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
+              <td class="text-sub small">{{ tx.created_at|date:"d/m/Y H:i" }}</td>
             </tr>
             {% endfor %}
           </tbody>

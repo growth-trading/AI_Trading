@@ -5,6 +5,8 @@
 #lwChart{background:#111827;border-radius:0 0 8px 8px;}
 .chart-loading{position:absolute;top:0;left:0;width:100%;height:600px;background:rgba(17,24,39,.85);display:flex;align-items:center;justify-content:center;z-index:10;border-radius:0 0 8px 8px;}
 .chart-loading-spinner{width:40px;height:40px;border:3px solid #1E293B;border-top-color:#3B82F6;border-radius:50%;animation:spin .8s linear infinite;}
+[data-theme=light] .chart-loading{background:rgba(248,250,252,.9);}
+[data-theme=light] .chart-loading-spinner{border-color:var(--border-2);border-top-color:var(--accent);}
 @keyframes spin{to{transform:rotate(360deg);}}
 #priceCdLabel{position:absolute;right:0;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5;min-width:60px;padding:3px 6px;border-radius:2px 0 0 2px;font-size:11px;font-weight:600;line-height:1.35;color:#fff;transform:translateY(-50%);}
 #priceCdLabel::before{content:"";position:absolute;right:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;}
@@ -259,7 +261,7 @@
         <div class="chart-loading-spinner"></div>
       </div>
       <div id="priceCdLabel"><span class="pcd-price"></span><span class="pcd-cd"></span></div>
-      <div id="chartError" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(17,24,39,.9);align-items:center;justify-content:center;color:#EF4444;font-size:.9rem;border-radius:0 0 8px 8px;padding:16px;text-align:center;"></div>
+      <div id="chartError" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg-card);align-items:center;justify-content:center;color:var(--danger);font-size:.9rem;border-radius:0 0 8px 8px;padding:16px;text-align:center;"></div>
     </div>
 
     <!-- Timezone bar -->
@@ -317,7 +319,7 @@
       <div class="ai-loading-spinner"></div>
       <div>
         <div class="fw-600" data-i18n="trad.ai.loading">Đang phân tích...</div>
-        <div class="text-muted small" data-i18n="trad.ai.loading_sub">Gemini đang đọc chart và tính toán tín hiệu</div>
+        <div class="text-sub small" data-i18n="trad.ai.loading_sub">Gemini đang đọc chart và tính toán tín hiệu</div>
       </div>
     </div>
 
@@ -326,10 +328,10 @@
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-stars text-accent"></i>
           <span class="fw-700" data-i18n="trad.ai.result_title">Kết quả phân tích AI</span>
-          <span class="text-muted small" id="aiResultSymbol"></span>
+          <span class="text-sub small" id="aiResultSymbol"></span>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <span class="text-muted small" id="aiResultTime"></span>
+          <span class="text-sub small" id="aiResultTime"></span>
           <button class="ai-close-btn" id="btnCloseAi"><i class="bi bi-x-lg"></i></button>
         </div>
       </div>
@@ -430,8 +432,8 @@
           <span data-i18n="trad.sub.balance">Số dư của bạn:</span>
           <strong>{{ user.coins|floatformat:2 }}</strong>
           <span data-i18n="com.coins_unit">xu</span>
-          <span class="text-muted small ms-2">·</span>
-          <span class="text-muted small ms-1" data-i18n="trad.sub.renew_note">Gia hạn từ ngày hết hạn hiện tại</span>
+          <span class="text-sub small ms-2">·</span>
+          <span class="text-sub small ms-1" data-i18n="trad.sub.renew_note">Gia hạn từ ngày hết hạn hiện tại</span>
         </div>
       </div>
     </div>

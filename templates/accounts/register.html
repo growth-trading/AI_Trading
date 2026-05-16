@@ -42,6 +42,7 @@
               <div class="input-icon-wrap">
                 <i class="bi bi-lock input-icon"></i>
                 {{ form.password1 }}
+                <button type="button" class="pw-toggle" data-target="id_password1" tabindex="-1" aria-label="Hiện/ẩn mật khẩu"><i class="bi bi-eye"></i></button>
               </div>
               {% if form.password1.errors %}
                 <div class="form-error">{{ form.password1.errors.0 }}</div>
@@ -52,12 +53,18 @@
               <div class="input-icon-wrap">
                 <i class="bi bi-lock-fill input-icon"></i>
                 {{ form.password2 }}
+                <button type="button" class="pw-toggle" data-target="id_password2" tabindex="-1" aria-label="Hiện/ẩn mật khẩu"><i class="bi bi-eye"></i></button>
               </div>
               {% if form.password2.errors %}
                 <div class="form-error">{{ form.password2.errors.0 }}</div>
+              {% else %}
+                <div class="form-error" id="pw-match-error" style="display:none;">Mật khẩu xác nhận không khớp.</div>
               {% endif %}
+              <div id="pw-match-ok" style="display:none; color:var(--success); font-size:0.8rem; margin-top:4px;">
+                <i class="bi bi-check-circle-fill me-1"></i>Mật khẩu khớp.
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary-gradient w-100 btn-lg">
+            <button type="submit" class="btn btn-primary-gradient w-100 btn-lg" id="register-btn">
               <i class="bi bi-person-plus me-2"></i><span data-i18n="auth.btn.create">Tạo tài khoản</span>
             </button>
           </form>
@@ -72,4 +79,55 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  /* Show/hide password toggle */
+  document.querySelectorAll('.pw-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+  });
+
+  /* Password match check */
+  var pw1 = document.getElementById('id_password1');
+  var pw2 = document.getElementById('id_password2');
+  var errEl = document.getElementById('pw-match-error');
+  var okEl  = document.getElementById('pw-match-ok');
+
+  if (!pw1 || !pw2) return;
+
+  function checkMatch() {
+    if (!pw2.value) {
+      if (errEl) errEl.style.display = 'none';
+      if (okEl)  okEl.style.display  = 'none';
+      pw2.style.borderColor = '';
+      return;
+    }
+    var match = pw1.value === pw2.value;
+    if (errEl) errEl.style.display = match ? 'none' : 'block';
+    if (okEl)  okEl.style.display  = match ? 'block' : 'none';
+    pw2.style.borderColor = match ? '#10B981' : '#EF4444';
+  }
+
+  pw1.addEventListener('input', checkMatch);
+  pw2.addEventListener('input', checkMatch);
+
+  pw2.closest('form').addEventListener('submit', function (e) {
+    if (pw1.value && pw2.value && pw1.value !== pw2.value) {
+      e.preventDefault();
+      if (errEl) errEl.style.display = 'block';
+      if (okEl)  okEl.style.display  = 'none';
+      pw2.style.borderColor = '#EF4444';
+      pw2.focus();
+    }
+  });
+})();
+</script>
 {% endblock %}
