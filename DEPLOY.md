@@ -414,7 +414,56 @@ $NSSM        = "C:\tools\nssm\nssm.exe"
 
 ---
 
-## 9. Cài services tự động
+## 9. Cấu hình MetaTrader5 (nếu cần dữ liệu Forex/Vàng)
+
+> **Bỏ qua bước này nếu** bạn chỉ dùng symbol `BINANCE:*` (BTC, ETH...).
+> **Bắt buộc nếu** muốn có dữ liệu `OANDA:XAUUSD` (vàng), `OANDA:EURUSD` (EUR/USD) v.v.
+
+### Tại sao MT5 phức tạp trên VPS?
+
+MT5 là ứng dụng **desktop có giao diện (GUI)** — không phải server daemon. Cần:
+- Cài MT5 terminal và đăng nhập tài khoản **1 lần qua Remote Desktop**
+- Sau đó chạy `run_mt5_collector` như background service để pre-fetch dữ liệu vào Redis
+
+Nếu không có MT5, app vẫn chạy nhưng các symbol không phải `BINANCE:*` sẽ trả lỗi "Không có dữ liệu".
+
+### 9a. Cài MT5 trên VPS
+
+```powershell
+# Tải MT5 từ broker (ví dụ Exness)
+# Truy cập qua Remote Desktop, tải và cài MT5 như máy thường
+# Đăng nhập tài khoản MT5 (Account: 433576464, Server: Exness-MT5Trial7)
+# Để MT5 terminal chạy ở background (minimize, không close)
+```
+
+### 9b. Cài MT5 Collector service
+
+```powershell
+$PYTHON = "C:\sites\AI_Trading\venv\Scripts\python.exe"
+$NSSM   = "C:\tools\nssm\nssm.exe"
+$DIR    = "C:\sites\AI_Trading"
+
+& $NSSM stop   MT5Collector 2>$null
+& $NSSM remove MT5Collector confirm 2>$null
+
+& $NSSM install MT5Collector $PYTHON
+& $NSSM set     MT5Collector AppParameters  "manage.py run_mt5_collector"
+& $NSSM set     MT5Collector AppDirectory   $DIR
+& $NSSM set     MT5Collector DisplayName    "MT5 Data Collector"
+& $NSSM set     MT5Collector Start          SERVICE_AUTO_START
+& $NSSM set     MT5Collector AppStdout      "$DIR\logs\mt5_collector.log"
+& $NSSM set     MT5Collector AppStderr      "$DIR\logs\mt5_collector_error.log"
+& $NSSM set     MT5Collector AppRotateFiles 1
+& $NSSM set     MT5Collector AppRotateBytes 10485760
+
+& $NSSM start MT5Collector
+```
+
+Collector kết nối MT5 một lần, liên tục cache nến vào Redis — Django workers không gọi MT5 trực tiếp, tránh lock/race condition.
+
+---
+
+## 10. Cài services tự động
 
 Chạy script cài đặt (PowerShell Admin):
 
