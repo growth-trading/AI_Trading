@@ -22,7 +22,6 @@ class DepositTransaction(models.Model):
     amount_usdt = models.DecimalField(max_digits=18, decimal_places=6, default=0)
     coins_credited = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
-    memo = models.CharField(max_length=50, blank=True)
     network = models.CharField(max_length=10, default='BSC')
     created_at = models.DateTimeField(auto_now_add=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)
@@ -32,12 +31,3 @@ class DepositTransaction(models.Model):
 
     def __str__(self):
         return f"{self.tx_hash[:16]}... | {self.amount_usdt} USDT | {self.status}"
-
-
-class WalletScanState(models.Model):
-    network = models.CharField(max_length=20, unique=True)
-    last_scanned_block = models.BigIntegerField(default=0)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.network} — block {self.last_scanned_block}"

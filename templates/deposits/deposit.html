@@ -158,23 +158,6 @@
                 </button>
               </div>
             </div>
-            <div class="wallet-field mb-3">
-              <label class="wallet-field-label" data-i18n="dep.memo.label">Mã nạp tiền (Memo)</label>
-              <div class="wallet-address-box">
-                <span class="font-mono text-warning fw-600">{{ request.user.memo_code }}</span>
-                <button class="btn-copy-inline" data-copy="{{ request.user.memo_code }}">
-                  <i class="bi bi-copy"></i> <span data-i18n="dep.copy">Sao chép</span>
-                </button>
-              </div>
-              <p class="help-text mt-1" data-i18n="dep.memo.hint">Điền mã này vào trường Hex Data / Ghi chú khi gửi từ MetaMask để hệ thống tự động nhận xu.</p>
-            </div>
-            <div class="info-box info-box-warning mb-3">
-              <i class="bi bi-exclamation-triangle-fill text-warning me-2 flex-shrink-0"></i>
-              <div>
-                <strong data-i18n="dep.memo.warn.title">Lưu ý khi gửi từ MetaMask</strong><br>
-                <span class="text-sub small" data-i18n="dep.memo.warn.desc">Bắt buộc điền mã UID vào trường Hex Data khi gửi — nếu không, hệ thống sẽ không tự động nhận biết tài khoản của bạn.</span>
-              </div>
-            </div>
             <div class="rate-info">
               <i class="bi bi-arrow-left-right text-accent me-2"></i>
               <span data-i18n="dep.rate">Tỉ lệ:</span> <strong>1 USDT = {{ usdt_to_coins }} <span data-i18n="com.coins_unit">xu</span></strong>
@@ -190,8 +173,8 @@
             <div class="steps-mini flex-grow-1 mb-4">
               <div class="step-mini step-mini--warn"><span class="step-mini-num step-mini-num--warn">1</span> <span data-i18n="dep.mm.step1">Mở MetaMask, chuyển sang mạng <strong class="text-warning">BSC (BNB Smart Chain)</strong></span></div>
               <div class="step-mini"><span class="step-mini-num">2</span> <span data-i18n="dep.mm.step2">Chọn token USDT — điền địa chỉ ví Admin và số lượng</span></div>
-              <div class="step-mini"><span class="step-mini-num">3</span> <span data-i18n="dep.mm.step3">Vào Advanced → Hex Data — dán mã UID của bạn để tự động nhận xu</span></div>
-              <div class="step-mini"><span class="step-mini-num">4</span> <span data-i18n="dep.mm.step4">Xác nhận và chờ giao dịch hoàn tất (1–5 phút)</span></div>
+              <div class="step-mini"><span class="step-mini-num">3</span> <span data-i18n="dep.mm.step3">Xác nhận và chờ giao dịch hoàn tất (1–5 phút)</span></div>
+              <div class="step-mini"><span class="step-mini-num">4</span> <span data-i18n="dep.mm.step4">Vào Activity → Chi tiết giao dịch → copy TxHash</span></div>
               <div class="step-mini"><span class="step-mini-num">5</span> <span data-i18n="dep.mm.step5">Nhấn nút bên dưới để xác minh và nhận xu ngay lập tức</span></div>
             </div>
             <button class="btn btn-primary-gradient w-100 btn-lg mb-3"
@@ -199,10 +182,10 @@
               <i class="bi bi-search me-2"></i><span data-i18n="dep.verify.open">Xác minh nạp tiền</span>
             </button>
             <div class="info-box">
-              <i class="bi bi-clock text-accent me-2"></i>
+              <i class="bi bi-shield-check text-success me-2"></i>
               <div>
-                <strong data-i18n="dep.autoscan.title">Tự động cộng xu</strong><br>
-                <span class="text-sub small" data-i18n="dep.autoscan.desc">Gửi từ MetaMask kèm ghi chú UID (ví dụ: UID-0042) — hệ thống tự động cộng xu sau khoảng 1 tiếng. Gửi từ sàn giao dịch hoặc không có ghi chú UID, hãy nhập TxHash thủ công ở bên phải.</span>
+                <strong data-i18n="dep.security.title">Bảo mật tuyệt đối</strong><br>
+                <span class="text-sub small" data-i18n="dep.security.desc">Hệ thống kiểm tra TxHash trực tiếp qua BSC. Mỗi TxHash chỉ được xử lý một lần.</span>
               </div>
             </div>
           </div>

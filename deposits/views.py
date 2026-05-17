@@ -11,11 +11,11 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.cache import cache
 from .models import DepositTransaction
-from .tasks import verify_txhash, _resolve_user_from_memo
+from .tasks import verify_txhash
 
 logger = logging.getLogger(__name__)
 
-_VERIFY_MISS = object()  # sentinel phân biệt cache miss với cached None
+_VERIFY_MISS = object()
 
 
 @login_required
@@ -59,11 +59,7 @@ def submit_txhash_view(request):
         messages.error(request, 'Bạn đang gửi quá nhiều yêu cầu. Vui lòng chờ 1 phút và thử lại.')
         return redirect('deposit')
 
-    # Chỉ chặn COMPLETED — PENDING (do auto-scan) vẫn có thể được claim thủ công
-    if DepositTransaction.objects.filter(
-        tx_hash=tx_hash,
-        status=DepositTransaction.STATUS_COMPLETED,
-    ).exists():
+    if DepositTransaction.objects.filter(tx_hash=tx_hash).exists():
         messages.error(request, 'Giao dịch này đã được xử lý.')
         return redirect('deposit')
 
@@ -79,43 +75,18 @@ def submit_txhash_view(request):
                                  'Hãy đảm bảo bạn đã chuyển USDT đến đúng địa chỉ ví.')
         return redirect('deposit')
 
-    # Nếu tx có memo → kiểm tra memo thuộc về user hiện tại (ngăn user A claim tx MetaMask của user B)
-    # Nếu tx không có memo (gửi từ sàn) → cho phép claim bình thường
-    tx_memo = tx_info.get('memo', '')
-    if tx_memo:
-        memo_user = _resolve_user_from_memo(tx_memo)
-        if memo_user is None or memo_user.pk != request.user.pk:
-            messages.error(
-                request,
-                'Giao dịch này có memo không khớp với tài khoản của bạn. '
-                'Vui lòng sử dụng đúng mã nạp tiền (UID) khi gửi từ MetaMask.'
-            )
-            return redirect('deposit')
-
     coins_to_credit = tx_info['amount_usdt'] * Decimal(str(settings.USDT_TO_COINS_RATE))
 
     try:
         with transaction.atomic():
-            # Claim PENDING (do auto-scan tạo) hoặc tạo mới nếu chưa có
-            updated = DepositTransaction.objects.filter(
-                tx_hash=tx_info['tx_hash'],
-                status=DepositTransaction.STATUS_PENDING,
-            ).update(
+            DepositTransaction.objects.create(
                 user=request.user,
+                tx_hash=tx_info['tx_hash'],
                 amount_usdt=tx_info['amount_usdt'],
                 coins_credited=coins_to_credit,
                 status=DepositTransaction.STATUS_COMPLETED,
                 confirmed_at=timezone.now(),
             )
-            if not updated:
-                DepositTransaction.objects.create(
-                    user=request.user,
-                    tx_hash=tx_info['tx_hash'],
-                    amount_usdt=tx_info['amount_usdt'],
-                    coins_credited=coins_to_credit,
-                    status=DepositTransaction.STATUS_COMPLETED,
-                    confirmed_at=timezone.now(),
-                )
             request.user.__class__.objects.filter(pk=request.user.pk).update(
                 coins=F('coins') + coins_to_credit
             )
