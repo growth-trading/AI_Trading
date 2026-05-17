@@ -650,11 +650,11 @@ body {
   margin-top: 0.5rem;
 }
 .sidebar-logout:hover {
-  background: #EF4444;
-  border-color: #EF4444;
-  color: #fff;
-  opacity: 1;
+  background: #EF4444 !important;
+  border: 1px solid #EF4444 !important;
+  color: #fff !important;
   box-shadow: 0 4px 12px rgba(239,68,68,0.4);
+  transition: none;
 }
 /* Sidebar toggle button */
 .sidebar-toggle {
@@ -1875,9 +1875,10 @@ body {
 [data-theme="light"] .nav-coins { background: rgba(0,0,0,0.04); border-color: #E2E8F0; }
 [data-theme="light"] .sidebar-link:hover { background: rgba(0,0,0,0.04); }
 [data-theme="light"] .sidebar-logout:hover {
-  background: #EF4444;
-  border-color: #EF4444;
-  color: #fff;
+  background: #EF4444 !important;
+  border: 1px solid #EF4444 !important;
+  color: #fff !important;
+  transition: none;
 }
 [data-theme="light"] .table-dark-custom tbody tr:hover { background: rgba(0,0,0,0.03); }
 [data-theme="light"] .network-badge { background: rgba(0,0,0,0.04); border-color: #E2E8F0; }
