@@ -650,10 +650,11 @@ body {
   margin-top: 0.5rem;
 }
 .sidebar-logout:hover {
-  background: rgba(239,68,68,0.9);
+  background: #EF4444;
   border-color: #EF4444;
   color: #fff;
-  box-shadow: 0 0 0 2px rgba(239,68,68,0.25);
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(239,68,68,0.4);
 }
 /* Sidebar toggle button */
 .sidebar-toggle {
@@ -1873,6 +1874,11 @@ body {
 [data-theme="light"] .btn-outline-light-custom:hover { background: rgba(0,0,0,0.08); }
 [data-theme="light"] .nav-coins { background: rgba(0,0,0,0.04); border-color: #E2E8F0; }
 [data-theme="light"] .sidebar-link:hover { background: rgba(0,0,0,0.04); }
+[data-theme="light"] .sidebar-logout:hover {
+  background: #EF4444;
+  border-color: #EF4444;
+  color: #fff;
+}
 [data-theme="light"] .table-dark-custom tbody tr:hover { background: rgba(0,0,0,0.03); }
 [data-theme="light"] .network-badge { background: rgba(0,0,0,0.04); border-color: #E2E8F0; }
 [data-theme="light"] .info-box { background: rgba(0,0,0,0.02); border-color: #E2E8F0; }
