@@ -46,7 +46,8 @@ python manage.py collectstatic
 - **AI Analysis**: `google-generativeai` (Gemini 2.5 Flash Vision) — phân tích ảnh biểu đồ
 - **Chỉ báo kỹ thuật**: `pandas>=2.0` + `pandas-ta>=0.3.14b` — tính RSI/MACD/EMA/Supertrend cục bộ
 - **Dữ liệu thị trường**: MetaTrader5 (primary), fallback Binance public API; symbol có prefix `BINANCE:` đi thẳng vào Binance path
-- **Cache**: `django-redis` + Redis (self-hosted), fallback `LocMemCache`; Redis key prefix = `'ait'`
+- **Cache**: `django-redis` + Redis (**bắt buộc** — thiếu `REDIS_URL` thì raise `ImproperlyConfigured`); Redis key prefix = `'ait'`
+- **Static files**: `whitenoise` (`WhiteNoiseMiddleware` + `CompressedManifestStaticFilesStorage`) — serve static trực tiếp từ Django không cần Nginx
 
 ## Cấu trúc project
 
@@ -125,6 +126,8 @@ Gate này bổ sung cho các check cụ thể trong từng view.
 
 **CRITICAL:** Luôn dùng `F('coins') + amount` / `F('coins') - cost` khi cộng/trừ coins — tránh race condition.
 
+**Production security** (khi `DEBUG=False`): `settings.py` tự bật `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS=31536000`, `SECURE_PROXY_SSL_HEADER`. Yêu cầu HTTPS.
+
 ### Module AI Trading (`trading/`)
 
 **Model `ChartAnalysisLog`**: lưu mỗi lần phân tích — `user`, `symbol`, `interval`, `signal` (BUY/SELL/HOLD), `confidence`, `entry`, `sl`, `tp`, `reasoning`.
@@ -133,22 +136,22 @@ Gate này bổ sung cho các check cụ thể trong từng view.
 
 **Phân tích** — `analyze_chart_view` (`@require_POST`):
 1. Check `is_authenticated` + `is_email_verified` + `has_ai_trading_access`
-2. Rate-limit 5 req/phút/user (atomic `cache.incr`); rate counter được **hoàn trả** (`cache.decr`) nếu xử lý thất bại do lỗi hệ thống
-3. Validate: symbol regex, interval whitelist, candles ≤ 500, chart_image ≤ 2MB + PNG magic bytes
-4. `compute_indicators_local(candles)` — tính RSI/MACD/EMA20/EMA50/Supertrend bằng pandas-ta (không API); thiếu nến / lỗi → trả `{}` thay vì số giả, Gemini nhận "(Không có dữ liệu indicator)"
-5. Không có PNG fallback hay mock — ảnh thiếu/không hợp lệ → trả 400 + hoàn rate slot
-6. `analyze_with_gemini(image_bytes, indicators, ...)` — Gemini 2.5 Flash Vision; safety filter / non-JSON → `raise RuntimeError` (view bắt → 500 + hoàn rate slot)
-7. Lưu `ChartAnalysisLog` với `Decimal` (precision đầy đủ); serialize JSON: `Decimal → float` chỉ khi trả response
+2. Validate image (trước rate-limit — tránh tiêu slot cho lỗi client): PNG base64 ≤ 2MB, magic bytes `\x89PNG`
+3. PIL compress: resize về 640px wide → JPEG 80% → giảm token Gemini; nếu PIL fail thì giữ PNG gốc
+4. Rate-limit: `cache.add(key, 1, 60)` → nếu exists thì `cache.incr(key)`; counter được **hoàn trả** (`cache.decr`) nếu xử lý thất bại do lỗi hệ thống
+5. `compute_indicators_local(candles)` — tính RSI/MACD/EMA20/EMA50/Supertrend bằng pandas-ta; thiếu nến / lỗi → `{}`, Gemini nhận "(Không có dữ liệu indicator)"
+6. `analyze_with_gemini(image_bytes, indicators, ..., lang='vi'|'en', image_mime)` — Gemini 2.5 Flash; `lang` param điều khiển ngôn ngữ reasoning; `ResourceExhausted`/quota → 429; non-JSON → 500 + hoàn rate slot
+7. Lưu `ChartAnalysisLog` với `Decimal`; serialize JSON: `Decimal → float` chỉ khi trả response
 
 **Dữ liệu nến** — `chart_data_view` / `tick_view` (yêu cầu `is_email_verified`):
 - Symbol prefix `BINANCE:` → đi thẳng vào Binance API path; các symbol khác đi vào MT5 path
-- MT5 với `_mt5_lock` đảm bảo thread-safe; `_mt5_resolve_symbol` dùng `@lru_cache(maxsize=100)` — thử các suffix `('', 'm', '.', 'pro', 'c', 'n')`
+- MT5 với `_mt5_lock` đảm bảo thread-safe; `_mt5_resolve_symbol` dùng plain dict cache (clear khi > 200 entries) — thử các suffix `('', 'm', '.', 'pro', 'c', 'n')`
 - Cache theo TTL của từng interval; historical data (`before_ts`) cache 600s
 - `chart_data_view` rate-limit 30 req/phút/user; `tick_view` rate-limit 60 req/phút/user
 
 **MT5 Collector** — `trading/management/commands/run_mt5_collector.py`: process độc lập kết nối MT5 một lần, liên tục làm mới cache. Dùng trong production thay vì để Django worker gọi MT5 trực tiếp.
 
-**`trading/services.py`**: chỉ import `pandas`, `pandas_ta`, `google.generativeai` — **không** dùng `requests`. Demo mode: nếu `GEMINI_API_KEY` rỗng hoặc là `'your_gemini_api_key'` → `_mock_analysis()` với `[DEMO]` label.
+**`trading/services.py`**: chỉ import `pandas`, `pandas_ta`, `google.generativeai` — **không** dùng `requests`. Không có demo/mock mode — nếu `GEMINI_API_KEY` thiếu hoặc sai, API call sẽ thất bại với lỗi xác thực.
 
 ### Module TradingView (`trading/`)
 
@@ -196,7 +199,7 @@ TV_PLAN_WEEK_COST=10
 TV_PLAN_MONTH_COST=30
 TV_PLAN_YEAR_COST=200
 
-REDIS_URL=                       # vd: redis://127.0.0.1:6379/0 (để trống → dùng LocMemCache)
+REDIS_URL=redis://127.0.0.1:6379/0  # BẮT BUỘC — để trống → ImproperlyConfigured khi khởi động
 ```
 
 ## Theme & i18n System
