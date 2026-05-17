@@ -23,7 +23,12 @@
       <a href="{% url 'deposit' %}" class="sidebar-link active"><i class="bi bi-wallet2"></i><span data-i18n="nav.deposit">Nạp tiền</span></a>
       <a href="{% url 'settings' %}" class="sidebar-link"><i class="bi bi-gear"></i><span data-i18n="nav.settings">Cài đặt</span></a>
     </nav>
-    <a href="{% url 'logout' %}" class="sidebar-logout"><i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span></a>
+    <form method="post" action="{% url 'logout' %}" style="margin:0">
+      {% csrf_token %}
+      <button type="submit" class="sidebar-logout" style="background:none;border:none;width:100%;text-align:left;cursor:pointer">
+        <i class="bi bi-box-arrow-right"></i><span data-i18n="nav.logout">Đăng xuất</span>
+      </button>
+    </form>
   </aside>
 
   <main class="dashboard-main">

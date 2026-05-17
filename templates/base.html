@@ -64,7 +64,14 @@
               <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i><span data-i18n="nav.profile">Hồ sơ</span></a></li>
               <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="bi bi-gear me-2"></i><span data-i18n="nav.settings">Cài đặt</span></a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i><span data-i18n="nav.logout">Đăng xuất</span></a></li>
+              <li>
+                <form method="post" action="{% url 'logout' %}" style="margin:0">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item text-danger" style="background:none;border:none;width:100%;text-align:left;padding:.25rem 1rem;cursor:pointer">
+                    <i class="bi bi-box-arrow-right me-2"></i><span data-i18n="nav.logout">Đăng xuất</span>
+                  </button>
+                </form>
+              </li>
             </ul>
           </div>
         {% else %}

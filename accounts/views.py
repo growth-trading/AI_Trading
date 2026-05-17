@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from django.conf import settings
 from .models import CustomUser
 from .forms import RegisterForm, LoginForm, OTPForm
@@ -59,6 +60,7 @@ def login_view(request):
     return render(request, 'accounts/login.html', {'form': form})
 
 
+@require_POST
 def logout_view(request):
     logout(request)
     return redirect('landing')
@@ -89,7 +91,9 @@ def verify_otp_view(request):
             cache.add(otp_rate_key, 0, 900)
             otp_attempts = cache.incr(otp_rate_key)
         if otp_attempts > 5:
-            messages.error(request, 'Quá nhiều lần thử sai. Vui lòng yêu cầu mã mới sau 15 phút.')
+            user.otp_code = ''
+            user.save(update_fields=['otp_code'])
+            messages.error(request, 'Quá nhiều lần thử sai. Vui lòng yêu cầu mã mới.')
         elif form.is_valid():
             if user.is_otp_valid(form.cleaned_data['otp']):
                 user.is_email_verified = True
