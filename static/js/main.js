@@ -61,17 +61,24 @@ if (statItems.length) {
 function copyText(text) {
   const lang = document.documentElement.getAttribute('data-lang') || 'vi';
   const msg = (i18n[lang] || i18n.vi)['copied'] || 'Copied!';
-  navigator.clipboard.writeText(text).then(() => {
-    showToast(msg, 'success');
-  }).catch(() => {
+  function fallback() {
     const ta = document.createElement('textarea');
     ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    ta.style.left = '-9999px';
     document.body.appendChild(ta);
+    ta.focus();
     ta.select();
-    document.execCommand('copy');
+    try { document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
     showToast(msg, 'success');
-  });
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => showToast(msg, 'success')).catch(fallback);
+  } else {
+    fallback();
+  }
 }
 
 // Toast notification
