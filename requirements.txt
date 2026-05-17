@@ -25,7 +25,7 @@ metatrader5==5.0.5735
 numba==0.61.2
 numpy==2.2.6
 pandas==3.0.3
-pandas-ta==0.4.71b0
+ta==0.11.0
 pillow==10.4.0
 proto-plus==1.28.0
 protobuf==5.29.6

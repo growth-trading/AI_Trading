@@ -4,7 +4,7 @@ import base64
 import logging
 from decimal import Decimal, InvalidOperation
 import pandas as pd
-import pandas_ta  # noqa: F401  # registers df.ta accessor on pandas DataFrame
+import ta as ta_lib
 import google.generativeai as genai
 from django.conf import settings
 
@@ -17,6 +17,30 @@ def _strip_exchange(symbol: str) -> str:
     return symbol.split(':', 1)[1] if ':' in symbol else symbol
 
 
+def _supertrend(df: pd.DataFrame, length: int = 10, multiplier: float = 3.0):
+    high, low, close = df['high'], df['low'], df['close']
+    prev_close = close.shift(1)
+    tr = pd.concat([high - low, (high - prev_close).abs(), (low - prev_close).abs()], axis=1).max(axis=1)
+    atr = tr.ewm(alpha=1 / length, min_periods=length, adjust=False).mean()
+    hl2 = (high + low) / 2
+    upper = (hl2 + multiplier * atr).values.copy()
+    lower = (hl2 - multiplier * atr).values.copy()
+    close_vals = close.values
+    n = len(df)
+    supert = [float('nan')] * n
+    direction = [float('nan')] * n
+    for i in range(1, n):
+        upper[i] = upper[i] if (upper[i] < upper[i - 1] or close_vals[i - 1] > upper[i - 1]) else upper[i - 1]
+        lower[i] = lower[i] if (lower[i] > lower[i - 1] or close_vals[i - 1] < lower[i - 1]) else lower[i - 1]
+        prev = supert[i - 1]
+        is_nan = prev != prev
+        if is_nan or prev == upper[i - 1]:
+            supert[i], direction[i] = (lower[i], 1) if close_vals[i] > upper[i] else (upper[i], -1)
+        else:
+            supert[i], direction[i] = (upper[i], -1) if close_vals[i] < lower[i] else (lower[i], 1)
+    return pd.Series(supert, index=df.index), pd.Series(direction, index=df.index)
+
+
 def compute_indicators_local(candles: list) -> dict:
     """Tính RSI/MACD/EMA/Supertrend từ OHLCV cục bộ — không gọi API ngoài."""
     if len(candles) < 60:
@@ -25,54 +49,39 @@ def compute_indicators_local(candles: list) -> dict:
 
     try:
         df = pd.DataFrame(candles)[['open', 'high', 'low', 'close']].astype(float)
-
-        df.ta.rsi(length=14, append=True)
-        df.ta.macd(fast=12, slow=26, signal=9, append=True)
-        df.ta.ema(length=20, append=True)
-        df.ta.ema(length=50, append=True)
-        df.ta.supertrend(length=10, multiplier=3.0, append=True)
-
-        last = df.iloc[-1]
-
-        def _v(col):
-            val = last.get(col)
-            return float(val) if val is not None and pd.notna(val) else None
-
         result = {}
 
-        rsi = _v('RSI_14')
-        if rsi is not None:
-            result['rsi'] = {'value': rsi}
+        rsi_val = ta_lib.momentum.RSIIndicator(df['close'], window=14).rsi().iloc[-1]
+        if pd.notna(rsi_val):
+            result['rsi'] = {'value': float(rsi_val)}
 
-        macd = _v('MACD_12_26_9')
-        if macd is not None:
+        macd_obj = ta_lib.trend.MACD(df['close'], window_fast=12, window_slow=26, window_sign=9)
+        macd_val = macd_obj.macd().iloc[-1]
+        if pd.notna(macd_val):
             result['macd'] = {
-                'valueMACD':       macd,
-                'valueMACDSignal': _v('MACDs_12_26_9'),
-                'valueMACDHist':   _v('MACDh_12_26_9'),
+                'valueMACD':       float(macd_val),
+                'valueMACDSignal': float(macd_obj.macd_signal().iloc[-1]),
+                'valueMACDHist':   float(macd_obj.macd_diff().iloc[-1]),
             }
 
-        ema20 = _v('EMA_20')
-        if ema20 is not None:
-            result['ema20'] = {'value': ema20}
+        ema20_val = ta_lib.trend.EMAIndicator(df['close'], window=20).ema_indicator().iloc[-1]
+        if pd.notna(ema20_val):
+            result['ema20'] = {'value': float(ema20_val)}
 
-        ema50 = _v('EMA_50')
-        if ema50 is not None:
-            result['ema50'] = {'value': ema50}
+        ema50_val = ta_lib.trend.EMAIndicator(df['close'], window=50).ema_indicator().iloc[-1]
+        if pd.notna(ema50_val):
+            result['ema50'] = {'value': float(ema50_val)}
 
-        st_cols     = [c for c in df.columns if re.match(r'^SUPERT_\d', c)]
-        st_dir_cols = [c for c in df.columns if re.match(r'^SUPERTd_\d', c)]
-        if st_cols and st_dir_cols:
-            st_val = _v(st_cols[0])
-            st_dir = _v(st_dir_cols[0])
-            if st_val is not None:
-                result['supertrend'] = {
-                    'value':       st_val,
-                    'valueAdvice': 'long' if (st_dir or 0) > 0 else 'short',
-                }
+        st_val, st_dir = _supertrend(df, length=10, multiplier=3.0)
+        last_st, last_dir = st_val.iloc[-1], st_dir.iloc[-1]
+        if pd.notna(last_st):
+            result['supertrend'] = {
+                'value':       float(last_st),
+                'valueAdvice': 'long' if (last_dir or 0) > 0 else 'short',
+            }
 
         if not result:
-            logger.error('compute_indicators_local: tất cả indicator đều None — có thể lỗi pandas_ta. Columns: %s', list(df.columns))
+            logger.error('compute_indicators_local: tất cả indicator đều None')
             return {}
         return result
 
