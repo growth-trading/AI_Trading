@@ -117,6 +117,8 @@ document.querySelectorAll('.alert-toast').forEach(el => {
 const i18n = {
   vi: {
     /* navbar */
+    'nav.home':        'Trang chủ',
+    'hero.cta.deposit': 'Nạp tiền ngay',
     'nav.ai-trading':  'AI Trading',
     'nav.deposit':     'Nạp tiền',
     'nav.coins':       'xu',
@@ -375,6 +377,8 @@ const i18n = {
   },
   en: {
     /* navbar */
+    'nav.home':        'Home',
+    'hero.cta.deposit': 'Deposit Now',
     'nav.ai-trading':  'AI Trading',
     'nav.deposit':     'Deposit',
     'nav.coins':       'coins',

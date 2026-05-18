@@ -46,8 +46,6 @@ from .services import compute_indicators_local, analyze_with_gemini
 
 @require_GET
 def landing(request):
-    if request.user.is_authenticated:
-        return redirect('trading')
     return render(request, 'landing/index.html')
 
 

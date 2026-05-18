@@ -21,6 +21,7 @@
           Thuật toán AI tiên tiến phân tích thị trường 24/7. Backtest chiến lược tự động.
           Nạp USDT — kích hoạt bot — hưởng lợi nhuận ổn định.
         </p>
+        {% if not user.is_authenticated %}
         <div class="hero-actions animate-fadeInUp delay-3">
           <a href="{% url 'register' %}" class="btn btn-primary-gradient btn-lg">
             <i class="bi bi-rocket-takeoff me-2"></i><span data-i18n="hero.cta1">Bắt đầu miễn phí</span>
@@ -29,6 +30,7 @@
             <i class="bi bi-play-circle me-2"></i><span data-i18n="hero.cta2">Xem Demo</span>
           </a>
         </div>
+        {% endif %}
       </div>
     </div>
 

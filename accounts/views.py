@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('trading')
+        return redirect('landing')
     form = RegisterForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         try:
@@ -38,7 +38,7 @@ def register_view(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('trading')
+        return redirect('landing')
     form = LoginForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = authenticate(
@@ -55,7 +55,7 @@ def login_view(request):
             next_url = request.POST.get('next') or request.GET.get('next', '')
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
                 return redirect(next_url)
-            return redirect('trading')
+            return redirect('landing')
         messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
     return render(request, 'accounts/login.html', {'form': form})
 
@@ -79,7 +79,7 @@ def verify_otp_view(request):
         request.session.pop('pending_verify_user_id', None)
         if not request.user.is_authenticated:
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        return redirect('trading')
+        return redirect('landing')
 
     form = OTPForm(request.POST or None)
     if request.method == 'POST':
@@ -103,7 +103,7 @@ def verify_otp_view(request):
                 request.session.pop('pending_verify_user_id', None)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.success(request, 'Xác thực email thành công! Chào mừng bạn.')
-                return redirect('trading')
+                return redirect('landing')
             else:
                 messages.error(request, 'Mã OTP không đúng hoặc đã hết hạn.')
 
