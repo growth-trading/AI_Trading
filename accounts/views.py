@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 from .models import CustomUser
 from .forms import RegisterForm, LoginForm, OTPForm
+from .middleware import _get_client_ip, _incr_with_ttl
 
 logger = logging.getLogger(__name__)
 
@@ -44,27 +45,41 @@ def register_view(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
+_LOGIN_FAIL_MAX = 5    # lần thất bại
+_LOGIN_FAIL_WIN = 900  # 15 phút
+
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('landing')
     form = LoginForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        user = authenticate(
-            request,
-            username=form.cleaned_data['username'],
-            password=form.cleaned_data['password'],
-        )
-        if user:
-            if not user.is_email_verified:
-                request.session['pending_verify_user_id'] = user.pk
-                messages.warning(request, 'Vui lòng xác thực email trước khi đăng nhập.')
-                return redirect('verify_otp')
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            next_url = request.POST.get('next') or request.GET.get('next', '')
-            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
-                return redirect(next_url)
-            return redirect('landing')
-        messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
+    if request.method == 'POST':
+        ip = _get_client_ip(request)
+        fail_key = f'login:fail:{ip}'
+        fail_count = cache.get(fail_key, 0)
+        if fail_count >= _LOGIN_FAIL_MAX:
+            messages.error(request, 'Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 15 phút.')
+            return render(request, 'accounts/login.html', {'form': form})
+
+        if form.is_valid():
+            user = authenticate(
+                request,
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password'],
+            )
+            if user:
+                cache.delete(fail_key)
+                if not user.is_email_verified:
+                    request.session['pending_verify_user_id'] = user.pk
+                    messages.warning(request, 'Vui lòng xác thực email trước khi đăng nhập.')
+                    return redirect('verify_otp')
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                next_url = request.POST.get('next') or request.GET.get('next', '')
+                if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                    return redirect(next_url)
+                return redirect('landing')
+            _incr_with_ttl(fail_key, _LOGIN_FAIL_WIN)
+            messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
     return render(request, 'accounts/login.html', {'form': form})
 
 
