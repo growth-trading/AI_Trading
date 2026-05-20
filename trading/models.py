@@ -10,8 +10,7 @@ class TradingViewProduct(models.Model):
     description = models.TextField(blank=True)
     description_en = models.TextField(blank=True, help_text='English description (optional)')
     chart_id = models.CharField(max_length=50, help_text='TradingView chart ID from URL')
-    symbol = models.CharField(max_length=50, default='OANDA:XAUUSD')
-    interval = models.CharField(max_length=10, default='60')
+
     features = models.TextField(
         blank=True,
         help_text='Mỗi dòng = 1 tính năng (Tiếng Việt). Ví dụ:\nChart real-time chuyên gia\nMACD · RSI · EMA · Supertrend',

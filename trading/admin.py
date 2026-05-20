@@ -4,11 +4,11 @@ from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog
 
 @admin.register(TradingViewProduct)
 class TradingViewProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'chart_id', 'symbol', 'interval', 'week_cost', 'month_cost', 'year_cost', 'is_active', 'sort_order')
-    list_editable = ('chart_id', 'symbol', 'interval', 'week_cost', 'month_cost', 'year_cost', 'is_active', 'sort_order')
+    list_display = ('name', 'slug', 'chart_id', 'week_cost', 'month_cost', 'year_cost', 'is_active', 'sort_order')
+    list_editable = ('chart_id', 'week_cost', 'month_cost', 'year_cost', 'is_active', 'sort_order')
     prepopulated_fields = {'slug': ('name',)}
     fieldsets = (
-        (None, {'fields': ('slug', 'chart_id', 'symbol', 'interval', 'is_active', 'sort_order', 'week_cost', 'month_cost', 'year_cost')}),
+        (None, {'fields': ('slug', 'chart_id', 'is_active', 'sort_order', 'week_cost', 'month_cost', 'year_cost')}),
         ('Tiếng Việt', {'fields': ('name', 'description', 'features')}),
         ('English', {'fields': ('name_en', 'description_en', 'features_en'), 'classes': ('collapse',)}),
     )
