@@ -1,6 +1,79 @@
 {% extends 'base.html' %}
 {% block title %}Đăng ký — RichAITrading{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+<style>
+  .country-picker { position: relative; }
+  .country-trigger {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card-2) !important;
+    border: 1px solid var(--border-2) !important;
+    color: var(--text-main) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.65rem 1rem 0.65rem 2.6rem !important;
+    font-size: 0.9rem !important;
+    cursor: pointer; user-select: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-height: 44px;
+  }
+  .country-trigger:hover, .country-trigger.open {
+    border-color: var(--accent) !important;
+  }
+  .country-trigger.open {
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
+  }
+  .country-trigger .ct-name { flex: 1; }
+  .country-trigger .ct-chevron { color: var(--text-sub); transition: transform 0.2s; }
+  .country-trigger.open .ct-chevron { transform: rotate(180deg); }
+  .country-trigger .fi { border-radius: 2px; width: 20px; height: 15px; object-fit: cover; flex-shrink: 0; }
+
+  .country-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    display: none;
+  }
+  .country-dropdown.open { display: block; }
+
+  .country-search-wrap {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .country-search-wrap i { color: var(--text-sub); font-size: 0.85rem; }
+  .country-search-wrap input {
+    background: transparent; border: none; outline: none;
+    color: var(--text-main); font-size: 0.85rem; flex: 1; padding: 2px 0;
+  }
+  .country-search-wrap input::placeholder { color: var(--text-sub); }
+
+  .country-list { max-height: 220px; overflow-y: auto; padding: 4px 0; }
+  .country-list::-webkit-scrollbar { width: 4px; }
+  .country-list::-webkit-scrollbar-track { background: transparent; }
+  .country-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .country-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 14px; cursor: pointer; font-size: 0.875rem;
+    color: var(--text-main); transition: background 0.12s;
+  }
+  .country-option:hover { background: var(--bg-card-2); }
+  .country-option.active { background: rgba(59,130,246,0.12); color: var(--accent); }
+  .country-option .fi { border-radius: 2px; width: 20px; height: 15px; object-fit: cover; flex-shrink: 0; }
+  .country-no-result { padding: 12px 14px; font-size: 0.85rem; color: var(--text-sub); }
+
+  [data-theme="light"] .country-trigger { background: #F8FAFC !important; color: #0F172A !important; border-color: #CBD5E1 !important; }
+  [data-theme="light"] .country-dropdown { background: #FFFFFF; border-color: var(--accent); }
+  [data-theme="light"] .country-option:hover { background: #F1F5F9; }
+  [data-theme="light"] .country-search-wrap { border-color: #E2E8F0; }
+  [data-theme="light"] .country-search-wrap input { color: #0F172A; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="auth-page">
   <div class="auth-bg-blur"></div>
@@ -48,7 +121,7 @@
                 <div class="form-error">{{ form.password1.errors.0 }}</div>
               {% endif %}
             </div>
-            <div class="mb-4">
+            <div class="mb-3">
               <label class="form-label-dark" data-i18n="auth.label.confirm_pw">Xác nhận mật khẩu</label>
               <div class="input-icon-wrap">
                 <i class="bi bi-lock-fill input-icon"></i>
@@ -64,6 +137,33 @@
                 <i class="bi bi-check-circle-fill me-1"></i>Mật khẩu khớp.
               </div>
             </div>
+
+            <!-- Country picker -->
+            <div class="mb-4">
+              <label class="form-label-dark" data-i18n="auth.label.country">Quốc gia</label>
+              {{ form.country }}
+              <div class="country-picker" id="countryPicker">
+                <div class="input-icon-wrap">
+                  <i class="bi bi-globe input-icon" id="ctGlobeIcon"></i>
+                  <div class="country-trigger" id="countryTrigger" role="button" tabindex="0">
+                    <span class="fi" id="ctFlag" style="display:none"></span>
+                    <span class="ct-name" id="ctName" style="color:var(--text-sub)">Chọn quốc gia</span>
+                    <i class="bi bi-chevron-down ct-chevron"></i>
+                  </div>
+                </div>
+                <div class="country-dropdown" id="countryDropdown">
+                  <div class="country-search-wrap">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="countrySearch" placeholder="Tìm quốc gia..." autocomplete="off">
+                  </div>
+                  <div class="country-list" id="countryList"></div>
+                </div>
+              </div>
+              {% if form.country.errors %}
+                <div class="form-error">{{ form.country.errors.0 }}</div>
+              {% endif %}
+            </div>
+
             <button type="submit" class="btn btn-primary-gradient w-100 btn-lg" id="register-btn">
               <i class="bi bi-person-plus me-2"></i><span data-i18n="auth.btn.create">Tạo tài khoản</span>
             </button>
@@ -84,7 +184,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  /* Show/hide password toggle */
+  /* ── Password toggle ── */
   document.querySelectorAll('.pw-toggle').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var input = document.getElementById(btn.dataset.target);
@@ -95,38 +195,151 @@
     });
   });
 
-  /* Password match check */
+  /* ── Password match ── */
   var pw1 = document.getElementById('id_password1');
   var pw2 = document.getElementById('id_password2');
   var errEl = document.getElementById('pw-match-error');
   var okEl  = document.getElementById('pw-match-ok');
 
-  if (!pw1 || !pw2) return;
-
-  function checkMatch() {
-    if (!pw2.value) {
-      if (errEl) errEl.style.display = 'none';
-      if (okEl)  okEl.style.display  = 'none';
-      pw2.style.borderColor = '';
-      return;
+  if (pw1 && pw2) {
+    function checkMatch() {
+      if (!pw2.value) {
+        if (errEl) errEl.style.display = 'none';
+        if (okEl)  okEl.style.display  = 'none';
+        pw2.style.borderColor = '';
+        return;
+      }
+      var match = pw1.value === pw2.value;
+      if (errEl) errEl.style.display = match ? 'none' : 'block';
+      if (okEl)  okEl.style.display  = match ? 'block' : 'none';
+      pw2.style.borderColor = match ? '#10B981' : '#EF4444';
     }
-    var match = pw1.value === pw2.value;
-    if (errEl) errEl.style.display = match ? 'none' : 'block';
-    if (okEl)  okEl.style.display  = match ? 'block' : 'none';
-    pw2.style.borderColor = match ? '#10B981' : '#EF4444';
+    pw1.addEventListener('input', checkMatch);
+    pw2.addEventListener('input', checkMatch);
+    pw2.closest('form').addEventListener('submit', function (e) {
+      if (pw1.value && pw2.value && pw1.value !== pw2.value) {
+        e.preventDefault();
+        if (errEl) errEl.style.display = 'block';
+        if (okEl)  okEl.style.display  = 'none';
+        pw2.style.borderColor = '#EF4444';
+        pw2.focus();
+      }
+    });
   }
 
-  pw1.addEventListener('input', checkMatch);
-  pw2.addEventListener('input', checkMatch);
+  /* ── Country picker ── */
+  var COUNTRIES = [
+    {code:'af',name:'Afghanistan'},{code:'al',name:'Albania'},{code:'dz',name:'Algeria'},
+    {code:'ar',name:'Argentina'},{code:'au',name:'Australia'},{code:'at',name:'Austria'},
+    {code:'az',name:'Azerbaijan'},{code:'bh',name:'Bahrain'},{code:'bd',name:'Bangladesh'},
+    {code:'by',name:'Belarus'},{code:'be',name:'Belgium'},{code:'bo',name:'Bolivia'},
+    {code:'ba',name:'Bosnia and Herzegovina'},{code:'br',name:'Brazil'},
+    {code:'bn',name:'Brunei'},{code:'bg',name:'Bulgaria'},{code:'kh',name:'Cambodia'},
+    {code:'ca',name:'Canada'},{code:'cl',name:'Chile'},{code:'cn',name:'China'},
+    {code:'co',name:'Colombia'},{code:'hr',name:'Croatia'},{code:'cu',name:'Cuba'},
+    {code:'cy',name:'Cyprus'},{code:'cz',name:'Czech Republic'},{code:'dk',name:'Denmark'},
+    {code:'ec',name:'Ecuador'},{code:'eg',name:'Egypt'},{code:'ee',name:'Estonia'},
+    {code:'et',name:'Ethiopia'},{code:'fi',name:'Finland'},{code:'fr',name:'France'},
+    {code:'ge',name:'Georgia'},{code:'de',name:'Germany'},{code:'gh',name:'Ghana'},
+    {code:'gr',name:'Greece'},{code:'gt',name:'Guatemala'},{code:'hk',name:'Hong Kong'},
+    {code:'hu',name:'Hungary'},{code:'in',name:'India'},{code:'id',name:'Indonesia'},
+    {code:'ir',name:'Iran'},{code:'iq',name:'Iraq'},{code:'ie',name:'Ireland'},
+    {code:'il',name:'Israel'},{code:'it',name:'Italy'},{code:'jp',name:'Japan'},
+    {code:'jo',name:'Jordan'},{code:'kz',name:'Kazakhstan'},{code:'ke',name:'Kenya'},
+    {code:'kw',name:'Kuwait'},{code:'kg',name:'Kyrgyzstan'},{code:'la',name:'Laos'},
+    {code:'lv',name:'Latvia'},{code:'lb',name:'Lebanon'},{code:'ly',name:'Libya'},
+    {code:'lt',name:'Lithuania'},{code:'lu',name:'Luxembourg'},{code:'mo',name:'Macau'},
+    {code:'my',name:'Malaysia'},{code:'mx',name:'Mexico'},{code:'md',name:'Moldova'},
+    {code:'mn',name:'Mongolia'},{code:'ma',name:'Morocco'},{code:'mm',name:'Myanmar'},
+    {code:'np',name:'Nepal'},{code:'nl',name:'Netherlands'},{code:'nz',name:'New Zealand'},
+    {code:'ng',name:'Nigeria'},{code:'no',name:'Norway'},{code:'om',name:'Oman'},
+    {code:'pk',name:'Pakistan'},{code:'ps',name:'Palestine'},{code:'pa',name:'Panama'},
+    {code:'py',name:'Paraguay'},{code:'pe',name:'Peru'},{code:'ph',name:'Philippines'},
+    {code:'pl',name:'Poland'},{code:'pt',name:'Portugal'},{code:'qa',name:'Qatar'},
+    {code:'ro',name:'Romania'},{code:'ru',name:'Russia'},{code:'sa',name:'Saudi Arabia'},
+    {code:'rs',name:'Serbia'},{code:'sg',name:'Singapore'},{code:'sk',name:'Slovakia'},
+    {code:'si',name:'Slovenia'},{code:'za',name:'South Africa'},{code:'kr',name:'South Korea'},
+    {code:'es',name:'Spain'},{code:'lk',name:'Sri Lanka'},{code:'sd',name:'Sudan'},
+    {code:'se',name:'Sweden'},{code:'ch',name:'Switzerland'},{code:'sy',name:'Syria'},
+    {code:'tw',name:'Taiwan'},{code:'tj',name:'Tajikistan'},{code:'tz',name:'Tanzania'},
+    {code:'th',name:'Thailand'},{code:'tn',name:'Tunisia'},{code:'tr',name:'Turkey'},
+    {code:'tm',name:'Turkmenistan'},{code:'ua',name:'Ukraine'},
+    {code:'ae',name:'United Arab Emirates'},{code:'gb',name:'United Kingdom'},
+    {code:'us',name:'United States'},{code:'uy',name:'Uruguay'},
+    {code:'uz',name:'Uzbekistan'},{code:'ve',name:'Venezuela'},{code:'vn',name:'Vietnam'},
+    {code:'ye',name:'Yemen'}
+  ];
 
-  pw2.closest('form').addEventListener('submit', function (e) {
-    if (pw1.value && pw2.value && pw1.value !== pw2.value) {
-      e.preventDefault();
-      if (errEl) errEl.style.display = 'block';
-      if (okEl)  okEl.style.display  = 'none';
-      pw2.style.borderColor = '#EF4444';
-      pw2.focus();
+  var hiddenInput  = document.getElementById('id_country');
+  var trigger      = document.getElementById('countryTrigger');
+  var dropdown     = document.getElementById('countryDropdown');
+  var searchInput  = document.getElementById('countrySearch');
+  var listEl       = document.getElementById('countryList');
+  var ctFlag       = document.getElementById('ctFlag');
+  var ctName       = document.getElementById('ctName');
+  var globeIcon    = document.getElementById('ctGlobeIcon');
+
+  if (!trigger) return;
+
+  function renderList(q) {
+    var filtered = q
+      ? COUNTRIES.filter(function(c){ return c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; })
+      : COUNTRIES;
+    listEl.innerHTML = '';
+    if (!filtered.length) {
+      listEl.innerHTML = '<div class="country-no-result">Không tìm thấy quốc gia</div>';
+      return;
     }
+    filtered.forEach(function(c) {
+      var div = document.createElement('div');
+      div.className = 'country-option' + (hiddenInput.value === c.name ? ' active' : '');
+      div.innerHTML = '<span class="fi fi-' + c.code + '"></span><span>' + c.name + '</span>';
+      div.addEventListener('click', function(){ selectCountry(c); });
+      listEl.appendChild(div);
+    });
+  }
+
+  function selectCountry(c) {
+    hiddenInput.value = c.name;
+    ctFlag.className  = 'fi fi-' + c.code;
+    ctFlag.style.display = '';
+    ctName.textContent = c.name;
+    ctName.style.color = '';
+    globeIcon.style.display = 'none';
+    closeDropdown();
+  }
+
+  function openDropdown() {
+    dropdown.classList.add('open');
+    trigger.classList.add('open');
+    searchInput.value = '';
+    renderList('');
+    setTimeout(function(){ searchInput.focus(); }, 50);
+    /* scroll active item into view */
+    setTimeout(function(){
+      var active = listEl.querySelector('.active');
+      if (active) active.scrollIntoView({ block: 'nearest' });
+    }, 60);
+  }
+
+  function closeDropdown() {
+    dropdown.classList.remove('open');
+    trigger.classList.remove('open');
+  }
+
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    dropdown.classList.contains('open') ? closeDropdown() : openDropdown();
+  });
+  trigger.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDropdown(); }
+  });
+
+  searchInput.addEventListener('input', function(){ renderList(this.value.trim()); });
+  searchInput.addEventListener('click', function(e){ e.stopPropagation(); });
+
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('countryPicker').contains(e.target)) closeDropdown();
   });
 })();
 </script>

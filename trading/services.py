@@ -147,7 +147,7 @@ Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đ
     except Exception as e:
         err_str = str(e)
         if 'ResourceExhausted' in type(e).__name__ or 'quota' in err_str.lower() or '429' in err_str:
-            raise RuntimeError('Gemini đang quá tải, vui lòng thử lại sau ít phút.') from e
+            raise RuntimeError('AI đang quá tải, vui lòng thử lại sau ít phút.') from e
         raise
 
     try:

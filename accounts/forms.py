@@ -2,13 +2,62 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 
+COUNTRY_CHOICES = [
+    ('', '—'),
+    ('Afghanistan', '🇦🇫 Afghanistan'), ('Albania', '🇦🇱 Albania'), ('Algeria', '🇩🇿 Algeria'),
+    ('Argentina', '🇦🇷 Argentina'), ('Australia', '🇦🇺 Australia'), ('Austria', '🇦🇹 Austria'),
+    ('Azerbaijan', '🇦🇿 Azerbaijan'), ('Bahrain', '🇧🇭 Bahrain'), ('Bangladesh', '🇧🇩 Bangladesh'),
+    ('Belarus', '🇧🇾 Belarus'), ('Belgium', '🇧🇪 Belgium'), ('Bolivia', '🇧🇴 Bolivia'),
+    ('Bosnia and Herzegovina', '🇧🇦 Bosnia and Herzegovina'), ('Brazil', '🇧🇷 Brazil'),
+    ('Brunei', '🇧🇳 Brunei'), ('Bulgaria', '🇧🇬 Bulgaria'), ('Cambodia', '🇰🇭 Cambodia'),
+    ('Canada', '🇨🇦 Canada'), ('Chile', '🇨🇱 Chile'), ('China', '🇨🇳 China'),
+    ('Colombia', '🇨🇴 Colombia'), ('Croatia', '🇭🇷 Croatia'), ('Cuba', '🇨🇺 Cuba'),
+    ('Cyprus', '🇨🇾 Cyprus'), ('Czech Republic', '🇨🇿 Czech Republic'), ('Denmark', '🇩🇰 Denmark'),
+    ('Ecuador', '🇪🇨 Ecuador'), ('Egypt', '🇪🇬 Egypt'), ('Estonia', '🇪🇪 Estonia'),
+    ('Ethiopia', '🇪🇹 Ethiopia'), ('Finland', '🇫🇮 Finland'), ('France', '🇫🇷 France'),
+    ('Georgia', '🇬🇪 Georgia'), ('Germany', '🇩🇪 Germany'), ('Ghana', '🇬🇭 Ghana'),
+    ('Greece', '🇬🇷 Greece'), ('Guatemala', '🇬🇹 Guatemala'), ('Hong Kong', '🇭🇰 Hong Kong'),
+    ('Hungary', '🇭🇺 Hungary'), ('India', '🇮🇳 India'), ('Indonesia', '🇮🇩 Indonesia'),
+    ('Iran', '🇮🇷 Iran'), ('Iraq', '🇮🇶 Iraq'), ('Ireland', '🇮🇪 Ireland'),
+    ('Israel', '🇮🇱 Israel'), ('Italy', '🇮🇹 Italy'), ('Japan', '🇯🇵 Japan'),
+    ('Jordan', '🇯🇴 Jordan'), ('Kazakhstan', '🇰🇿 Kazakhstan'), ('Kenya', '🇰🇪 Kenya'),
+    ('Kuwait', '🇰🇼 Kuwait'), ('Kyrgyzstan', '🇰🇬 Kyrgyzstan'), ('Laos', '🇱🇦 Laos'),
+    ('Latvia', '🇱🇻 Latvia'), ('Lebanon', '🇱🇧 Lebanon'), ('Libya', '🇱🇾 Libya'),
+    ('Lithuania', '🇱🇹 Lithuania'), ('Luxembourg', '🇱🇺 Luxembourg'), ('Macau', '🇲🇴 Macau'),
+    ('Malaysia', '🇲🇾 Malaysia'), ('Mexico', '🇲🇽 Mexico'), ('Moldova', '🇲🇩 Moldova'),
+    ('Mongolia', '🇲🇳 Mongolia'), ('Morocco', '🇲🇦 Morocco'), ('Myanmar', '🇲🇲 Myanmar'),
+    ('Nepal', '🇳🇵 Nepal'), ('Netherlands', '🇳🇱 Netherlands'), ('New Zealand', '🇳🇿 New Zealand'),
+    ('Nigeria', '🇳🇬 Nigeria'), ('Norway', '🇳🇴 Norway'), ('Oman', '🇴🇲 Oman'),
+    ('Pakistan', '🇵🇰 Pakistan'), ('Palestine', '🇵🇸 Palestine'), ('Panama', '🇵🇦 Panama'),
+    ('Paraguay', '🇵🇾 Paraguay'), ('Peru', '🇵🇪 Peru'), ('Philippines', '🇵🇭 Philippines'),
+    ('Poland', '🇵🇱 Poland'), ('Portugal', '🇵🇹 Portugal'), ('Qatar', '🇶🇦 Qatar'),
+    ('Romania', '🇷🇴 Romania'), ('Russia', '🇷🇺 Russia'), ('Saudi Arabia', '🇸🇦 Saudi Arabia'),
+    ('Serbia', '🇷🇸 Serbia'), ('Singapore', '🇸🇬 Singapore'), ('Slovakia', '🇸🇰 Slovakia'),
+    ('Slovenia', '🇸🇮 Slovenia'), ('South Africa', '🇿🇦 South Africa'), ('South Korea', '🇰🇷 South Korea'),
+    ('Spain', '🇪🇸 Spain'), ('Sri Lanka', '🇱🇰 Sri Lanka'), ('Sudan', '🇸🇩 Sudan'),
+    ('Sweden', '🇸🇪 Sweden'), ('Switzerland', '🇨🇭 Switzerland'), ('Syria', '🇸🇾 Syria'),
+    ('Taiwan', '🇹🇼 Taiwan'), ('Tajikistan', '🇹🇯 Tajikistan'), ('Tanzania', '🇹🇿 Tanzania'),
+    ('Thailand', '🇹🇭 Thailand'), ('Tunisia', '🇹🇳 Tunisia'), ('Turkey', '🇹🇷 Turkey'),
+    ('Turkmenistan', '🇹🇲 Turkmenistan'), ('Ukraine', '🇺🇦 Ukraine'),
+    ('United Arab Emirates', '🇦🇪 United Arab Emirates'), ('United Kingdom', '🇬🇧 United Kingdom'),
+    ('United States', '🇺🇸 United States'), ('Uruguay', '🇺🇾 Uruguay'),
+    ('Uzbekistan', '🇺🇿 Uzbekistan'), ('Venezuela', '🇻🇪 Venezuela'), ('Vietnam', '🇻🇳 Vietnam'),
+    ('Yemen', '🇾🇪 Yemen'),
+]
+
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, label='Email')
+    country = forms.ChoiceField(
+        choices=COUNTRY_CHOICES,
+        required=False,
+        label='Quốc gia',
+        widget=forms.HiddenInput(),
+    )
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'password1', 'password2', 'country']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

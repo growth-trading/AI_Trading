@@ -532,6 +532,8 @@ body {
   outline: none;
 }
 .form-control::placeholder { color: var(--border-2) !important; }
+select.form-control { padding-right: 2rem !important; cursor: pointer; }
+select.form-control option { background: var(--bg-card); color: var(--text-main); }
 .form-error { color: var(--danger); font-size: 0.8rem; margin-top: 4px; }
 .pw-toggle {
   position: absolute;
@@ -1513,7 +1515,7 @@ body {
   border-bottom: 1px solid var(--border);
 }
 .ai-price-item { flex: 1; text-align: center; }
-.ai-price-label { font-size: 0.7rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+.ai-price-label { font-size: 0.9rem; color: #000; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; font-weight: 600; }
 .ai-price-val { font-size: 1rem; font-family: 'Courier New', monospace; }
 .ai-price-divider { width: 1px; height: 32px; background: var(--border); }
 

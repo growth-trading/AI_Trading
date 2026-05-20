@@ -353,6 +353,7 @@ def analyze_chart_view(request):
         _decr_rate()
         msg = str(e)
         if 'quá tải' in msg or 'quota' in msg.lower():
+            logger.warning('AI API overloaded for user %s: %s | cause: %s', request.user.pk, msg, e.__cause__)
             return JsonResponse({'error': msg}, status=429)
         logger.warning('analyze_chart RuntimeError for user %s: %s', request.user.pk, msg)
         return JsonResponse({'error': 'Phân tích thất bại, vui lòng thử lại.'}, status=500)

@@ -9,12 +9,13 @@ _ALLOWED_PIL_FORMATS = {'JPEG', 'PNG', 'GIF', 'WEBP'}
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'phone', 'address', 'avatar']
+        fields = ['first_name', 'last_name', 'phone', 'address', 'country', 'avatar']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'address': forms.TextInput(attrs={'class': 'form-control'}),
+            'country': forms.HiddenInput(),
             'avatar': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
 
