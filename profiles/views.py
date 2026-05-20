@@ -13,7 +13,10 @@ def profile_view(request):
             form.save()
             messages.success(request, 'Cập nhật hồ sơ thành công.')
             return redirect('profile')
-    return render(request, 'profiles/profile.html', {'form': form})
+    return render(request, 'profiles/profile.html', {
+        'form': form,
+        'referral_count': request.user.referrals.count(),
+    })
 
 
 @login_required

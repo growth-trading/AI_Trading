@@ -84,7 +84,6 @@ def tradingview_view(request):
 
 _PLAN_DAYS = {'week': 7, 'month': 30, 'year': 365}
 
-
 class _InsufficientCoins(Exception):
     pass
 

@@ -54,6 +54,17 @@ class RegisterForm(UserCreationForm):
         label='Quốc gia',
         widget=forms.HiddenInput(),
     )
+    referral_code_input = forms.CharField(
+        required=False,
+        label='Mã giới thiệu',
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nhập mã giới thiệu (nếu có)',
+            'autocomplete': 'off',
+            'style': 'text-transform:uppercase',
+        }),
+    )
 
     class Meta:
         model = CustomUser
@@ -65,6 +76,15 @@ class RegisterForm(UserCreationForm):
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['password1'].widget.attrs.update({'autocomplete': 'new-password', 'id': 'id_password1', 'class': 'form-control pw-with-toggle'})
         self.fields['password2'].widget.attrs.update({'autocomplete': 'new-password', 'id': 'id_password2', 'class': 'form-control pw-with-toggle'})
+        self.fields['referral_code_input'].widget.attrs.update({'class': 'form-control', 'style': 'text-transform:uppercase'})
+
+    def clean_referral_code_input(self):
+        code = self.cleaned_data.get('referral_code_input', '').strip().upper()
+        if not code:
+            return ''
+        if not CustomUser.objects.filter(referral_code=code).exists():
+            raise forms.ValidationError('Mã giới thiệu không hợp lệ.')
+        return code
 
     def clean(self):
         cleaned_data = super().clean()

@@ -1,14 +1,58 @@
+import logging
 import secrets
 import string
 import uuid
+from decimal import Decimal
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
+_REFERRAL_F1_RATE = Decimal('40')
+_REFERRAL_F2_RATE = Decimal('20')
+
+
+def _gen_referral_code():
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(8))
 
 
 def _avatar_upload_to(instance, filename):
     ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'jpg'
     return f'avatars/{uuid.uuid4().hex}.{ext}'
+
+
+def pay_referral_commission(depositor_pk: int, coins_amount) -> None:
+    """Trả hoa hồng F1 (40%) và F2 (20%) ngay khi người được giới thiệu nạp tiền."""
+    try:
+        depositor = CustomUser.objects.select_related(
+            'referred_by', 'referred_by__referred_by'
+        ).get(pk=depositor_pk)
+    except CustomUser.DoesNotExist:
+        return
+
+    amount = Decimal(str(coins_amount))
+    f1 = depositor.referred_by
+    if not f1:
+        return
+    f1_bonus = (amount * _REFERRAL_F1_RATE / 100).quantize(Decimal('0.01'))
+    if f1_bonus > 0:
+        CustomUser.objects.filter(pk=f1.pk).update(
+            referral_coins_earned=F('referral_coins_earned') + f1_bonus,
+        )
+        logger.info('Referral F1 commission: +%s earned to user %s (from deposit by %s)', f1_bonus, f1.pk, depositor_pk)
+
+    f2 = f1.referred_by
+    if not f2:
+        return
+    f2_bonus = (amount * _REFERRAL_F2_RATE / 100).quantize(Decimal('0.01'))
+    if f2_bonus > 0:
+        CustomUser.objects.filter(pk=f2.pk).update(
+            referral_coins_earned=F('referral_coins_earned') + f2_bonus,
+        )
+        logger.info('Referral F2 commission: +%s earned to user %s (from deposit by %s)', f2_bonus, f2.pk, depositor_pk)
 
 
 class CustomUser(AbstractUser):
@@ -22,7 +66,21 @@ class CustomUser(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
     address = models.CharField(max_length=255, blank=True)
     country = models.CharField(max_length=100, blank=True)
+    referral_code = models.CharField(max_length=20, unique=True, null=True, blank=True, db_index=True)
+    referral_coins_earned = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    referred_by = models.ForeignKey(
+        'self', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='referrals'
+    )
     ai_trading_expires_at = models.DateTimeField(null=True, blank=True)
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            code = _gen_referral_code()
+            while CustomUser.objects.filter(referral_code=code).exists():
+                code = _gen_referral_code()
+            self.referral_code = code
+        super().save(*args, **kwargs)
+
     @property
     def memo_code(self):
         return f"UID-{self.pk:04d}"

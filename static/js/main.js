@@ -195,8 +195,10 @@ const i18n = {
     'auth.btn.create':     'Tạo tài khoản',
     'auth.has_account':    'Đã có tài khoản?',
     /* auth — shared labels */
-    'auth.label.username':   'Tên đăng nhập',
-    'auth.label.password':   'Mật khẩu',
+    'auth.label.username':        'Tên đăng nhập',
+    'auth.label.password':        'Mật khẩu',
+    'auth.label.referral':        'Mã giới thiệu',
+    'auth.label.referral_optional': '(không bắt buộc)',
     'auth.label.confirm_pw': 'Xác nhận mật khẩu',
     'auth.label.country':    'Quốc gia',
     /* auth — OTP */
@@ -262,6 +264,14 @@ const i18n = {
     'prof.btn.edit':      'Chỉnh sửa',
     'prof.btn.save':      'Lưu thay đổi',
     'prof.btn.cancel':    'Hủy',
+    /* referral */
+    'prof.referral.title':          'Chương trình giới thiệu',
+    'prof.referral.your_code':      'Mã giới thiệu của bạn',
+    'prof.referral.hint':           'Chia sẻ mã này để nhận hoa hồng khi bạn bè mua gói.',
+    'prof.referral.count':          'Số người đã giới thiệu:',
+    'prof.referral.referred_by':    'Được giới thiệu bởi:',
+    'prof.referral.earned_title':    'Xu hoa hồng tích lũy',
+    'prof.referral.earned_hint':     'Tổng xu nhận được từ hoa hồng giới thiệu (F1: 40%, F2: 20% giá trị gói bạn bè mua).',
     /* trading page */
     'trad.hero.title':    'Công nghệ giao dịch thế hệ mới',
     'trad.hero.sub':      'Thuật toán AI phân tích thị trường 24/7, tự động hóa chiến lược và tối ưu lợi nhuận.',
@@ -458,8 +468,10 @@ const i18n = {
     'auth.btn.create':     'Create Account',
     'auth.has_account':    'Already have an account?',
     /* auth — shared labels */
-    'auth.label.username':   'Username',
-    'auth.label.password':   'Password',
+    'auth.label.username':        'Username',
+    'auth.label.password':        'Password',
+    'auth.label.referral':        'Referral Code',
+    'auth.label.referral_optional': '(optional)',
     'auth.label.confirm_pw': 'Confirm Password',
     'auth.label.country':    'Country',
     /* auth — OTP */
@@ -525,6 +537,14 @@ const i18n = {
     'prof.btn.edit':      'Edit',
     'prof.btn.save':      'Save Changes',
     'prof.btn.cancel':    'Cancel',
+    /* referral */
+    'prof.referral.title':          'Referral Program',
+    'prof.referral.your_code':      'Your Referral Code',
+    'prof.referral.hint':           'Share this code to earn commissions when friends buy plans.',
+    'prof.referral.count':          'Total referrals:',
+    'prof.referral.referred_by':    'Referred by:',
+    'prof.referral.earned_title':    'Accumulated Commission Coins',
+    'prof.referral.earned_hint':     'Total coins earned from referral commissions (F1: 40%, F2: 20% of friends\' plan value).',
     /* trading page */
     'trad.hero.title':    'Next-Generation Trading Technology',
     'trad.hero.sub':      'AI algorithms analyze markets 24/7, automate strategies and maximize profits.',

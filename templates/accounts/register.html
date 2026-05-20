@@ -138,6 +138,18 @@
               </div>
             </div>
 
+            <!-- Referral code -->
+            <div class="mb-3">
+              <label class="form-label-dark" data-i18n="auth.label.referral">Mã giới thiệu <span class="text-sub" style="font-size:0.8rem;" data-i18n="auth.label.referral_optional">(không bắt buộc)</span></label>
+              <div class="input-icon-wrap">
+                <i class="bi bi-people input-icon"></i>
+                {{ form.referral_code_input }}
+              </div>
+              {% if form.referral_code_input.errors %}
+                <div class="form-error">{{ form.referral_code_input.errors.0 }}</div>
+              {% endif %}
+            </div>
+
             <!-- Country picker -->
             <div class="mb-4">
               <label class="form-label-dark" data-i18n="auth.label.country">Quốc gia</label>

@@ -26,6 +26,14 @@ def register_view(request):
         except IntegrityError:
             messages.error(request, 'Email này đã được sử dụng.')
             return render(request, 'accounts/register.html', {'form': form})
+        ref_code = form.cleaned_data.get('referral_code_input', '')
+        if ref_code:
+            try:
+                referrer = CustomUser.objects.get(referral_code=ref_code)
+                user.referred_by = referrer
+                user.save(update_fields=['referred_by'])
+            except CustomUser.DoesNotExist:
+                pass
         otp = user.generate_otp()
         if _send_otp_email(user, otp):
             messages.success(request, 'Đăng ký thành công! Kiểm tra email để lấy mã xác thực.')
