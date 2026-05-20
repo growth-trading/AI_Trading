@@ -338,7 +338,7 @@ def analyze_chart_view(request):
         result['sl']    = _clamp_price(result.get('sl'))
         result['tp']    = _clamp_price(result.get('tp'))
 
-        ChartAnalysisLog.objects.create(
+        log = ChartAnalysisLog.objects.create(
             user=request.user,
             symbol=symbol,
             interval=interval,
@@ -351,6 +351,7 @@ def analyze_chart_view(request):
             'entry': float(result['entry']) if result['entry'] is not None else None,
             'sl':    float(result['sl'])    if result['sl']    is not None else None,
             'tp':    float(result['tp'])    if result['tp']    is not None else None,
+            'log_id': log.pk,
         }
         return JsonResponse({'success': True, 'data': json_result})
 
@@ -692,3 +693,93 @@ def tick_view(request):
     except Exception:
         logger.exception('tick_view failed for user %s symbol %s', request.user.pk, symbol)
         return JsonResponse({'error': 'Không thể tải dữ liệu, vui lòng thử lại.'}, status=500)
+
+
+def _candles_since(symbol: str, interval: str, since_ts: int) -> list:
+    """Lấy toàn bộ nến từ since_ts đến hiện tại. Dùng để kiểm tra trạng thái kèo trong lịch sử."""
+    if symbol.startswith('BINANCE:'):
+        ticker = symbol.split(':', 1)[1]
+        if not re.match(r'^[A-Z0-9]{1,20}$', ticker):
+            return []
+        ticker = urllib.parse.quote(ticker, safe='')
+        bi = _BINANCE_INTERVAL.get(interval, '1h')
+        url = (f'https://api.binance.com/api/v3/klines?symbol={ticker}'
+               f'&interval={bi}&startTime={since_ts * 1000}&limit=1000')
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        try:
+            with urllib.request.urlopen(req, timeout=10) as r:
+                data = json.loads(r.read())
+            if not isinstance(data, list):
+                return []
+            return [
+                {'time': int(d[0]) // 1000, 'open': float(d[1]),
+                 'high': float(d[2]), 'low': float(d[3]), 'close': float(d[4])}
+                for d in data
+            ]
+        except Exception as e:
+            logger.warning('_candles_since Binance failed %s %s: %s', symbol, interval, e)
+            return []
+    else:
+        try:
+            return _mt5_candles(symbol, interval, since_ts=since_ts, before_ts=None)
+        except Exception as e:
+            logger.warning('_candles_since MT5 failed %s %s: %s', symbol, interval, e)
+            return []
+
+
+def _determine_trade_status(candles: list, signal: str, entry, sl, tp) -> str:
+    """Kiểm tra theo thứ tự thời gian xem TP hay SL đã bị chạm. Trả về 'TP', 'SL' hoặc 'RUNNING'."""
+    is_buy = signal == 'BUY'
+    try:
+        sl_f = float(sl)
+        tp_f = float(tp)
+        entry_f = float(entry)
+    except (TypeError, ValueError):
+        return 'RUNNING'
+    for candle in candles:
+        try:
+            high   = float(candle['high'])
+            low    = float(candle['low'])
+            open_p = float(candle.get('open', entry_f))
+        except (KeyError, TypeError, ValueError):
+            continue
+        sl_hit = (low <= sl_f)  if is_buy else (high >= sl_f)
+        tp_hit = (high >= tp_f) if is_buy else (low  <= tp_f)
+        if sl_hit and tp_hit:
+            return 'SL' if abs(open_p - sl_f) < abs(open_p - tp_f) else 'TP'
+        if sl_hit:
+            return 'SL'
+        if tp_hit:
+            return 'TP'
+    return 'RUNNING'
+
+
+@require_GET
+def trade_status_view(request, log_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Chưa đăng nhập'}, status=401)
+    if not request.user.is_email_verified:
+        return JsonResponse({'error': 'Chưa xác thực email'}, status=403)
+    try:
+        log = ChartAnalysisLog.objects.get(pk=log_id, user=request.user)
+    except ChartAnalysisLog.DoesNotExist:
+        return JsonResponse({'error': 'Không tìm thấy'}, status=404)
+
+    if log.trade_status in ('TP', 'SL'):
+        return JsonResponse({'status': log.trade_status, 'cached': True})
+
+    if not (log.entry and log.sl and log.tp) or log.signal == 'HOLD':
+        return JsonResponse({'status': 'NONE'})
+
+    since_ts = int(log.created_at.timestamp())
+    candles  = _candles_since(log.symbol, log.interval, since_ts)
+    if not candles:
+        return JsonResponse({'status': 'RUNNING', 'current_price': None})
+
+    status = _determine_trade_status(candles, log.signal, log.entry, log.sl, log.tp)
+    current_price = candles[-1].get('close')
+
+    if status in ('TP', 'SL'):
+        ChartAnalysisLog.objects.filter(pk=log.pk).update(trade_status=status)
+
+    return JsonResponse({'status': status, 'current_price': current_price})

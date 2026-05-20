@@ -65,6 +65,7 @@ class UserTVSubscription(models.Model):
 
 class ChartAnalysisLog(models.Model):
     SIGNAL_CHOICES = [('BUY', 'BUY'), ('SELL', 'SELL'), ('HOLD', 'HOLD')]
+    TRADE_STATUS_CHOICES = [('', 'Chưa kiểm tra'), ('TP', 'Chạm TP'), ('SL', 'Chạm SL')]
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -80,6 +81,7 @@ class ChartAnalysisLog(models.Model):
     sl = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
     tp = models.DecimalField(max_digits=18, decimal_places=6, null=True, blank=True)
     reasoning = models.TextField(blank=True)
+    trade_status = models.CharField(max_length=2, choices=TRADE_STATUS_CHOICES, default='', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

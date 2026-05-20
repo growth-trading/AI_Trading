@@ -68,6 +68,21 @@
 .ai-history-prices{display:flex;gap:8px;margin-top:4px;font-size:.7rem;font-weight:600;}
 .ai-history-empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px 14px;color:#64748B;}
 .ai-signal-badge-sm{font-size:.6rem;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:.5px;}
+.ai-history-item{cursor:pointer;}
+.ai-history-arrow{font-size:.65rem;color:#64748B;transition:color .15s,transform .15s;}
+.ai-history-item:hover .ai-history-arrow{color:var(--accent);transform:translateX(2px);}
+/* Trade status bar */
+.air-trade-status{padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg-main);flex-shrink:0;}
+[data-theme=light] .air-trade-status{background:#F8FAFC;}
+.air-status-loading{display:flex;align-items:center;gap:8px;}
+.air-status-spinner{width:14px;height:14px;border:2px solid var(--border-2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+.air-status-result{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.air-status-badge{font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:4px;letter-spacing:.03em;}
+.air-status-tp{background:rgba(16,185,129,.15);color:#10B981;border:1px solid rgba(16,185,129,.3);}
+.air-status-sl{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid rgba(239,68,68,.3);}
+.air-status-running{background:rgba(245,158,11,.12);color:#F59E0B;border:1px solid rgba(245,158,11,.3);}
+.air-status-price{font-size:.72rem;color:var(--text-sub);}
+.air-status-price strong{color:var(--text-main);}
 </style>
 {% endblock %}
 
@@ -338,10 +353,23 @@
       </div>
       <div class="ai-history-list-wrap" id="aiHistoryList">
         {% for log in recent_logs %}
-        <div class="ai-history-item">
+        <div class="ai-history-item"
+             data-signal="{{ log.signal }}"
+             data-symbol="{{ log.symbol }}"
+             data-interval="{{ log.interval }}"
+             data-entry="{{ log.entry|default:'' }}"
+             data-sl="{{ log.sl|default:'' }}"
+             data-tp="{{ log.tp|default:'' }}"
+             data-reasoning="{{ log.reasoning|escapejs }}"
+             data-time="{{ log.created_at|date:'d/m H:i' }}"
+             data-log-id="{{ log.pk }}"
+             data-trade-status="{{ log.trade_status }}">
           <div class="d-flex align-items-center justify-content-between mb-1">
             <span class="ai-history-symbol">{{ log.symbol }}</span>
-            <span class="ai-signal-badge ai-signal-badge-sm ai-signal-{{ log.signal|lower }}">{{ log.signal }}</span>
+            <div class="d-flex align-items-center gap-1">
+              <span class="ai-signal-badge ai-signal-badge-sm ai-signal-{{ log.signal|lower }}">{{ log.signal }}</span>
+              <i class="bi bi-chevron-right ai-history-arrow"></i>
+            </div>
           </div>
           <div class="d-flex align-items-center justify-content-between">
             <span class="ai-history-meta">{% if log.interval == "1" %}M1{% elif log.interval == "5" %}M5{% elif log.interval == "15" %}M15{% elif log.interval == "30" %}M30{% elif log.interval == "60" %}H1{% elif log.interval == "120" %}H2{% elif log.interval == "240" %}H4{% elif log.interval == "D" %}D1{% elif log.interval == "W" %}W1{% else %}{{ log.interval }}{% endif %}</span>
@@ -389,6 +417,18 @@
           <button class="ai-close-btn" id="btnCloseAi" title="Quay lại lịch sử">
             <i class="bi bi-arrow-left"></i>
           </button>
+        </div>
+
+        <!-- Trade status (chỉ hiện khi xem lịch sử) -->
+        <div class="air-trade-status" id="aiTradeStatus" style="display:none">
+          <div class="air-status-loading" id="aiStatusLoading">
+            <div class="air-status-spinner"></div>
+            <span class="text-sub small">Đang kiểm tra...</span>
+          </div>
+          <div class="air-status-result" id="aiStatusResult" style="display:none">
+            <span id="aiStatusBadge"></span>
+            <span class="air-status-price">Giá hiện tại: <strong id="aiStatusCurrentPrice"></strong></span>
+          </div>
         </div>
 
         <!-- Prices 2×2 grid -->
@@ -1050,6 +1090,119 @@
     av.style.display = 'flex';
   }
 
+  // Click vào history item → hiện kết quả đầy đủ
+  document.getElementById('aiHistoryList').addEventListener('click', function (e) {
+    var item = e.target.closest('.ai-history-item');
+    if (!item) return;
+    showResultFromHistory(item);
+  });
+
+  function showResultFromHistory(el) {
+    var _ivLabel = {'1':'M1','5':'M5','15':'M15','30':'M30','60':'H1','120':'H2','240':'H4','D':'D1','W':'W1'};
+    var signal   = el.dataset.signal   || 'HOLD';
+    var symbol   = el.dataset.symbol   || '';
+    var interval = el.dataset.interval || '';
+    var entry    = el.dataset.entry;
+    var sl       = el.dataset.sl;
+    var tp       = el.dataset.tp;
+    var reasoning = el.dataset.reasoning || '';
+    var time     = el.dataset.time || '';
+    var symShort = symbol.includes(':') ? symbol.split(':')[1] : symbol;
+
+    // Signal badge
+    var badge = document.getElementById('aiSignalBadge');
+    badge.textContent = signal;
+    badge.className   = 'ai-signal-badge ai-signal-' + signal.toLowerCase();
+
+    // Header
+    document.getElementById('aiResultSymbol').textContent = symShort + ' · ' + (_ivLabel[interval] || interval);
+    document.getElementById('aiResultTime').textContent   = time;
+
+    // Prices grid
+    document.getElementById('aiPricesRow').style.display = signal === 'HOLD' ? 'none' : '';
+    document.getElementById('aiEntry').textContent = entry ? formatPrice(entry) : '—';
+    document.getElementById('aiSL').textContent    = sl    ? formatPrice(sl)    : '—';
+    document.getElementById('aiTP').textContent    = tp    ? formatPrice(tp)    : '—';
+
+    if (entry && sl && tp && signal !== 'HOLD') {
+      var e = parseFloat(entry), s = parseFloat(sl), t = parseFloat(tp);
+      var slDist = Math.abs(e - s), tpDist = Math.abs(t - e);
+      var isBuy  = signal === 'BUY';
+      document.getElementById('aiSLDist').textContent = (isBuy ? '↓ ' : '↑ ') + formatPrice(slDist) + ' (' + (slDist/e*100).toFixed(2) + '%)';
+      document.getElementById('aiTPDist').textContent = (isBuy ? '↑ ' : '↓ ') + formatPrice(tpDist) + ' (' + (tpDist/e*100).toFixed(2) + '%)';
+      var rrEl = document.getElementById('aiRR');
+      if (slDist > 0) {
+        var rrNum = tpDist / slDist;
+        rrEl.textContent = '1 : ' + rrNum.toFixed(1);
+        rrEl.className   = 'air-cell-val fw-700 ' + (rrNum >= 2 ? 'text-success' : rrNum >= 1.5 ? 'text-warning' : 'text-danger');
+      } else {
+        rrEl.textContent = '—'; rrEl.className = 'air-cell-val fw-700';
+      }
+    } else {
+      document.getElementById('aiSLDist').textContent = '';
+      document.getElementById('aiTPDist').textContent = '';
+      var rrEl = document.getElementById('aiRR');
+      rrEl.textContent = '—'; rrEl.className = 'air-cell-val fw-700';
+    }
+
+    document.getElementById('aiReasoning').textContent = reasoning;
+
+    // Switch sang result view
+    showActiveView();
+    document.getElementById('aiLoading').style.display      = 'none';
+    document.getElementById('aiError').style.display        = 'none';
+    document.getElementById('aiResultContent').style.display = 'flex';
+
+    // Kiểm tra trạng thái kèo từ dữ liệu lịch sử (chỉ check 1 lần, kết quả lưu DB)
+    var statusEl      = document.getElementById('aiTradeStatus');
+    var statusLoading = document.getElementById('aiStatusLoading');
+    var statusResult  = document.getElementById('aiStatusResult');
+    var logId         = el.dataset.logId;
+    var cachedStatus  = el.dataset.tradeStatus;
+
+    function _renderStatusBadge(status, price) {
+      statusLoading.style.display = 'none';
+      var badge = document.getElementById('aiStatusBadge');
+      if (status === 'TP') {
+        badge.textContent = '✅ Đã chạm TP';
+        badge.className   = 'air-status-badge air-status-tp';
+      } else if (status === 'SL') {
+        badge.textContent = '❌ Đã chạm SL';
+        badge.className   = 'air-status-badge air-status-sl';
+      } else {
+        badge.textContent = '🟡 Đang chạy';
+        badge.className   = 'air-status-badge air-status-running';
+      }
+      var priceEl = document.getElementById('aiStatusCurrentPrice');
+      priceEl.textContent = price ? formatPrice(price) : '—';
+      statusResult.style.display = 'flex';
+    }
+
+    if (entry && sl && tp && signal !== 'HOLD' && logId) {
+      statusEl.style.display      = 'flex';
+      statusLoading.style.display = 'flex';
+      statusResult.style.display  = 'none';
+
+      if (cachedStatus === 'TP' || cachedStatus === 'SL') {
+        _renderStatusBadge(cachedStatus, null);
+      } else {
+        var statusUrl = '{% url "trade_status" 0 %}'.replace('/0/', '/' + logId + '/');
+        fetch(statusUrl)
+          .then(function (r) { return r.json(); })
+          .then(function (json) {
+            if (json.status === 'NONE') { statusEl.style.display = 'none'; return; }
+            if (json.status === 'TP' || json.status === 'SL') {
+              el.dataset.tradeStatus = json.status;
+            }
+            _renderStatusBadge(json.status, json.current_price);
+          })
+          .catch(function () { statusEl.style.display = 'none'; });
+      }
+    } else {
+      statusEl.style.display = 'none';
+    }
+  }
+
   function captureChartImage() {
     try {
       var container = document.getElementById('lwChart');
@@ -1158,6 +1311,7 @@
     }
 
     document.getElementById('aiReasoning').textContent = data.reasoning || '';
+    document.getElementById('aiTradeStatus').style.display = 'none';
     prependHistory(data, currentSymbol, currentInterval);
   }
 
@@ -1183,10 +1337,23 @@
     }
     var item = document.createElement('div');
     item.className = 'ai-history-item';
+    item.dataset.signal      = signal;
+    item.dataset.symbol      = symbol;
+    item.dataset.interval    = interval;
+    item.dataset.entry       = data.entry || '';
+    item.dataset.sl          = data.sl    || '';
+    item.dataset.tp          = data.tp    || '';
+    item.dataset.reasoning   = data.reasoning || '';
+    item.dataset.time        = timeStr;
+    item.dataset.logId       = data.log_id || '';
+    item.dataset.tradeStatus = '';
     item.innerHTML =
       '<div class="d-flex align-items-center justify-content-between mb-1">' +
         '<span class="ai-history-symbol">' + symShort + '</span>' +
-        '<span class="ai-signal-badge ai-signal-badge-sm ai-signal-' + signal.toLowerCase() + '">' + signal + '</span>' +
+        '<div class="d-flex align-items-center gap-1">' +
+          '<span class="ai-signal-badge ai-signal-badge-sm ai-signal-' + signal.toLowerCase() + '">' + signal + '</span>' +
+          '<i class="bi bi-chevron-right ai-history-arrow"></i>' +
+        '</div>' +
       '</div>' +
       '<div class="d-flex align-items-center justify-content-between">' +
         '<span class="ai-history-meta">' + (ivLabel[interval] || interval) + '</span>' +
