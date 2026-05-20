@@ -12,6 +12,14 @@ class TradingViewProduct(models.Model):
     chart_id = models.CharField(max_length=50, help_text='TradingView chart ID from URL')
     symbol = models.CharField(max_length=50, default='OANDA:XAUUSD')
     interval = models.CharField(max_length=10, default='60')
+    features = models.TextField(
+        blank=True,
+        help_text='Mỗi dòng = 1 tính năng (Tiếng Việt). Ví dụ:\nChart real-time chuyên gia\nMACD · RSI · EMA · Supertrend',
+    )
+    features_en = models.TextField(
+        blank=True,
+        help_text='English features, one per line. Leave blank to use Vietnamese.',
+    )
     week_cost = models.PositiveIntegerField(default=10)
     month_cost = models.PositiveIntegerField(default=30)
     year_cost = models.PositiveIntegerField(default=200)
@@ -23,6 +31,17 @@ class TradingViewProduct(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def features_list(self):
+        return [f.strip() for f in self.features.splitlines() if f.strip()]
+
+    @property
+    def features_en_list(self):
+        lines = self.features_en.strip()
+        if not lines:
+            return self.features_list
+        return [f.strip() for f in lines.splitlines() if f.strip()]
 
 
 class UserTVSubscription(models.Model):

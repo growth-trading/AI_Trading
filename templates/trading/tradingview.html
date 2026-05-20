@@ -208,11 +208,18 @@
           <span class="tv-content-en">{{ item.product.description_en|default:item.product.description }}</span>
         </div>
 
-        <ul class="tv-product-features">
-          <li><i class="bi bi-check-circle-fill"></i><span data-i18n="tv.feat.realtime">Chart real-time chuyên gia</span></li>
-          <li><i class="bi bi-check-circle-fill"></i><span data-i18n="tv.feat.indicators">MACD · RSI · EMA · Supertrend</span></li>
-          <li><i class="bi bi-check-circle-fill"></i><span data-i18n="tv.feat.levels">Vùng hỗ trợ / kháng cự</span></li>
-        </ul>
+        {% if item.product.features_list %}
+          <ul class="tv-product-features tv-content-vi">
+            {% for feat in item.product.features_list %}
+              <li><i class="bi bi-check-circle-fill"></i><span>{{ feat }}</span></li>
+            {% endfor %}
+          </ul>
+          <ul class="tv-product-features tv-content-en">
+            {% for feat in item.product.features_en_list %}
+              <li><i class="bi bi-check-circle-fill"></i><span>{{ feat }}</span></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
 
         {% if item.has_access %}
           <div class="tv-product-expiry">

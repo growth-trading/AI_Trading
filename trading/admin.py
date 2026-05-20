@@ -9,8 +9,8 @@ class TradingViewProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     fieldsets = (
         (None, {'fields': ('slug', 'chart_id', 'symbol', 'interval', 'is_active', 'sort_order', 'week_cost', 'month_cost', 'year_cost')}),
-        ('Tiếng Việt', {'fields': ('name', 'description')}),
-        ('English', {'fields': ('name_en', 'description_en'), 'classes': ('collapse',)}),
+        ('Tiếng Việt', {'fields': ('name', 'description', 'features')}),
+        ('English', {'fields': ('name_en', 'description_en', 'features_en'), 'classes': ('collapse',)}),
     )
 
 
