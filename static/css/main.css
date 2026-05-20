@@ -67,6 +67,14 @@ body {
   color: var(--text-main) !important;
   letter-spacing: -0.03em;
 }
+.navbar-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
 .nav-link {
   color: var(--text-sub) !important;
   font-weight: 500;
@@ -809,6 +817,7 @@ body {
 /* ---- DEPOSIT PAGE ---- */
 .wallet-field { }
 .wallet-field-label { font-size: 0.8rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.04em; }
+.qr-wallet-img { border-radius: 12px; border: 4px solid #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.4); display: block; margin: 0 auto; }
 .wallet-address-box {
   display: flex;
   align-items: center;

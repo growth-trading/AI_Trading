@@ -119,6 +119,7 @@ const i18n = {
     /* navbar */
     'nav.home':        'Trang chủ',
     'hero.cta.deposit': 'Nạp tiền ngay',
+    'dep.qr.hint':      'Quét mã để sao chép địa chỉ',
     'nav.ai-trading':  'AI Trading',
     'nav.deposit':     'Nạp tiền',
     'nav.coins':       'xu',
@@ -379,6 +380,7 @@ const i18n = {
     /* navbar */
     'nav.home':        'Home',
     'hero.cta.deposit': 'Deposit Now',
+    'dep.qr.hint':      'Scan to copy address',
     'nav.ai-trading':  'AI Trading',
     'nav.deposit':     'Deposit',
     'nav.coins':       'coins',
