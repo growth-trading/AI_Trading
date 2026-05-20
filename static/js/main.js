@@ -322,6 +322,10 @@ const i18n = {
     'trad.ai.history_empty':'Chưa có phân tích nào',
     'trad.ai.back_history': 'Lịch sử',
     'trad.ai.disclaimer':   '⚠️ Tín hiệu chỉ mang tính tham khảo, không phải khuyến nghị đầu tư. Giao dịch luôn có rủi ro.',
+    'trad.ind.label':       'Chỉ báo',
+    'trad.ind.group.ma':    'Đường trung bình',
+    'trad.ind.group.bb':    'Dải Bollinger',
+    'trad.ind.group.osc':   'Dao động',
     'trad.sym.placeholder': 'VD: NASDAQ:NVDA',
     'trad.chart.realtime':  'Dữ liệu thời gian thực từ TradingView',
     /* subscription plans */
@@ -615,6 +619,10 @@ const i18n = {
     'trad.ai.history_empty':'No analyses yet',
     'trad.ai.back_history': 'History',
     'trad.ai.disclaimer':   '⚠️ Signals are for reference only, not investment advice. Trading always involves risk.',
+    'trad.ind.label':       'Indicators',
+    'trad.ind.group.ma':    'Moving Average',
+    'trad.ind.group.bb':    'Bollinger Bands',
+    'trad.ind.group.osc':   'Oscillators',
     'trad.sym.placeholder': 'e.g. NASDAQ:NVDA',
     'trad.chart.realtime':  'Real-time data from TradingView',
     /* subscription plans */

@@ -83,6 +83,16 @@
 .air-status-running{background:rgba(245,158,11,.12);color:#F59E0B;border:1px solid rgba(245,158,11,.3);}
 .air-status-price{font-size:.72rem;color:var(--text-sub);}
 .air-status-price strong{color:var(--text-main);}
+/* Indicator dropdown */
+.ind-count-badge{background:var(--accent);color:#fff;font-size:.62rem;font-weight:700;border-radius:10px;padding:0 5px;min-width:16px;text-align:center;line-height:16px;height:16px;flex-shrink:0;}
+.ind-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ind-check{margin-left:auto;color:var(--accent);font-size:.85rem;opacity:0;transition:opacity .15s;}
+.ind-item.active .ind-check{opacity:1;}
+.ind-menu{min-width:180px;}
+/* RSI panel */
+#rsiPanel{background:var(--bg-main);}
+[data-theme="light"] #rsiPanel{background:#FFFFFF;}
+.rsi-panel-label{font-size:.62rem;font-weight:700;color:#94A3B8;padding:3px 10px;letter-spacing:.06em;text-transform:uppercase;}
 </style>
 {% endblock %}
 
@@ -263,6 +273,47 @@
           </div>
         </div>
 
+        <!-- Indicator dropdown -->
+        <div class="tv-dropdown" id="indicatorDropdown">
+          <button class="tv-dropdown-btn" type="button">
+            <i class="bi bi-bar-chart-line tv-dropdown-icon"></i>
+            <span class="tv-dropdown-label" data-i18n="trad.ind.label">Chỉ báo</span>
+            <span class="ind-count-badge" id="indCountBadge" style="display:none">0</span>
+            <i class="bi bi-chevron-down tv-dropdown-arrow"></i>
+          </button>
+          <div class="tv-dropdown-menu ind-menu">
+            <div class="tv-dropdown-group" data-i18n="trad.ind.group.ma">Đường trung bình</div>
+            <div class="tv-dropdown-item ind-item" data-ind="ema20">
+              <span class="ind-dot" style="background:#3B82F6"></span>
+              <span class="tv-item-name">EMA 20</span>
+              <i class="bi bi-check2 ind-check"></i>
+            </div>
+            <div class="tv-dropdown-item ind-item" data-ind="ema50">
+              <span class="ind-dot" style="background:#F59E0B"></span>
+              <span class="tv-item-name">EMA 50</span>
+              <i class="bi bi-check2 ind-check"></i>
+            </div>
+            <div class="tv-dropdown-item ind-item" data-ind="ema200">
+              <span class="ind-dot" style="background:#8B5CF6"></span>
+              <span class="tv-item-name">EMA 200</span>
+              <i class="bi bi-check2 ind-check"></i>
+            </div>
+            <div class="tv-dropdown-sep"></div>
+            <div class="tv-dropdown-group" data-i18n="trad.ind.group.bb">Dải Bollinger</div>
+            <div class="tv-dropdown-item ind-item" data-ind="bb">
+              <span class="ind-dot" style="background:#06B6D4"></span>
+              <span class="tv-item-name">BB (20, 2)</span>
+              <i class="bi bi-check2 ind-check"></i>
+            </div>
+            <div class="tv-dropdown-sep"></div>
+            <div class="tv-dropdown-group" data-i18n="trad.ind.group.osc">Dao động</div>
+            <div class="tv-dropdown-item ind-item" data-ind="rsi">
+              <span class="ind-dot" style="background:#EC4899"></span>
+              <span class="tv-item-name">RSI (14)</span>
+              <i class="bi bi-check2 ind-check"></i>
+            </div>
+          </div>
+        </div>
 
       </div>
 
@@ -292,6 +343,12 @@
       </div>
       <div id="priceCdLabel"><span class="pcd-price"></span><span class="pcd-cd"></span></div>
       <div id="chartError" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg-card);align-items:center;justify-content:center;color:var(--danger);font-size:.9rem;border-radius:0 0 8px 8px;padding:16px;text-align:center;"></div>
+    </div>
+
+    <!-- RSI sub-panel -->
+    <div id="rsiPanel" style="display:none;border-top:1px solid var(--border);">
+      <div class="rsi-panel-label">RSI (14)</div>
+      <div id="rsiChart" style="width:100%;height:100px;"></div>
     </div>
 
     <!-- Timezone bar -->
@@ -584,6 +641,161 @@
   var chart = null, candleSeries = null;
   var entryLine = null, slLine = null, tpLine = null;
   var lastAnalysisLevels = null;
+
+  // ── Chỉ báo kỹ thuật ────────────────────────────────────────────────────
+  var _activeInds = {};   // { ema20: true/false, ... }
+  var _indSeries  = {};   // { ema20: lineSeries, ... }
+  var _rsiChart = null, _rsiSeries = null, _rsiOBSeries = null, _rsiOSSeries = null;
+
+  function _calcEMA(data, period) {
+    var k = 2 / (period + 1), ema = [], prev = null;
+    for (var i = 0; i < data.length; i++) {
+      var p = data[i].close;
+      if (prev === null) {
+        if (i >= period - 1) {
+          var sum = 0;
+          for (var j = i - period + 1; j <= i; j++) sum += data[j].close;
+          prev = sum / period;
+          ema.push({ time: data[i].time, value: prev });
+        }
+      } else {
+        prev = p * k + prev * (1 - k);
+        ema.push({ time: data[i].time, value: prev });
+      }
+    }
+    return ema;
+  }
+
+  function _calcBB(data, period, mult) {
+    var upper = [], mid = [], lower = [];
+    for (var i = period - 1; i < data.length; i++) {
+      var slice = data.slice(i - period + 1, i + 1);
+      var sma = slice.reduce(function (s, c) { return s + c.close; }, 0) / period;
+      var variance = slice.reduce(function (s, c) { return s + Math.pow(c.close - sma, 2); }, 0) / period;
+      var std = Math.sqrt(variance);
+      upper.push({ time: data[i].time, value: sma + mult * std });
+      mid.push(  { time: data[i].time, value: sma });
+      lower.push({ time: data[i].time, value: sma - mult * std });
+    }
+    return { upper: upper, mid: mid, lower: lower };
+  }
+
+  function _calcRSI(data, period) {
+    if (data.length <= period) return [];
+    var gains = 0, losses = 0, i, d;
+    for (i = 1; i <= period; i++) {
+      d = data[i].close - data[i - 1].close;
+      if (d > 0) gains += d; else losses -= d;
+    }
+    var avgGain = gains / period, avgLoss = losses / period, results = [];
+    for (i = period; i < data.length; i++) {
+      if (i > period) {
+        d = data[i].close - data[i - 1].close;
+        avgGain = (avgGain * (period - 1) + (d > 0 ? d : 0)) / period;
+        avgLoss = (avgLoss * (period - 1) + (d < 0 ? -d : 0)) / period;
+      }
+      var rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      results.push({ time: data[i].time, value: parseFloat((100 - 100 / (1 + rs)).toFixed(2)) });
+    }
+    return results;
+  }
+
+  function _removeIndSeries(key) {
+    if (_indSeries[key]) {
+      try { chart.removeSeries(_indSeries[key]); } catch (e) {}
+      delete _indSeries[key];
+    }
+  }
+
+  function _removeRsiChart() {
+    if (_rsiChart) { _rsiChart.remove(); _rsiChart = null; _rsiSeries = null; _rsiOBSeries = null; _rsiOSSeries = null; }
+    document.getElementById('rsiPanel').style.display = 'none';
+    syncPanelHeight();
+  }
+
+  function _initRsiChart() {
+    if (_rsiChart) return;
+    var panel = document.getElementById('rsiPanel');
+    panel.style.display = '';
+    var container = document.getElementById('rsiChart');
+    var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    _rsiChart = LightweightCharts.createChart(container, {
+      width: container.clientWidth, height: 100,
+      layout: { background: { color: isDark ? '#111827' : '#FFFFFF' }, textColor: isDark ? '#94A3B8' : '#374151' },
+      grid: { vertLines: { color: isDark ? '#1E293B' : '#E5E7EB' }, horzLines: { color: isDark ? '#1E293B' : '#E5E7EB' } },
+      rightPriceScale: { borderColor: isDark ? '#1E293B' : '#374151', scaleMargins: { top: 0.05, bottom: 0.05 } },
+      timeScale: { borderColor: isDark ? '#1E293B' : '#E5E7EB', visible: false },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+      handleScroll: false, handleScale: false,
+    });
+    _rsiOBSeries = _rsiChart.addLineSeries({ color: 'rgba(239,68,68,0.4)',  lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+    _rsiOSSeries = _rsiChart.addLineSeries({ color: 'rgba(16,185,129,0.4)', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+    _rsiSeries   = _rsiChart.addLineSeries({ color: '#EC4899', lineWidth: 2, lastValueVisible: true, priceLineVisible: false });
+    new ResizeObserver(function () {
+      if (_rsiChart) _rsiChart.applyOptions({ width: container.clientWidth });
+      syncPanelHeight();
+    }).observe(container);
+    chart.timeScale().subscribeVisibleLogicalRangeChange(function (range) {
+      if (_rsiChart && range) _rsiChart.timeScale().setVisibleLogicalRange(range);
+    });
+    syncPanelHeight();
+  }
+
+  function _updateRsiData() {
+    if (!_rsiChart || !chartCandles.length) return;
+    _rsiSeries.setData(_calcRSI(chartCandles, 14));
+    var ob = chartCandles.map(function (c) { return { time: c.time, value: 70 }; });
+    var os = chartCandles.map(function (c) { return { time: c.time, value: 30 }; });
+    _rsiOBSeries.setData(ob);
+    _rsiOSSeries.setData(os);
+    var range = chart.timeScale().getVisibleLogicalRange();
+    if (range) _rsiChart.timeScale().setVisibleLogicalRange(range);
+  }
+
+  function drawIndicators() {
+    if (!chartCandles || !chartCandles.length || !chart) return;
+    // EMA 20
+    if (_activeInds.ema20) {
+      if (!_indSeries.ema20) _indSeries.ema20 = chart.addLineSeries({ color: '#3B82F6', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+      _indSeries.ema20.setData(_calcEMA(chartCandles, 20));
+    } else _removeIndSeries('ema20');
+    // EMA 50
+    if (_activeInds.ema50) {
+      if (!_indSeries.ema50) _indSeries.ema50 = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+      _indSeries.ema50.setData(_calcEMA(chartCandles, 50));
+    } else _removeIndSeries('ema50');
+    // EMA 200
+    if (_activeInds.ema200) {
+      if (!_indSeries.ema200) _indSeries.ema200 = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+      _indSeries.ema200.setData(_calcEMA(chartCandles, 200));
+    } else _removeIndSeries('ema200');
+    // Bollinger Bands
+    if (_activeInds.bb) {
+      var bb = _calcBB(chartCandles, 20, 2);
+      if (!_indSeries.bbUpper) _indSeries.bbUpper = chart.addLineSeries({ color: '#06B6D4', lineWidth: 1, lineStyle: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+      if (!_indSeries.bbMid)   _indSeries.bbMid   = chart.addLineSeries({ color: 'rgba(6,182,212,0.45)', lineWidth: 1, lineStyle: 2, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+      if (!_indSeries.bbLower) _indSeries.bbLower = chart.addLineSeries({ color: '#06B6D4', lineWidth: 1, lineStyle: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+      _indSeries.bbUpper.setData(bb.upper);
+      _indSeries.bbMid.setData(bb.mid);
+      _indSeries.bbLower.setData(bb.lower);
+    } else {
+      _removeIndSeries('bbUpper'); _removeIndSeries('bbMid'); _removeIndSeries('bbLower');
+    }
+    // RSI
+    if (_activeInds.rsi) {
+      _initRsiChart();
+      _updateRsiData();
+    } else {
+      _removeRsiChart();
+    }
+  }
+
+  function _updateIndBadge() {
+    var count = Object.keys(_activeInds).filter(function (k) { return _activeInds[k]; }).length;
+    var badge = document.getElementById('indCountBadge');
+    badge.textContent = count;
+    badge.style.display = count > 0 ? '' : 'none';
+  }
   var lastCandleTime = 0;
   var _refreshTimer = null;
   var chartCandles = [];
@@ -709,6 +921,7 @@
           chart.applyOptions({ width: document.getElementById('lwChart').clientWidth });
           chart.timeScale().fitContent();
           lastCandleTime = chartCandles[chartCandles.length - 1].time;
+          drawIndicators();
           if (lastAnalysisLevels) {
             drawLevels(lastAnalysisLevels.entry, lastAnalysisLevels.sl, lastAnalysisLevels.tp);
           }
@@ -745,6 +958,7 @@
         var logicalRange = chart.timeScale().getVisibleLogicalRange();
         chartCandles = newCandles.concat(chartCandles);
         candleSeries.setData(chartCandles);
+        drawIndicators();
         if (logicalRange) {
           chart.timeScale().setVisibleLogicalRange({
             from: logicalRange.from + newCandles.length,
@@ -770,6 +984,7 @@
         }
         candleSeries.setData(chartCandles);
         lastCandleTime = chartCandles[chartCandles.length - 1].time;
+        drawIndicators();
         _cdUpdatePos();
       })
       .catch(function () {});
@@ -830,6 +1045,27 @@
 
   var symbolDD   = initDropdown('symbolDropdown',   function (v) { loadChart(v, null); });
   var intervalDD = initDropdown('intervalDropdown', function (v) { loadChart(null, v); });
+
+  // Indicator dropdown — toggle behavior (menu ở lại khi chọn)
+  (function () {
+    var el  = document.getElementById('indicatorDropdown');
+    var btn = el.querySelector('.tv-dropdown-btn');
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      document.querySelectorAll('.tv-dropdown.open').forEach(function (d) { if (d !== el) d.classList.remove('open'); });
+      el.classList.toggle('open');
+    });
+    el.addEventListener('click', function (e) {
+      var item = e.target.closest('.ind-item');
+      if (!item) return;
+      e.stopPropagation();
+      var ind = item.dataset.ind;
+      _activeInds[ind] = !_activeInds[ind];
+      item.classList.toggle('active', !!_activeInds[ind]);
+      _updateIndBadge();
+      drawIndicators();
+    });
+  })();
 
   // Timezone picker (click clock to open)
   (function() {
