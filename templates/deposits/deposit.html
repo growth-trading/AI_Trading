@@ -103,8 +103,7 @@
               </div>
             </div>
             <div class="text-center my-3">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={{ admin_wallet }}&bgcolor=ffffff&color=000000&margin=8"
-                   alt="QR ví Admin" width="160" height="160" class="qr-wallet-img" />
+              <div class="qr-wallet-canvas d-inline-block" style="background:#fff;padding:8px;border-radius:8px;line-height:0;"></div>
               <p class="text-sub small mt-2">
                 <i class="bi bi-camera me-1"></i><span data-i18n="dep.qr.hint">Quét mã để sao chép địa chỉ</span>
               </p>
@@ -171,8 +170,7 @@
               </div>
             </div>
             <div class="text-center my-3">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={{ admin_wallet }}&bgcolor=ffffff&color=000000&margin=8"
-                   alt="QR ví Admin" width="160" height="160" class="qr-wallet-img" />
+              <div class="qr-wallet-canvas d-inline-block" style="background:#fff;padding:8px;border-radius:8px;line-height:0;"></div>
               <p class="text-sub small mt-2">
                 <i class="bi bi-camera me-1"></i><span data-i18n="dep.qr.hint">Quét mã để sao chép địa chỉ</span>
               </p>
@@ -288,13 +286,26 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 (function () {
+  var WALLET = '{{ admin_wallet|escapejs }}';
+
+  function renderQR() {
+    document.querySelectorAll('.qr-wallet-canvas').forEach(function (el) {
+      if (el.dataset.rendered) return;
+      el.dataset.rendered = '1';
+      if (!WALLET) { el.style.display = 'none'; return; }
+      new QRCode(el, { text: WALLET, width: 160, height: 160, colorDark: '#000000', colorLight: '#ffffff' });
+    });
+  }
+
   function selectDepositMethod(method) {
     document.getElementById('depositMethodSelect').style.display = 'none';
     document.getElementById('depositExchange').style.display = method === 'exchange' ? 'block' : 'none';
     document.getElementById('depositMetamask').style.display = method === 'metamask' ? 'block' : 'none';
     try { localStorage.setItem('dep-method', method); } catch (e) {}
+    renderQR();
   }
 
   function goBackToSelect() {

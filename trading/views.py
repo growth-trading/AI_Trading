@@ -165,10 +165,16 @@ def trading_view(request):
         'month': settings.AI_PLAN_MONTH_COST,
         'year':  settings.AI_PLAN_YEAR_COST,
     }
+    recent_logs = []
+    if user.has_ai_trading_access:
+        recent_logs = list(
+            ChartAnalysisLog.objects.filter(user=user).order_by('-created_at')[:20]
+        )
     return render(request, 'trading/index.html', {
         'has_ai_access': user.has_ai_trading_access,
         'ai_expires_at': user.ai_trading_expires_at,
         'ai_plans': plans,
+        'recent_logs': recent_logs,
     })
 
 

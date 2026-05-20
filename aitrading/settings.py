@@ -132,6 +132,10 @@ MT5_SERVER   = config('MT5_SERVER',   default='')
 
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 
+# Referral payout — gửi USDT tự động từ ví admin
+ADMIN_PRIVATE_KEY = config('ADMIN_PRIVATE_KEY', default='')
+REFERRAL_MIN_PAYOUT_COINS = config('REFERRAL_MIN_PAYOUT_COINS', default=10, cast=int)
+
 # AI Trading subscription plan costs (in coins)
 AI_PLAN_WEEK_COST  = config('AI_PLAN_WEEK_COST',  default=20,  cast=int)
 AI_PLAN_MONTH_COST = config('AI_PLAN_MONTH_COST', default=50,  cast=int)

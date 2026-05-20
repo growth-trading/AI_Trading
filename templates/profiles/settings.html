@@ -1,6 +1,24 @@
 {% extends 'base.html' %}
 {% block title %}Cài đặt — RichAITrading{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css" />
+<style>
+  .settings-option-icon.flag-icon-wrap {
+    background: none;
+    font-size: 2rem;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+  .settings-option-icon.flag-icon-wrap .fi {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-size: cover;
+    border-radius: 6px;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-layout">
   <aside class="sidebar">
@@ -75,7 +93,7 @@
           <p class="text-sub small mb-3" data-i18n="settings.lang.desc">Chọn ngôn ngữ hiển thị cho toàn bộ ứng dụng.</p>
           <div class="settings-option-group">
             <button type="button" class="settings-option-btn" id="setLangVi">
-              <div class="settings-option-icon">🇻🇳</div>
+              <div class="settings-option-icon flag-icon-wrap"><span class="fi fi-vn fis"></span></div>
               <div>
                 <div class="settings-option-label">Tiếng Việt</div>
                 <div class="settings-option-sub">Vietnamese</div>
@@ -83,7 +101,7 @@
               <i class="bi bi-check-circle-fill settings-option-check ms-auto" id="checkVi"></i>
             </button>
             <button type="button" class="settings-option-btn" id="setLangEn">
-              <div class="settings-option-icon">🇺🇸</div>
+              <div class="settings-option-icon flag-icon-wrap"><span class="fi fi-us fis"></span></div>
               <div>
                 <div class="settings-option-label">English</div>
                 <div class="settings-option-sub">Tiếng Anh</div>

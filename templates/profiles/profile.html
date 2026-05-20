@@ -60,7 +60,19 @@
   [data-theme="light"] .country-search-wrap { border-color: #E2E8F0; }
   [data-theme="light"] .country-search-wrap input { color: #0F172A; }
 
-  /* Referral */
+  /* Referral stat boxes */
+  .ref-stat-box {
+    background: var(--bg-card-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 6px;
+  }
+  .ref-stat-box i { font-size: 1.8rem; }
+  .ref-stat-val { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+  .ref-stat-label { font-size: 0.78rem; color: var(--text-sub); font-weight: 500; }
+  .ref-stat-rate { font-size: 0.82rem; font-weight: 700; line-height: 1.4; }
   .referral-code-box {
     font-family: 'Courier New', monospace;
     font-size: 1.4rem; font-weight: 700; letter-spacing: 0.15em;
@@ -71,20 +83,27 @@
     padding: 8px 20px;
     user-select: all;
   }
-  .referral-earned-box {
-    display: flex; align-items: center; gap: 16px;
-    background: var(--bg-card-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 20px 24px;
+  /* Payout xu display */
+  .payout-coins-display {
+    display: flex; align-items: baseline; gap: 8px;
   }
-  .referral-earned-val {
-    font-size: 2rem; font-weight: 800;
-    color: var(--accent); line-height: 1;
-    font-family: 'Courier New', monospace;
-  }
+  .payout-coins-val { font-size: 2.2rem; font-weight: 800; color: #F59E0B; line-height: 1; }
+  .payout-coins-unit { font-size: 1rem; color: var(--text-sub); }
+  [data-theme="light"] .ref-stat-box { background: #F8FAFC; border-color: #E2E8F0; }
   [data-theme="light"] .referral-code-box { background: #EFF6FF; }
-  [data-theme="light"] .referral-earned-box { background: #F8FAFC; border-color: #E2E8F0; }
+  .btn-icon-copy { background:none; border:1px solid transparent; border-radius:6px; color:var(--text-sub); padding:4px 6px; cursor:pointer; transition:color .2s, border-color .2s; line-height:1; outline:none; box-shadow:none; }
+  .btn-icon-copy:hover { color:var(--accent); border-color:var(--accent); }
+  .btn-icon-copy:focus, .btn-icon-copy:active, .btn-icon-copy:focus-visible { outline:none; box-shadow:none; background:none; }
+
+  /* Payout */
+  .payout-window-badge { display:inline-flex; align-items:center; gap:6px; font-size:.82rem; font-weight:600; padding:4px 12px; border-radius:20px; }
+  .payout-window-badge.open { background:rgba(16,185,129,.12); color:#10B981; border:1px solid rgba(16,185,129,.3); }
+  .payout-window-badge.closed { background:rgba(245,158,11,.1); color:#F59E0B; border:1px solid rgba(245,158,11,.3); }
+  .payout-history-row td { vertical-align:middle; }
+  .payout-status-COMPLETED { color:#10B981; font-weight:600; }
+  .payout-status-PENDING   { color:#F59E0B; font-weight:600; }
+  .payout-status-FAILED    { color:#EF4444; font-weight:600; }
+  #payoutBtn:disabled { color: #fff !important; }
 </style>
 {% endblock %}
 
@@ -192,6 +211,10 @@
                 <div class="form-label-dark" data-i18n="prof.label.address">Địa chỉ</div>
                 <div class="profile-info-val">{{ request.user.address|default:"—" }}</div>
               </div>
+              <div class="col-12">
+                <div class="form-label-dark" data-i18n="prof.label.bsc_wallet">Ví BSC nhận hoa hồng</div>
+                <div class="profile-info-val font-mono" style="font-size:.85rem;">{{ request.user.payout_wallet|default:"—" }}</div>
+              </div>
             </div>
           </div>
 
@@ -233,6 +256,10 @@
                 <label class="form-label-dark" data-i18n="prof.label.address">Địa chỉ</label>
                 {{ form.address }}
               </div>
+              <div class="col-12">
+                <label class="form-label-dark"><span data-i18n="prof.label.bsc_wallet">Ví BSC nhận hoa hồng</span> <span class="text-sub" style="font-size:.78rem;">(BEP-20, để nhận USDT)</span></label>
+                {{ form.payout_wallet }}
+              </div>
               <div class="col-12 d-none">
                 {{ form.avatar }}
               </div>
@@ -249,50 +276,128 @@
 
         </div>
       </div>
-      <!-- Referral Card -->
+      <!-- Referral + Payout Card (gộp) -->
       <div class="col-12">
         <div class="dashboard-card">
-          <h5 class="card-title-dark mb-4" data-i18n="prof.referral.title">Chương trình giới thiệu</h5>
-          <div class="row g-4 align-items-start">
 
-            <!-- Mã giới thiệu -->
-            <div class="col-md-5">
-              <div class="form-label-dark mb-2" data-i18n="prof.referral.your_code">Mã giới thiệu của bạn</div>
-              <div class="d-flex align-items-center gap-2">
-                <div class="referral-code-box" id="referralCodeBox">{{ request.user.referral_code }}</div>
-                <button type="button" class="btn btn-outline-accent btn-sm" id="btnCopyCode" title="Sao chép">
-                  <i class="bi bi-copy"></i>
-                </button>
-              </div>
-              <div class="text-sub mt-2" style="font-size:0.8rem;" data-i18n="prof.referral.hint">Chia sẻ mã này để nhận hoa hồng khi bạn bè mua gói.</div>
-              <div class="mt-3">
-                <span class="form-label-dark" data-i18n="prof.referral.count">Số người đã giới thiệu:</span>
-                <span class="fw-700 text-accent ms-1">{{ referral_count }}</span>
-              </div>
-              {% if request.user.referred_by %}
-              <div class="mt-2">
-                <span class="form-label-dark" data-i18n="prof.referral.referred_by">Được giới thiệu bởi:</span>
-                <span class="fw-600 ms-1">{{ request.user.referred_by.username }}</span>
-              </div>
-              {% endif %}
-            </div>
-
-            <!-- Xu hoa hồng tích lũy -->
-            <div class="col-md-7">
-              <div class="form-label-dark mb-2" data-i18n="prof.referral.earned_title">Xu hoa hồng tích lũy</div>
-              <div class="referral-earned-box">
-                <i class="bi bi-coin text-accent" style="font-size:1.6rem;"></i>
-                <div>
-                  <div class="referral-earned-val">{{ request.user.referral_coins_earned|floatformat:0 }}</div>
-                  <div class="text-sub" style="font-size:0.8rem;" data-i18n="com.coins_unit">xu</div>
-                </div>
-              </div>
-              <div class="text-sub mt-3" style="font-size:0.8rem;" data-i18n="prof.referral.earned_hint">
-                Tổng xu nhận được từ hoa hồng giới thiệu (F1: 40%, F2: 20% giá trị gói bạn bè mua).
-              </div>
-            </div>
-
+          <!-- Header -->
+          <div class="mb-4">
+            <h5 class="card-title-dark mb-0" data-i18n="prof.referral.title">Chương trình giới thiệu</h5>
           </div>
+
+          <!-- 2 stat boxes -->
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <div class="ref-stat-box">
+                <i class="bi bi-people-fill text-accent"></i>
+                <div class="ref-stat-val text-accent">{{ referral_count }}</div>
+                <div class="ref-stat-label" data-i18n="prof.referral.stat.people">Người đã giới thiệu</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="ref-stat-box">
+                <i class="bi bi-coin" style="color:#F59E0B;"></i>
+                <div class="ref-stat-val" style="color:#F59E0B;">{{ request.user.referral_coins_earned|floatformat:0 }}</div>
+                <div class="ref-stat-label" data-i18n="prof.referral.stat.earned">Hoa hồng tích lũy</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mã giới thiệu + Ví rút (2 cột) -->
+          <div class="row g-4">
+            <!-- Mã giới thiệu -->
+            <div class="col-md-6">
+              <div class="p-3 h-100" style="background:var(--bg-card-2);border:1px solid var(--border);border-radius:12px;">
+                <div class="form-label-dark mb-2" data-i18n="prof.referral.your_code">Mã giới thiệu của bạn</div>
+                <div class="referral-code-box d-flex align-items-center justify-content-between gap-2" id="referralCodeBox">
+                  <span>{{ request.user.referral_code }}</span>
+                  <button type="button" class="btn btn-icon-copy" id="btnCopyCode" title="Sao chép">
+                    <i class="bi bi-copy"></i>
+                  </button>
+                </div>
+                <div class="mt-2 text-sub" style="font-size:0.8rem;" data-i18n="prof.referral.hint">Chia sẻ mã này để nhận hoa hồng khi bạn bè nạp xu.</div>
+                <div class="mt-2 text-sub" style="font-size:.8rem;"><i class="bi bi-percent text-success me-1"></i><span data-i18n="prof.referral.rate_label">Hoa hồng:</span> <span class="fw-600" style="color:#10B981;">F1: 40% / F2: 20%</span></div>
+                {% if request.user.referred_by %}
+                <div class="mt-2 text-sub" style="font-size:0.8rem;">
+                  <span data-i18n="prof.referral.referred_by">Được giới thiệu bởi:</span>
+                  <span class="fw-600 text-main ms-1">{{ request.user.referred_by.username }}</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Rút hoa hồng -->
+            <div class="col-md-6">
+              <div class="p-3 h-100" style="background:var(--bg-card-2);border:1px solid var(--border);border-radius:12px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                  <div class="form-label-dark mb-0"><i class="bi bi-send text-accent me-1"></i><span data-i18n="prof.payout.title">Rút hoa hồng về ví</span></div>
+                  {% if is_payout_window %}
+                    <span class="payout-window-badge open"><i class="bi bi-unlock-fill"></i><span data-i18n="prof.payout.open">Đang mở thanh toán</span></span>
+                  {% else %}
+                    <span class="payout-window-badge closed"><i class="bi bi-clock"></i><span data-i18n="prof.payout.closed">Mở vào 2 ngày cuối tháng</span></span>
+                  {% endif %}
+                </div>
+                <div class="mb-3 text-sub" style="font-size:.8rem;"><i class="bi bi-shield-check me-1" style="color:#6366F1;"></i><span data-i18n="prof.payout.min_label">Tối thiểu:</span> <span class="fw-600" style="color:#6366F1;">{{ min_payout_coins }} <span data-i18n="com.coins_unit">xu</span></span></div>
+                {% if not request.user.payout_wallet %}
+                  <div class="info-box-warning p-3" style="border-radius:8px;">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    <span class="text-sub small"><span data-i18n="prof.payout.no_wallet_pre">Vui lòng cập nhật</span> <strong data-i18n="prof.label.bsc_wallet">Ví BSC nhận hoa hồng</strong> <span data-i18n="prof.payout.no_wallet_post">trong phần Thông tin cá nhân trước.</span></span>
+                  </div>
+                {% else %}
+                  <div class="mb-3 d-flex align-items-baseline gap-2 flex-wrap">
+                    <span class="text-sub" style="font-size:.82rem;white-space:nowrap;" data-i18n="prof.payout.wallet_label">Ví nhận:</span>
+                    <span class="font-mono" style="font-size:.82rem;word-break:break-all;color:var(--text-main);">{{ request.user.payout_wallet }}</span>
+                  </div>
+                  <button id="payoutBtn"
+                    class="btn btn-primary-gradient w-100"
+                    {% if not is_payout_window or request.user.referral_coins_earned < min_payout_coins %}disabled{% endif %}>
+                    <i class="bi bi-send me-2"></i><span data-i18n="prof.payout.btn">Rút hoa hồng ngay</span>
+                  </button>
+                  {% if request.user.referral_coins_earned < min_payout_coins and is_payout_window %}
+                    <p class="text-sub mt-2 mb-0" style="font-size:.78rem;"><i class="bi bi-info-circle me-1"></i><span data-i18n="prof.payout.not_enough">Chưa đủ xu tối thiểu.</span></p>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Lịch sử rút -->
+          {% if payout_history %}
+          <div class="mt-4">
+            <div class="form-label-dark mb-2" data-i18n="prof.payout.history">Lịch sử rút hoa hồng</div>
+            <div class="table-responsive">
+              <table class="table-dark-custom">
+                <thead>
+                  <tr>
+                    <th data-i18n="com.th.time">Thời gian</th>
+                    <th data-i18n="com.coins_unit">Xu</th>
+                    <th>USDT</th>
+                    <th data-i18n="prof.payout.wallet_label">Ví nhận</th>
+                    <th>TxHash</th>
+                    <th data-i18n="com.th.status">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in payout_history %}
+                  <tr class="payout-history-row">
+                    <td class="text-sub small">{{ p.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="fw-600">{{ p.amount_coins|floatformat:0 }}</td>
+                    <td class="text-accent fw-600">{{ p.amount_usdt|floatformat:2 }}</td>
+                    <td class="font-mono text-sub" style="font-size:.78rem;">{{ p.wallet_address|slice:":10" }}...</td>
+                    <td>
+                      {% if p.tx_hash %}
+                        <a href="https://bscscan.com/tx/{{ p.tx_hash }}" target="_blank" rel="noopener" class="text-accent font-mono" style="font-size:.78rem;">{{ p.tx_hash|slice:":12" }}...</a>
+                      {% else %}—{% endif %}
+                    </td>
+                    <td><span class="payout-status-{{ p.status }}" data-i18n="prof.payout.status.{{ p.status|lower }}">{{ p.get_status_display }}</span></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endif %}
+
         </div>
       </div>
 
@@ -487,6 +592,38 @@
     document.addEventListener('click', function(e){
       var picker = document.getElementById('countryPicker');
       if (picker && !picker.contains(e.target)) closeDropdown();
+    });
+  }
+
+  /* ── Payout ── */
+  var payoutBtn = document.getElementById('payoutBtn');
+  if (payoutBtn) {
+    payoutBtn.addEventListener('click', function () {
+      if (payoutBtn.disabled) return;
+      payoutBtn.disabled = true;
+      payoutBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+      fetch('{% url "request_payout" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success) {
+          payoutBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Đã gửi thành công!';
+          payoutBtn.classList.remove('btn-primary-gradient');
+          payoutBtn.classList.add('btn-success');
+          setTimeout(function () { location.reload(); }, 2000);
+        } else {
+          alert(data.error || 'Có lỗi xảy ra.');
+          payoutBtn.disabled = false;
+          payoutBtn.innerHTML = '<i class="bi bi-send me-2"></i>Rút hoa hồng ngay';
+        }
+      })
+      .catch(function () {
+        alert('Lỗi kết nối. Vui lòng thử lại.');
+        payoutBtn.disabled = false;
+        payoutBtn.innerHTML = '<i class="bi bi-send me-2"></i>Rút hoa hồng ngay';
+      });
     });
   }
 

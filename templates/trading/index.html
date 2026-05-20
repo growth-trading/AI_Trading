@@ -56,6 +56,18 @@
 .tv-live-bar{font-size:.8rem;padding:6px 16px;display:flex;align-items:center;gap:4px;color:#94A3B8;}
 [data-theme=light] .tv-live-bar{color:#64748B;}
 [data-theme=light] #lwChart{background:#FFFFFF;}
+/* AI History */
+.ai-history-header{display:flex;align-items:center;gap:4px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#94A3B8;padding:10px 14px 6px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ai-history-item{padding:8px 14px;border-bottom:1px solid var(--border);cursor:default;transition:background .15s;}
+.ai-history-item:last-child{border-bottom:none;}
+.ai-history-item:hover{background:var(--bg-main);}
+[data-theme=light] .ai-history-item:hover{background:#F8FAFC;}
+.ai-history-symbol{font-size:.8rem;font-weight:600;color:var(--text-main);}
+.ai-history-meta{font-size:.7rem;color:#94A3B8;}
+.ai-history-time{font-size:.7rem;color:#64748B;}
+.ai-history-prices{display:flex;gap:8px;margin-top:4px;font-size:.7rem;font-weight:600;}
+.ai-history-empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px 14px;color:#64748B;}
+.ai-signal-badge-sm{font-size:.6rem;padding:2px 6px;border-radius:4px;font-weight:700;letter-spacing:.5px;}
 </style>
 {% endblock %}
 
@@ -156,6 +168,9 @@
       <span data-i18n="trad.sub.renew">Gia hạn</span>
     </button>
   </div>
+
+  <!-- Chart + AI Sidebar wrapper -->
+  <div class="trading-chart-wrapper" id="tradingChartWrapper">
 
   <!-- Chart Card -->
   <div class="trading-chart-card">
@@ -310,69 +325,112 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- end trading-chart-card -->
 
-  <!-- AI Result Panel -->
-  <div class="ai-result-panel" id="aiResultPanel" style="display:none">
+  <!-- AI Result Sidebar -->
+  <div class="ai-result-panel" id="aiResultPanel">
 
-    <div class="ai-result-loading" id="aiLoading">
-      <div class="ai-loading-spinner"></div>
-      <div>
-        <div class="fw-600" data-i18n="trad.ai.loading">Đang phân tích...</div>
-        <div class="text-sub small" data-i18n="trad.ai.loading_sub">AI đang đọc và phân tích dữ liệu thực tế</div>
+    <!-- VIEW 1: Lịch sử (mặc định) -->
+    <div class="ai-history-view" id="aiHistorySection">
+      <div class="ai-history-header">
+        <i class="bi bi-clock-history me-1"></i>
+        <span data-i18n="trad.ai.history">Lịch sử phân tích</span>
+      </div>
+      <div class="ai-history-list-wrap" id="aiHistoryList">
+        {% for log in recent_logs %}
+        <div class="ai-history-item">
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <span class="ai-history-symbol">{{ log.symbol }}</span>
+            <span class="ai-signal-badge ai-signal-badge-sm ai-signal-{{ log.signal|lower }}">{{ log.signal }}</span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="ai-history-meta">{% if log.interval == "1" %}M1{% elif log.interval == "5" %}M5{% elif log.interval == "15" %}M15{% elif log.interval == "30" %}M30{% elif log.interval == "60" %}H1{% elif log.interval == "120" %}H2{% elif log.interval == "240" %}H4{% elif log.interval == "D" %}D1{% elif log.interval == "W" %}W1{% else %}{{ log.interval }}{% endif %}</span>
+            <span class="ai-history-time">{{ log.created_at|date:"d/m H:i" }}</span>
+          </div>
+          {% if log.entry %}
+          <div class="ai-history-prices">
+            <span class="text-accent">E: {{ log.entry|floatformat:2 }}</span>
+            {% if log.sl %}<span class="text-danger">SL: {{ log.sl|floatformat:2 }}</span>{% endif %}
+            {% if log.tp %}<span class="text-success">TP: {{ log.tp|floatformat:2 }}</span>{% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% empty %}
+        <div class="ai-history-empty" id="aiHistoryEmpty">
+          <i class="bi bi-stars text-sub" style="font-size:1.5rem"></i>
+          <span class="text-sub small" data-i18n="trad.ai.history_empty">Chưa có phân tích nào</span>
+        </div>
+        {% endfor %}
       </div>
     </div>
 
-    <div id="aiResultContent" style="display:none">
-      <div class="ai-result-header">
-        <div class="d-flex align-items-center gap-2">
-          <i class="bi bi-stars text-accent"></i>
-          <span class="fw-700" data-i18n="trad.ai.result_title">Kết quả phân tích AI</span>
-          <span class="text-sub small" id="aiResultSymbol"></span>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="text-sub small" id="aiResultTime"></span>
-          <button class="ai-close-btn" id="btnCloseAi"><i class="bi bi-x-lg"></i></button>
+    <!-- VIEW 2: Phân tích (loading / kết quả / lỗi) -->
+    <div class="ai-active-view" id="aiActiveView">
+
+      <div class="ai-result-loading" id="aiLoading">
+        <div class="ai-loading-spinner"></div>
+        <div>
+          <div class="fw-600" data-i18n="trad.ai.loading">Đang phân tích...</div>
+          <div class="text-sub small" data-i18n="trad.ai.loading_sub">AI đang đọc và phân tích dữ liệu thực tế</div>
         </div>
       </div>
 
-      <div class="ai-prices-row" id="aiPricesRow">
-        <div class="ai-price-item ai-signal-item">
-          <div class="ai-signal-badge" id="aiSignalBadge">—</div>
+      <div id="aiResultContent">
+
+        <!-- Header: signal + meta + back -->
+        <div class="air-header">
+          <div class="air-signal-wrap">
+            <div class="ai-signal-badge" id="aiSignalBadge">—</div>
+            <div class="air-meta">
+              <span class="air-symbol" id="aiResultSymbol"></span>
+              <span class="air-time" id="aiResultTime"></span>
+            </div>
+          </div>
+          <button class="ai-close-btn" id="btnCloseAi" title="Quay lại lịch sử">
+            <i class="bi bi-arrow-left"></i>
+          </button>
         </div>
-        <div class="ai-price-divider"></div>
-        <div class="ai-price-item">
-          <div class="ai-price-label" data-i18n="trad.ai.entry">Vào lệnh</div>
-          <div class="ai-price-val text-accent fw-700" id="aiEntry">—</div>
+
+        <!-- Prices 2×2 grid -->
+        <div class="air-grid" id="aiPricesRow">
+          <div class="air-cell">
+            <div class="air-cell-label" data-i18n="trad.ai.entry">Vào lệnh</div>
+            <div class="air-cell-val text-accent fw-700" id="aiEntry">—</div>
+          </div>
+          <div class="air-cell">
+            <div class="air-cell-label">R:R</div>
+            <div class="air-cell-val fw-700" id="aiRR">—</div>
+          </div>
+          <div class="air-cell">
+            <div class="air-cell-label">Stop Loss</div>
+            <div class="air-cell-val text-danger fw-700" id="aiSL">—</div>
+            <div class="air-cell-dist text-danger" id="aiSLDist"></div>
+          </div>
+          <div class="air-cell">
+            <div class="air-cell-label">Take Profit</div>
+            <div class="air-cell-val text-success fw-700" id="aiTP">—</div>
+            <div class="air-cell-dist text-success" id="aiTPDist"></div>
+          </div>
         </div>
-        <div class="ai-price-divider"></div>
-        <div class="ai-price-item">
-          <div class="ai-price-label">Stop Loss</div>
-          <div class="ai-price-val text-danger fw-700" id="aiSL">—</div>
-          <div class="ai-price-dist text-danger" id="aiSLDist"></div>
-        </div>
-        <div class="ai-price-divider"></div>
-        <div class="ai-price-item">
-          <div class="ai-price-label">Take Profit</div>
-          <div class="ai-price-val text-success fw-700" id="aiTP">—</div>
-          <div class="ai-price-dist text-success" id="aiTPDist"></div>
-        </div>
-        <div class="ai-price-divider"></div>
-        <div class="ai-price-item">
-          <div class="ai-price-label">R:R</div>
-          <div class="ai-price-val fw-700" id="aiRR">—</div>
-        </div>
+
+        <!-- Reasoning -->
+        <div class="ai-reasoning" id="aiReasoning"></div>
+
       </div>
 
-      <div class="ai-reasoning" id="aiReasoning"></div>
-    </div>
+      <div class="ai-result-error" id="aiError" style="display:none">
+        <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+        <span id="aiErrorMsg"></span>
+        <button class="btn btn-sm btn-outline-secondary mt-3" onclick="showHistoryView();clearLevels();">
+          <i class="bi bi-arrow-left me-1"></i><span data-i18n="trad.ai.back_history">Lịch sử</span>
+        </button>
+      </div>
 
-    <div class="ai-result-error" id="aiError" style="display:none">
-      <i class="bi bi-exclamation-triangle text-danger me-2"></i>
-      <span id="aiErrorMsg"></span>
-    </div>
+    </div><!-- end ai-active-view -->
 
-  </div>
+  </div><!-- end ai-result-panel -->
+
+  </div><!-- end trading-chart-wrapper -->
 
   <!-- Renew Modal -->
   <div class="modal fade" id="renewModal" tabindex="-1" aria-hidden="true">
@@ -978,9 +1036,19 @@
 
   document.getElementById('btnAiAnalyze').addEventListener('click', function () { runAnalysis(); });
   document.getElementById('btnCloseAi').addEventListener('click', function () {
-    document.getElementById('aiResultPanel').style.display = 'none';
+    showHistoryView();
     clearLevels();
   });
+
+  function showHistoryView() {
+    document.getElementById('aiActiveView').style.display  = 'none';
+    document.getElementById('aiHistorySection').style.display = '';
+  }
+  function showActiveView() {
+    document.getElementById('aiHistorySection').style.display = 'none';
+    var av = document.getElementById('aiActiveView');
+    av.style.display = 'flex';
+  }
 
   function captureChartImage() {
     try {
@@ -1002,15 +1070,13 @@
   }
 
   function runAnalysis() {
-    var panel   = document.getElementById('aiResultPanel');
     var loading = document.getElementById('aiLoading');
     var content = document.getElementById('aiResultContent');
     var error   = document.getElementById('aiError');
-    panel.style.display   = 'block';
+    showActiveView();
     loading.style.display = 'flex';
     content.style.display = 'none';
     error.style.display   = 'none';
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     var csrf = getCookie('csrftoken');
     if (!csrf) {
       loading.style.display = 'none';
@@ -1036,7 +1102,7 @@
         .then(function (res) { return res.json(); })
         .then(function (json) {
           loading.style.display = 'none';
-          if (json.success) { renderResult(json.data); content.style.display = 'block'; }
+          if (json.success) { renderResult(json.data); content.style.display = 'flex'; }
           else              { showAiError(json.error || 'Đã xảy ra lỗi'); }
         })
         .catch(function () {
@@ -1049,54 +1115,95 @@
 
   function renderResult(data) {
     var signal = data.signal || 'HOLD';
-    var badge  = document.getElementById('aiSignalBadge');
+    var _ivLabel = {'1':'M1','5':'M5','15':'M15','30':'M30','60':'H1','120':'H2','240':'H4','D':'D1','W':'W1'};
+    var sym = currentSymbol.includes(':') ? currentSymbol.split(':')[1] : currentSymbol;
+
+    // Signal badge
+    var badge = document.getElementById('aiSignalBadge');
     badge.textContent = signal;
     badge.className   = 'ai-signal-badge ai-signal-' + signal.toLowerCase();
 
+    // Header meta
+    document.getElementById('aiResultSymbol').textContent = sym + ' · ' + (_ivLabel[currentInterval] || currentInterval);
+    document.getElementById('aiResultTime').textContent   = new Date().toLocaleTimeString('vi-VN');
+
+    // Prices grid
+    document.getElementById('aiPricesRow').style.display = signal === 'HOLD' ? 'none' : '';
     document.getElementById('aiEntry').textContent = data.entry ? formatPrice(data.entry) : '—';
     document.getElementById('aiSL').textContent    = data.sl    ? formatPrice(data.sl)    : '—';
     document.getElementById('aiTP').textContent    = data.tp    ? formatPrice(data.tp)    : '—';
-    document.getElementById('aiPricesRow').style.display = signal === 'HOLD' ? 'none' : '';
 
     if (data.entry && data.sl && data.tp && signal !== 'HOLD') {
       var e = parseFloat(data.entry), s = parseFloat(data.sl), t = parseFloat(data.tp);
       var slDist = Math.abs(e - s), tpDist = Math.abs(t - e);
-      var slPct  = (slDist / e * 100).toFixed(2), tpPct = (tpDist / e * 100).toFixed(2);
       var isBuy  = signal === 'BUY';
-      document.getElementById('aiSLDist').textContent = (isBuy ? '↓ ' : '↑ ') + formatPrice(slDist) + ' (' + slPct + '%)';
-      document.getElementById('aiTPDist').textContent = (isBuy ? '↑ ' : '↓ ') + formatPrice(tpDist) + ' (' + tpPct + '%)';
-      var rrEl  = document.getElementById('aiRR');
+      document.getElementById('aiSLDist').textContent = (isBuy ? '↓ ' : '↑ ') + formatPrice(slDist) + ' (' + (slDist / e * 100).toFixed(2) + '%)';
+      document.getElementById('aiTPDist').textContent = (isBuy ? '↑ ' : '↓ ') + formatPrice(tpDist) + ' (' + (tpDist / e * 100).toFixed(2) + '%)';
+      var rrEl = document.getElementById('aiRR');
       if (slDist > 0) {
         var rrNum = tpDist / slDist;
         rrEl.textContent = '1 : ' + rrNum.toFixed(1);
-        rrEl.className   = 'ai-price-val fw-700 ' + (rrNum >= 2 ? 'text-success' : rrNum >= 1.5 ? 'text-warning' : 'text-danger');
+        rrEl.className   = 'air-cell-val fw-700 ' + (rrNum >= 2 ? 'text-success' : rrNum >= 1.5 ? 'text-warning' : 'text-danger');
       } else {
-        rrEl.textContent = '—';
-        rrEl.className   = 'ai-price-val fw-700';
+        rrEl.textContent = '—'; rrEl.className = 'air-cell-val fw-700';
       }
       lastAnalysisLevels = { entry: data.entry, sl: data.sl, tp: data.tp };
       drawLevels(data.entry, data.sl, data.tp);
-      document.querySelector('.trading-chart-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       lastAnalysisLevels = null;
       document.getElementById('aiSLDist').textContent = '';
       document.getElementById('aiTPDist').textContent = '';
       var rrEl = document.getElementById('aiRR');
-      rrEl.textContent = '—';
-      rrEl.className   = 'ai-price-val fw-700';
+      rrEl.textContent = '—'; rrEl.className = 'air-cell-val fw-700';
     }
 
     document.getElementById('aiReasoning').textContent = data.reasoning || '';
-    var sym = currentSymbol.includes(':') ? currentSymbol.split(':')[1] : currentSymbol;
-    var _ivLabel = {'1':'M1','5':'M5','15':'M15','30':'M30','60':'H1','120':'H2','240':'H4','D':'D1','W':'W1'};
-    document.getElementById('aiResultSymbol').textContent = '— ' + sym + ' · ' + (_ivLabel[currentInterval] || currentInterval);
-    document.getElementById('aiResultTime').textContent   = new Date().toLocaleTimeString('vi-VN');
+    prependHistory(data, currentSymbol, currentInterval);
+  }
+
+  function prependHistory(data, symbol, interval) {
+    var list  = document.getElementById('aiHistoryList');
+    var empty = document.getElementById('aiHistoryEmpty');
+    if (empty) empty.remove();
+    var signal = (data.signal || 'HOLD').toUpperCase();
+    var ivLabel = {'1':'M1','5':'M5','15':'M15','30':'M30','60':'H1','120':'H2','240':'H4','D':'D1','W':'W1'};
+    var now = new Date();
+    var timeStr = (now.getDate() < 10 ? '0' : '') + now.getDate() + '/' +
+                  (now.getMonth() + 1 < 10 ? '0' : '') + (now.getMonth() + 1) + ' ' +
+                  (now.getHours() < 10 ? '0' : '') + now.getHours() + ':' +
+                  (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+    var symShort = symbol.includes(':') ? symbol.split(':')[1] : symbol;
+    var pricesHtml = '';
+    if (data.entry && signal !== 'HOLD') {
+      pricesHtml = '<div class="ai-history-prices">' +
+        '<span class="text-accent">E: ' + formatPrice(data.entry) + '</span>' +
+        (data.sl ? '<span class="text-danger">SL: ' + formatPrice(data.sl) + '</span>' : '') +
+        (data.tp ? '<span class="text-success">TP: ' + formatPrice(data.tp) + '</span>' : '') +
+        '</div>';
+    }
+    var item = document.createElement('div');
+    item.className = 'ai-history-item';
+    item.innerHTML =
+      '<div class="d-flex align-items-center justify-content-between mb-1">' +
+        '<span class="ai-history-symbol">' + symShort + '</span>' +
+        '<span class="ai-signal-badge ai-signal-badge-sm ai-signal-' + signal.toLowerCase() + '">' + signal + '</span>' +
+      '</div>' +
+      '<div class="d-flex align-items-center justify-content-between">' +
+        '<span class="ai-history-meta">' + (ivLabel[interval] || interval) + '</span>' +
+        '<span class="ai-history-time">' + timeStr + '</span>' +
+      '</div>' +
+      pricesHtml;
+    list.insertBefore(item, list.firstChild);
+    // keep max 20 items
+    var items = list.querySelectorAll('.ai-history-item');
+    if (items.length > 20) items[items.length - 1].remove();
   }
 
   function showAiError(msg) {
     var error = document.getElementById('aiError');
     error.style.display = 'flex';
     document.getElementById('aiErrorMsg').textContent = msg;
+    document.getElementById('aiResultContent').style.display = 'none';
   }
 
   function formatPrice(val) {
@@ -1104,10 +1211,19 @@
     return n >= 1000 ? n.toFixed(2) : n >= 100 ? n.toFixed(3) : n >= 1 ? n.toFixed(4) : n.toFixed(5);
   }
 
+  function syncPanelHeight() {
+    var card  = document.querySelector('.trading-chart-card');
+    var panel = document.getElementById('aiResultPanel');
+    if (!card || !panel || window.innerWidth <= 1024) return;
+    panel.style.height = card.offsetHeight + 'px';
+  }
+  window.addEventListener('resize', syncPanelHeight);
+
   initChart();
   loadChart(currentSymbol);
   startCountdown();
   startTzClock();
+  setTimeout(syncPanelHeight, 200);
 
   new MutationObserver(function(mutations) {
     mutations.forEach(function(m) {
