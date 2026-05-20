@@ -1899,6 +1899,19 @@ select.form-control option { background: var(--bg-card); color: var(--text-main)
 [data-theme="light"] .dep-modal { background: #FFFFFF; }
 
 /* ---- RESPONSIVE ---- */
+
+/* Màn lớn — nới rộng container để giảm khoảng trắng hai bên */
+@media (min-width: 1600px) {
+  .container { max-width: 1520px; }
+  .trading-page { max-width: 1680px; }
+  .tv-page .container { max-width: 1520px; }
+}
+@media (min-width: 1920px) {
+  .container { max-width: 1800px; }
+  .trading-page { max-width: 1880px; }
+  .tv-page .container { max-width: 1800px; }
+}
+
 @media (max-width: 991px) {
   .sidebar { display: none; }
   .dashboard-main { margin-left: 0; max-width: 100%; padding: 1.5rem; }
