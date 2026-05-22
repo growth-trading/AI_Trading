@@ -39,7 +39,7 @@ from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 
-from accounts.models import CustomUser
+from accounts.models import CustomUser, pay_referral_commission
 from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription
 from .services import compute_indicators_local, analyze_with_gemini
 
@@ -142,6 +142,7 @@ def subscribe_tradingview_view(request):
             UserTVSubscription.objects.filter(pk=sub.pk).update(expires_at=new_expiry)
 
         user.refresh_from_db(fields=['coins'])
+        pay_referral_commission(request.user.pk, cost)
         return JsonResponse({
             'success': True,
             'expires_at': new_expiry.isoformat(),
@@ -224,6 +225,7 @@ def subscribe_ai_trading_view(request):
                 return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
 
         user.refresh_from_db(fields=['coins', 'ai_trading_expires_at'])
+        pay_referral_commission(request.user.pk, cost)
         return JsonResponse({
             'success': True,
             'expires_at': user.ai_trading_expires_at.isoformat(),

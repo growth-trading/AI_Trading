@@ -24,12 +24,12 @@ def _avatar_upload_to(instance, filename):
     return f'avatars/{uuid.uuid4().hex}.{ext}'
 
 
-def pay_referral_commission(depositor_pk: int, coins_amount) -> None:
-    """Trả hoa hồng F1 (40%) và F2 (20%) ngay khi người được giới thiệu nạp tiền."""
+def pay_referral_commission(buyer_pk: int, coins_amount) -> None:
+    """Trả hoa hồng F1 (40%) và F2 (20%) khi người được giới thiệu mua dịch vụ."""
     try:
         depositor = CustomUser.objects.select_related(
             'referred_by', 'referred_by__referred_by'
-        ).get(pk=depositor_pk)
+        ).get(pk=buyer_pk)
     except CustomUser.DoesNotExist:
         return
 
@@ -43,7 +43,7 @@ def pay_referral_commission(depositor_pk: int, coins_amount) -> None:
         CustomUser.objects.filter(pk=f1.pk).update(
             referral_coins_earned=F('referral_coins_earned') + f1_bonus,
         )
-        logger.info('Referral F1 commission: +%s earned to user %s (from deposit by %s)', f1_bonus, f1.pk, depositor_pk)
+        logger.info('Referral F1 commission: +%s earned to user %s (from purchase by %s)', f1_bonus, f1.pk, buyer_pk)
 
     f2 = f1.referred_by
     if not f2:
@@ -53,7 +53,7 @@ def pay_referral_commission(depositor_pk: int, coins_amount) -> None:
         CustomUser.objects.filter(pk=f2.pk).update(
             referral_coins_earned=F('referral_coins_earned') + f2_bonus,
         )
-        logger.info('Referral F2 commission: +%s earned to user %s (from deposit by %s)', f2_bonus, f2.pk, depositor_pk)
+        logger.info('Referral F2 commission: +%s earned to user %s (from purchase by %s)', f2_bonus, f2.pk, buyer_pk)
 
 
 class CustomUser(AbstractUser):

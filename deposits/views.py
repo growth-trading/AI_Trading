@@ -12,7 +12,6 @@ from django.utils import timezone
 from django.core.cache import cache
 from .models import DepositTransaction
 from .tasks import verify_txhash
-from accounts.models import pay_referral_commission
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +93,6 @@ def submit_txhash_view(request):
     except IntegrityError:
         messages.error(request, 'Giao dịch này đã được xử lý.')
         return redirect('deposit')
-
-    pay_referral_commission(request.user.pk, coins_to_credit)
 
     messages.success(
         request,
