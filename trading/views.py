@@ -40,7 +40,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 
 from accounts.models import CustomUser, pay_referral_commission
-from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription
+from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings
 from .services import compute_indicators_local, analyze_with_gemini
 
 
@@ -161,10 +161,11 @@ def trading_view(request):
         return redirect('login')
 
     user = request.user
+    ai_cfg = AIPlanSettings.get()
     plans = {
-        'week':  settings.AI_PLAN_WEEK_COST,
-        'month': settings.AI_PLAN_MONTH_COST,
-        'year':  settings.AI_PLAN_YEAR_COST,
+        'week':  ai_cfg.week_cost,
+        'month': ai_cfg.month_cost,
+        'year':  ai_cfg.year_cost,
     }
     recent_logs = []
     if user.has_ai_trading_access:
@@ -195,10 +196,11 @@ def subscribe_ai_trading_view(request):
     if plan not in _PLAN_DAYS:
         return JsonResponse({'error': 'Gói không hợp lệ'}, status=400)
 
+    ai_cfg = AIPlanSettings.get()
     plan_costs = {
-        'week':  settings.AI_PLAN_WEEK_COST,
-        'month': settings.AI_PLAN_MONTH_COST,
-        'year':  settings.AI_PLAN_YEAR_COST,
+        'week':  ai_cfg.week_cost,
+        'month': ai_cfg.month_cost,
+        'year':  ai_cfg.year_cost,
     }
     cost = plan_costs[plan]
     days = _PLAN_DAYS[plan]

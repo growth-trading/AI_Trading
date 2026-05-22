@@ -63,6 +63,33 @@ class UserTVSubscription(models.Model):
         return f'{self.user} — {self.product}'
 
 
+class AIPlanSettings(models.Model):
+    """Singleton — cấu hình giá gói AI Trading qua Admin."""
+    week_cost = models.PositiveIntegerField(default=20, verbose_name='Giá gói tuần (xu)')
+    month_cost = models.PositiveIntegerField(default=50, verbose_name='Giá gói tháng (xu)')
+    year_cost = models.PositiveIntegerField(default=400, verbose_name='Giá gói năm (xu)')
+
+    class Meta:
+        verbose_name = 'Giá gói AI Trading'
+        verbose_name_plural = 'Giá gói AI Trading'
+
+    def __str__(self):
+        return f'Tuần: {self.week_cost}xu / Tháng: {self.month_cost}xu / Năm: {self.year_cost}xu'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # singleton
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(pk=1, defaults={
+            'week_cost': 20,
+            'month_cost': 50,
+            'year_cost': 400,
+        })
+        return obj
+
+
 class ChartAnalysisLog(models.Model):
     SIGNAL_CHOICES = [('BUY', 'BUY'), ('SELL', 'SELL'), ('HOLD', 'HOLD')]
     TRADE_STATUS_CHOICES = [('', 'Chưa kiểm tra'), ('TP', 'Chạm TP'), ('SL', 'Chạm SL')]

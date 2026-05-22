@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog
+from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog, AIPlanSettings
 
 
 @admin.register(TradingViewProduct)
@@ -12,6 +12,17 @@ class TradingViewProductAdmin(admin.ModelAdmin):
         ('Tiếng Việt', {'fields': ('name', 'description', 'features')}),
         ('English', {'fields': ('name_en', 'description_en', 'features_en'), 'classes': ('collapse',)}),
     )
+
+
+@admin.register(AIPlanSettings)
+class AIPlanSettingsAdmin(admin.ModelAdmin):
+    list_display = ('week_cost', 'month_cost', 'year_cost')
+
+    def has_add_permission(self, request):
+        return not AIPlanSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(UserTVSubscription)
