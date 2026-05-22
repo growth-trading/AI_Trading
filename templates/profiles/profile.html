@@ -285,16 +285,23 @@
             <h5 class="card-title-dark mb-0" data-i18n="prof.referral.title">Chương trình giới thiệu</h5>
           </div>
 
-          <!-- 2 stat boxes -->
+          <!-- 3 stat boxes -->
           <div class="row g-3 mb-4">
-            <div class="col-6">
+            <div class="col-4">
               <div class="ref-stat-box">
-                <i class="bi bi-people-fill text-accent"></i>
-                <div class="ref-stat-val text-accent">{{ referral_count }}</div>
-                <div class="ref-stat-label" data-i18n="prof.referral.stat.people">Người đã giới thiệu</div>
+                <i class="bi bi-person-fill-add text-accent"></i>
+                <div class="ref-stat-val text-accent">{{ f1_count }}</div>
+                <div class="ref-stat-label">F1 <span data-i18n="prof.referral.stat.direct">trực tiếp</span></div>
               </div>
             </div>
-            <div class="col-6">
+            <div class="col-4">
+              <div class="ref-stat-box">
+                <i class="bi bi-people-fill" style="color:#6366F1;"></i>
+                <div class="ref-stat-val" style="color:#6366F1;">{{ f2_count }}</div>
+                <div class="ref-stat-label">F2 <span data-i18n="prof.referral.stat.indirect">cấp 2</span></div>
+              </div>
+            </div>
+            <div class="col-4">
               <div class="ref-stat-box">
                 <i class="bi bi-coin" style="color:#F59E0B;"></i>
                 <div class="ref-stat-val" style="color:#F59E0B;">{{ request.user.referral_coins_earned|floatformat:0 }}</div>
@@ -632,7 +639,9 @@
   var codeBox = document.getElementById('referralCodeBox');
   if (btnCopy && codeBox) {
     btnCopy.addEventListener('click', function () {
-      navigator.clipboard.writeText(codeBox.textContent.trim()).then(function () {
+      var code = codeBox.querySelector('span').textContent.trim();
+
+      function onSuccess() {
         btnCopy.innerHTML = '<i class="bi bi-check-lg"></i>';
         btnCopy.classList.add('btn-success');
         btnCopy.classList.remove('btn-outline-accent');
@@ -641,8 +650,29 @@
           btnCopy.classList.remove('btn-success');
           btnCopy.classList.add('btn-outline-accent');
         }, 2000);
-      });
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(onSuccess).catch(function () {
+          fallbackCopy(code) && onSuccess();
+        });
+      } else {
+        fallbackCopy(code) && onSuccess();
+      }
     });
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
   }
 
   /* ── Avatar upload ── */

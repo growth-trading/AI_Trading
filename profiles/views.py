@@ -4,6 +4,7 @@ from django.contrib import messages
 from accounts.models import ReferralPayout
 from accounts.payout import is_payout_window
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from .forms import ProfileForm
 
 
@@ -16,10 +17,14 @@ def profile_view(request):
             form.save()
             messages.success(request, 'Cập nhật hồ sơ thành công.')
             return redirect('profile')
+    User = get_user_model()
+    f1_count = request.user.referrals.count()
+    f2_count = User.objects.filter(referred_by__referred_by=request.user).count()
     payout_history = ReferralPayout.objects.filter(user=request.user)[:6]
     return render(request, 'profiles/profile.html', {
         'form': form,
-        'referral_count': request.user.referrals.count(),
+        'f1_count': f1_count,
+        'f2_count': f2_count,
         'is_payout_window': is_payout_window(),
         'payout_history': payout_history,
         'min_payout_coins': getattr(settings, 'REFERRAL_MIN_PAYOUT_COINS', 10),
