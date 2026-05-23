@@ -64,7 +64,12 @@ def verify_txhash(tx_hash: str):
         if to_addr.lower() != admin_wallet:
             continue
         from_addr = '0x' + topics[1][-40:]
+        # Bỏ qua nếu admin tự gửi cho mình
+        if from_addr.lower() == admin_wallet:
+            continue
         amount_usdt = _usdt_amount(log.get('data', '0x0'))
+        if amount_usdt <= 0:
+            continue
         return {
             'tx_hash': tx_hash.lower(),
             'amount_usdt': amount_usdt,

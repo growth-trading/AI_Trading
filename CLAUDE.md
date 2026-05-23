@@ -40,11 +40,11 @@ python manage.py collectstatic
 - **Backend**: Django 4.2, Python 3.11+, `python-decouple` (`.env`)
 - **Database**: SQLite (dev), `psycopg2-binary` có sẵn cho PostgreSQL
 - **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2, Web3.js (MetaMask), Lightweight Charts (biểu đồ nến)
-- **Tác vụ nền**: `django-apscheduler` — scheduler trong `DepositsConfig.ready()`, không dùng Celery
+- **Tác vụ nền**: không dùng Celery hay django-apscheduler (đã xóa); tác vụ định kỳ chạy thủ công hoặc qua OS scheduler
 - **Email**: Django SMTP (Gmail)
-- **Blockchain**: BscScan API (BSC/BEP-20 USDT); `deposits/tasks.py` dùng `requests`, còn `trading/views.py` chỉ dùng stdlib `urllib.request`
+- **Blockchain**: BSC public RPC (`deposits/tasks.py` dùng `requests`); `trading/views.py` dùng stdlib `urllib.request`
 - **AI Analysis**: `google-generativeai` (Gemini 2.5 Flash Vision) — phân tích ảnh biểu đồ
-- **Chỉ báo kỹ thuật**: `pandas>=2.0` + `pandas-ta>=0.3.14b` — tính RSI/MACD/EMA/Supertrend cục bộ
+- **Chỉ báo kỹ thuật**: `pandas>=2.0` + `ta==0.11.0` (package `ta`, import `import ta as ta_lib`) — tính RSI/MACD/EMA/Supertrend cục bộ
 - **Dữ liệu thị trường**: MetaTrader5 (primary), fallback Binance public API; symbol có prefix `BINANCE:` đi thẳng vào Binance path
 - **Cache**: `django-redis` + Redis (**bắt buộc** — thiếu `REDIS_URL` thì raise `ImproperlyConfigured`); Redis key prefix = `'ait'`
 - **Static files**: `whitenoise` (`WhiteNoiseMiddleware` + `CompressedManifestStaticFilesStorage`) — serve static trực tiếp từ Django không cần Nginx

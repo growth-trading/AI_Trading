@@ -14,13 +14,13 @@ alwaysApply: true
 - **Backend**: Django 4.2, Python 3.11+, `python-decouple` (`.env`)
 - **Database**: SQLite (dev), `psycopg2-binary` có sẵn cho PostgreSQL
 - **Frontend**: Django Templates + Bootstrap 5, Bootstrap Icons 1.11, Font Awesome 6.7.2, Web3.js (MetaMask), Lightweight Charts (biểu đồ nến)
-- **Tác vụ nền**: `django-apscheduler` — scheduler khởi động trong `DepositsConfig.ready()`, không dùng Celery
+- **Tác vụ nền**: không dùng Celery hay django-apscheduler (đã xóa); nạp tiền thủ công (user nhập TxHash)
 - **Email**: Django SMTP (Gmail)
-- **Blockchain**: BscScan API (BSC/BEP-20 USDT)
+- **Blockchain**: BSC public RPC — `deposits/tasks.py` dùng `requests`
 - **AI Analysis**: `google-generativeai` (Gemini 2.5 Flash Vision) — phân tích biểu đồ và đưa ra tín hiệu
-- **Chỉ báo kỹ thuật**: `pandas>=2.0` + `pandas-ta>=0.3.14b` — tính RSI/MACD/EMA/Supertrend cục bộ từ dữ liệu nến, không dùng API ngoài
+- **Chỉ báo kỹ thuật**: `pandas>=2.0` + `ta==0.11.0` (package `ta`, `import ta as ta_lib`) — tính RSI/MACD/EMA/Supertrend cục bộ từ dữ liệu nến, không dùng API ngoài
 - **Dữ liệu thị trường**: MetaTrader5 (MT5) — lấy nến OHLCV real-time; fallback Binance public API nếu MT5 không có sẵn
-- **Cache**: `django-redis` + Redis (self-hosted), fallback `LocMemCache` nếu không có `REDIS_URL`
+- **Cache**: `django-redis` + Redis (**bắt buộc** — thiếu `REDIS_URL` thì raise `ImproperlyConfigured`)
 
 ## Biến môi trường (`.env`)
 

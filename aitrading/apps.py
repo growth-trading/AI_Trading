@@ -1,6 +1,4 @@
 import logging
-import subprocess
-import time
 from django.apps import AppConfig
 
 logger = logging.getLogger(__name__)
@@ -15,31 +13,15 @@ class AitradingConfig(AppConfig):
 
     def _ensure_redis(self):
         from django.conf import settings
+        from django.core.exceptions import ImproperlyConfigured
         import redis as redis_lib
 
-        def _ping():
+        try:
             redis_lib.from_url(settings.REDIS_URL, socket_connect_timeout=3).ping()
-
-        try:
-            _ping()
-            logger.info('Redis already running: %s', settings.REDIS_URL)
-            return
-        except Exception:
-            pass
-
-        logger.info('Redis chưa chạy, đang khởi động redis-server...')
-        try:
-            subprocess.Popen(
-                ['redis-server'],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            time.sleep(1.5)
-            _ping()
-            logger.info('Redis khởi động thành công.')
+            logger.info('Redis connected: %s', settings.REDIS_URL)
         except Exception as e:
-            from django.core.exceptions import ImproperlyConfigured
             raise ImproperlyConfigured(
-                f'Không thể kết nối hoặc khởi động Redis tại {settings.REDIS_URL}: {e}\n'
-                'Hãy cài Redis và đảm bảo redis-server có trong PATH.'
+                f'Không thể kết nối Redis tại {settings.REDIS_URL}: {e}\n'
+                'Hãy khởi động Redis trước khi chạy server (vd: redis-server), '
+                'sau đó đặt REDIS_URL=redis://127.0.0.1:6379/0 trong .env.'
             ) from e

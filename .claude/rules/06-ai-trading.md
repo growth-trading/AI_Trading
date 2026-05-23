@@ -109,20 +109,18 @@ Processing:
 
 ### `compute_indicators_local(candles: list) -> dict`
 
-Tính 5 chỉ báo từ OHLCV cục bộ bằng pandas-ta. Không cần internet.
+Tính 5 chỉ báo từ OHLCV cục bộ bằng package `ta` (`import ta as ta_lib`). Không cần internet.
 
 ```python
 # Yêu cầu: candles >= 60 phần tử, mỗi phần tử có key open/high/low/close
 # Nếu < 60 → trả {} (empty dict) + log warning — không fake data
-df = pd.DataFrame(candles)[['open','high','low','close']].astype(float)
-df.ta.rsi(length=14, append=True)          # → RSI_14
-df.ta.macd(fast=12, slow=26, signal=9)     # → MACD_12_26_9, MACDs_*, MACDh_*
-df.ta.ema(length=20, append=True)          # → EMA_20
-df.ta.ema(length=50, append=True)          # → EMA_50
-df.ta.supertrend(length=10, multiplier=3.0)# → SUPERT_10_3.0, SUPERTd_10_3.0
+import ta as ta_lib
+df = pd.DataFrame(candles)[['open','high','low','close','volume']].astype(float)
+ta_lib.add_all_ta_features(df, open='open', high='high', low='low', close='close', volume='volume')
+# hoặc tính từng chỉ báo riêng: ta_lib.momentum.RSIIndicator, ta_lib.trend.MACD, v.v.
 ```
 
-**Tên cột Supertrend**: detect động bằng regex `^SUPERT_\d` và `^SUPERTd_\d` — không hardcode tên cột vì có thể khác giữa phiên bản pandas-ta.
+**Tên cột**: lấy từ kết quả `ta` library — không hardcode tên cột theo `pandas-ta`.
 
 **Direction**: `(st_dir or 0) > 0` → `'long'`, ngược lại → `'short'`.
 

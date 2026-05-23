@@ -2,16 +2,14 @@ import logging
 import secrets
 import string
 import uuid
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+from django.core.cache import cache
+from django.db import models, transaction
 from django.db.models import F
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
-
-_REFERRAL_F1_RATE = Decimal('40')  # fallback nếu chưa có DB config
-_REFERRAL_F2_RATE = Decimal('20')
 
 
 def _gen_referral_code():
@@ -26,6 +24,12 @@ def _avatar_upload_to(instance, filename):
 
 def pay_referral_commission(buyer_pk: int, coins_amount) -> None:
     """Trả hoa hồng F1 (40%) và F2 (20%) khi người được giới thiệu mua dịch vụ."""
+    # Idempotency: chống double-pay khi user retry trong vòng 30 giây
+    idempotency_key = f'commission:lock:{buyer_pk}'
+    if not cache.add(idempotency_key, 1, 30):
+        logger.info('Commission already paid recently for buyer %s, skipping duplicate', buyer_pk)
+        return
+
     try:
         depositor = CustomUser.objects.select_related(
             'referred_by', 'referred_by__referred_by'
@@ -37,16 +41,24 @@ def pay_referral_commission(buyer_pk: int, coins_amount) -> None:
     f1 = depositor.referred_by
     if not f1:
         return
+
+    # Chặn self-referral và referrer bị khóa/chưa xác thực email
+    if f1.pk == depositor.pk or not (f1.is_active and f1.is_email_verified):
+        return
+
     cfg = ReferralSettings.get()
-    f1_bonus = (amount * cfg.f1_rate / 100).quantize(Decimal('0.01'))
+    f1_bonus = (amount * cfg.f1_rate / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+
     f2 = f1.referred_by
+    # Chặn circular referral: f2 không được là buyer hoặc f1
+    if f2 and f2.pk in (depositor.pk, f1.pk):
+        f2 = None
     f2_bonus = (
-        (amount * cfg.f2_rate / 100).quantize(Decimal('0.01'))
+        (amount * cfg.f2_rate / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
         if f2 else Decimal('0')
     )
 
-    from django.db import transaction as _tx
-    with _tx.atomic():
+    with transaction.atomic():
         if f1_bonus > 0:
             CustomUser.objects.filter(pk=f1.pk).update(
                 referral_coins_earned=F('referral_coins_earned') + f1_bonus,

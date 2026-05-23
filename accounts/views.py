@@ -228,14 +228,18 @@ def request_payout_view(request):
         payout.save(update_fields=['status', 'tx_hash', 'processed_at'])
         return JsonResponse({'success': True, 'tx_hash': tx_hash, 'amount_usdt': float(amount_usdt)})
     except Exception as e:
-        logger.exception('USDT transfer failed for payout %s', payout.pk)
-        CustomUser.objects.filter(pk=user.pk).update(
-            referral_coins_earned=F('referral_coins_earned') + amount_coins
+        logger.exception('USDT transfer failed for payout %s (user %s, %s USDT)', payout.pk, user.pk, amount_usdt)
+        # KHÔNG tự động hoàn xu vì TX có thể đã được broadcast lên BSC network.
+        # Admin cần kiểm tra blockchain bằng tx hash trước khi xử lý thủ công.
+        payout.status = ReferralPayout.STATUS_PENDING
+        payout.error_message = (
+            f'Transfer error: {e}. '
+            'TX có thể đã broadcast — admin cần xác minh blockchain trước khi hoàn xu.'
         )
-        payout.status = ReferralPayout.STATUS_FAILED
-        payout.error_message = str(e)
         payout.save(update_fields=['status', 'error_message'])
-        return JsonResponse({'error': f'Gửi USDT thất bại: {e}. Xu đã được hoàn trả.'}, status=500)
+        return JsonResponse({
+            'error': 'Gửi USDT thất bại. Yêu cầu rút tiền sẽ được admin xem xét trong 24h.'
+        }, status=500)
 
 
 def _send_otp_email(user, otp):

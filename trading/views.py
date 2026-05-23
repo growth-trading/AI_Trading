@@ -95,6 +95,10 @@ def subscribe_tradingview_view(request):
     if not request.user.is_email_verified:
         return JsonResponse({'error': 'Chưa xác thực email'}, status=403)
 
+    # Chống double-click: block 10s/user
+    if not cache.add(f'subscribe:tv:lock:{request.user.pk}', 1, 10):
+        return JsonResponse({'error': 'Yêu cầu đang xử lý, vui lòng chờ giây lát.'}, status=429)
+
     try:
         body = json.loads(request.body)
     except (json.JSONDecodeError, ValueError):
@@ -118,8 +122,6 @@ def subscribe_tradingview_view(request):
     try:
         with transaction.atomic():
             user = CustomUser.objects.select_for_update().get(pk=request.user.pk)
-            if user.coins < cost:
-                raise _InsufficientCoins()
 
             sub, _ = UserTVSubscription.objects.get_or_create(
                 user=user,
@@ -149,7 +151,7 @@ def subscribe_tradingview_view(request):
         return JsonResponse({
             'success': True,
             'expires_at': new_expiry.isoformat(),
-            'coins_remaining': float(user.coins),
+            'coins_remaining': str(user.coins),
         })
     except _InsufficientCoins:
         return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
@@ -190,6 +192,10 @@ def subscribe_ai_trading_view(request):
     if not request.user.is_email_verified:
         return JsonResponse({'error': 'Chưa xác thực email'}, status=403)
 
+    # Chống double-click: block 10s/user
+    if not cache.add(f'subscribe:ai:lock:{request.user.pk}', 1, 10):
+        return JsonResponse({'error': 'Yêu cầu đang xử lý, vui lòng chờ giây lát.'}, status=429)
+
     try:
         body = json.loads(request.body)
     except (json.JSONDecodeError, ValueError):
@@ -212,8 +218,6 @@ def subscribe_ai_trading_view(request):
     try:
         with transaction.atomic():
             user = CustomUser.objects.select_for_update().get(pk=request.user.pk)
-            if user.coins < cost:
-                return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
             new_expiry = (
                 user.ai_trading_expires_at + timedelta(days=days)
                 if user.ai_trading_expires_at and user.ai_trading_expires_at > now
@@ -227,7 +231,7 @@ def subscribe_ai_trading_view(request):
                 ai_trading_expires_at=new_expiry,
             )
             if not updated:
-                return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
+                raise _InsufficientCoins()
 
         user.refresh_from_db(fields=['coins', 'ai_trading_expires_at'])
         try:
@@ -237,8 +241,10 @@ def subscribe_ai_trading_view(request):
         return JsonResponse({
             'success': True,
             'expires_at': user.ai_trading_expires_at.isoformat(),
-            'coins_remaining': float(user.coins),
+            'coins_remaining': str(user.coins),
         })
+    except _InsufficientCoins:
+        return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
     except Exception:
         logger.exception('subscribe_ai_trading failed for user %s', request.user.pk)
         return JsonResponse({'error': 'Đăng ký thất bại, vui lòng thử lại.'}, status=500)
