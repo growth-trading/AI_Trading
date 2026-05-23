@@ -17,7 +17,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_apscheduler',
     'accounts',
     'deposits',
     'trading',
@@ -136,10 +135,6 @@ GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 ADMIN_PRIVATE_KEY = config('ADMIN_PRIVATE_KEY', default='')
 REFERRAL_MIN_PAYOUT_COINS = config('REFERRAL_MIN_PAYOUT_COINS', default=10, cast=int)
 
-# AI Trading subscription plan costs (in coins)
-AI_PLAN_WEEK_COST  = config('AI_PLAN_WEEK_COST',  default=20,  cast=int)
-AI_PLAN_MONTH_COST = config('AI_PLAN_MONTH_COST', default=50,  cast=int)
-AI_PLAN_YEAR_COST  = config('AI_PLAN_YEAR_COST',  default=400, cast=int)
 
 # TradingView subscription plan costs (in coins)
 TV_PLAN_WEEK_COST  = config('TV_PLAN_WEEK_COST',  default=10,  cast=int)
@@ -179,9 +174,3 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
-APSCHEDULER_RUN_NOW_TIMEOUT = 25
-
-# Set to '1' in production to start the wallet scanner scheduler on app startup.
-# In development, the scheduler starts automatically when using `runserver`.
-DJANGO_RUN_SCHEDULER = config('DJANGO_RUN_SCHEDULER', default='0')

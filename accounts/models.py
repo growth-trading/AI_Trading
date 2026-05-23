@@ -39,21 +39,24 @@ def pay_referral_commission(buyer_pk: int, coins_amount) -> None:
         return
     cfg = ReferralSettings.get()
     f1_bonus = (amount * cfg.f1_rate / 100).quantize(Decimal('0.01'))
-    if f1_bonus > 0:
-        CustomUser.objects.filter(pk=f1.pk).update(
-            referral_coins_earned=F('referral_coins_earned') + f1_bonus,
-        )
-        logger.info('Referral F1 commission: +%s earned to user %s (from purchase by %s)', f1_bonus, f1.pk, buyer_pk)
-
     f2 = f1.referred_by
-    if not f2:
-        return
-    f2_bonus = (amount * cfg.f2_rate / 100).quantize(Decimal('0.01'))
-    if f2_bonus > 0:
-        CustomUser.objects.filter(pk=f2.pk).update(
-            referral_coins_earned=F('referral_coins_earned') + f2_bonus,
-        )
-        logger.info('Referral F2 commission: +%s earned to user %s (from purchase by %s)', f2_bonus, f2.pk, buyer_pk)
+    f2_bonus = (
+        (amount * cfg.f2_rate / 100).quantize(Decimal('0.01'))
+        if f2 else Decimal('0')
+    )
+
+    from django.db import transaction as _tx
+    with _tx.atomic():
+        if f1_bonus > 0:
+            CustomUser.objects.filter(pk=f1.pk).update(
+                referral_coins_earned=F('referral_coins_earned') + f1_bonus,
+            )
+            logger.info('Referral F1 commission: +%s earned to user %s (from purchase by %s)', f1_bonus, f1.pk, buyer_pk)
+        if f2 and f2_bonus > 0:
+            CustomUser.objects.filter(pk=f2.pk).update(
+                referral_coins_earned=F('referral_coins_earned') + f2_bonus,
+            )
+            logger.info('Referral F2 commission: +%s earned to user %s (from purchase by %s)', f2_bonus, f2.pk, buyer_pk)
 
 
 class CustomUser(AbstractUser):

@@ -639,7 +639,10 @@
   var codeBox = document.getElementById('referralCodeBox');
   if (btnCopy && codeBox) {
     btnCopy.addEventListener('click', function () {
-      var code = codeBox.querySelector('span').textContent.trim();
+      var span = codeBox.querySelector('span');
+      if (!span) return;
+      var code = span.textContent.trim();
+      if (!code) return;
 
       function onSuccess() {
         btnCopy.innerHTML = '<i class="bi bi-check-lg"></i>';

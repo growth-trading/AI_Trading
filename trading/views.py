@@ -142,7 +142,10 @@ def subscribe_tradingview_view(request):
             UserTVSubscription.objects.filter(pk=sub.pk).update(expires_at=new_expiry)
 
         user.refresh_from_db(fields=['coins'])
-        pay_referral_commission(request.user.pk, cost)
+        try:
+            pay_referral_commission(request.user.pk, cost)
+        except Exception:
+            logger.exception('Referral commission failed after TV purchase for user %s', request.user.pk)
         return JsonResponse({
             'success': True,
             'expires_at': new_expiry.isoformat(),
@@ -227,7 +230,10 @@ def subscribe_ai_trading_view(request):
                 return JsonResponse({'error': 'Không đủ xu. Vui lòng nạp thêm.'}, status=402)
 
         user.refresh_from_db(fields=['coins', 'ai_trading_expires_at'])
-        pay_referral_commission(request.user.pk, cost)
+        try:
+            pay_referral_commission(request.user.pk, cost)
+        except Exception:
+            logger.exception('Referral commission failed after AI purchase for user %s', request.user.pk)
         return JsonResponse({
             'success': True,
             'expires_at': user.ai_trading_expires_at.isoformat(),
