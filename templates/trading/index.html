@@ -1462,7 +1462,31 @@
     var loading = document.getElementById('aiLoading');
     var content = document.getElementById('aiResultContent');
     var error   = document.getElementById('aiError');
+
+    // Button loading state
+    var btn      = document.getElementById('btnAiAnalyze');
+    var btnIcon  = btn.querySelector('i');
+    var btnSpan  = btn.querySelector('span');
+    var origIcon = btnIcon ? btnIcon.className : '';
+    var origText = btnSpan ? btnSpan.textContent : '';
+    btn.disabled = true;
+    if (btnIcon) { btnIcon.className = 'bi bi-arrow-repeat me-1'; btnIcon.style.animation = 'spin .8s linear infinite'; }
+    if (btnSpan) btnSpan.textContent = 'Đang phân tích...';
+
+    function restoreBtn() {
+      btn.disabled = false;
+      if (btnIcon) { btnIcon.className = origIcon; btnIcon.style.animation = ''; }
+      if (btnSpan) btnSpan.textContent = origText;
+    }
+
     showActiveView();
+
+    // Mobile: cuộn đến khu vực kết quả
+    if (window.innerWidth <= 1024) {
+      var panel = document.getElementById('aiResultPanel');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     loading.style.display = 'flex';
     content.style.display = 'none';
     error.style.display   = 'none';
@@ -1470,6 +1494,7 @@
     if (!csrf) {
       loading.style.display = 'none';
       showAiError('Phiên đăng nhập hết hạn, vui lòng tải lại trang.');
+      restoreBtn();
       return;
     }
     // Kéo chart về nến mới nhất, chờ 2 frame để canvas render xong rồi mới chụp
@@ -1491,11 +1516,13 @@
         .then(function (res) { return res.json(); })
         .then(function (json) {
           loading.style.display = 'none';
+          restoreBtn();
           if (json.success) { renderResult(json.data); content.style.display = 'flex'; }
           else              { showAiError(json.error || 'Đã xảy ra lỗi'); }
         })
         .catch(function () {
           loading.style.display = 'none';
+          restoreBtn();
           showAiError('Không thể kết nối. Vui lòng thử lại.');
         });
       }); // requestAnimationFrame inner
