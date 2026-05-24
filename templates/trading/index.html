@@ -1469,9 +1469,11 @@
     var btnSpan  = btn.querySelector('span');
     var origIcon = btnIcon ? btnIcon.className : '';
     var origText = btnSpan ? btnSpan.textContent : '';
+    var lang = localStorage.getItem('ait-lang') || 'vi';
+    var loadingLabel = (typeof i18n !== 'undefined' && i18n[lang]) ? i18n[lang]['trad.ai.loading'] : 'Đang phân tích...';
     btn.disabled = true;
     if (btnIcon) { btnIcon.className = 'bi bi-arrow-repeat me-1'; btnIcon.style.animation = 'spin .8s linear infinite'; }
-    if (btnSpan) btnSpan.textContent = 'Đang phân tích...';
+    if (btnSpan) btnSpan.textContent = loadingLabel;
 
     function restoreBtn() {
       btn.disabled = false;
@@ -1481,10 +1483,14 @@
 
     showActiveView();
 
-    // Mobile: cuộn đến khu vực kết quả
+    // Mobile: cuộn xuống để thấy phần đáy chart + panel kết quả
     if (window.innerWidth <= 1024) {
       var panel = document.getElementById('aiResultPanel');
-      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (panel) {
+        var panelTop = panel.getBoundingClientRect().top + window.pageYOffset;
+        // Lùi lên 40% chiều cao viewport để thấy phần đáy của chart phía trên
+        window.scrollTo({ top: Math.max(0, panelTop - Math.round(window.innerHeight * 0.4)), behavior: 'smooth' });
+      }
     }
 
     loading.style.display = 'flex';
