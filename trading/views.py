@@ -115,6 +115,9 @@ def subscribe_tradingview_view(request):
     except TradingViewProduct.DoesNotExist:
         return JsonResponse({'error': 'Sản phẩm không tồn tại'}, status=404)
 
+    if product.is_coming_soon:
+        return JsonResponse({'error': 'Sản phẩm chưa ra mắt, vui lòng chờ.'}, status=400)
+
     cost = getattr(product, f'{plan}_cost')
     days = _PLAN_DAYS[plan]
     now = timezone.now()

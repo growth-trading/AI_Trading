@@ -23,6 +23,7 @@ class TradingViewProduct(models.Model):
     month_cost = models.PositiveIntegerField(default=30)
     year_cost = models.PositiveIntegerField(default=200)
     is_active = models.BooleanField(default=True)
+    is_coming_soon = models.BooleanField(default=False, verbose_name='Chuẩn bị ra mắt', help_text='Hiện thị giao diện "Sắp ra mắt", ẩn nút mua.')
     sort_order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:

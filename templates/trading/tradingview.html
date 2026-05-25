@@ -59,6 +59,25 @@
 }
 .tv-product-status.active { background: rgba(16,185,129,.15); color: #10B981; border: 1px solid rgba(16,185,129,.3); }
 .tv-product-status.inactive { background: rgba(148,163,184,.08); color: var(--text-sub); border: 1px solid rgba(148,163,184,.2); }
+.tv-product-status.coming-soon { background: rgba(239,68,68,.12); color: #F87171; border: 1px solid rgba(239,68,68,.3); }
+
+/* Coming soon card */
+.tv-product-card.coming-soon-card {
+  opacity: .85;
+  border-color: rgba(239,68,68,.3);
+}
+.tv-product-card.coming-soon-card:hover {
+  border-color: rgba(239,68,68,.5);
+  box-shadow: 0 8px 30px rgba(239,68,68,.1);
+  transform: translateY(-2px);
+}
+.tv-coming-soon-banner {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: #EF4444; border: 1px solid #EF4444;
+  border-radius: 8px; padding: 12px; margin-top: auto;
+  font-size: .875rem; font-weight: 600; color: #fff;
+}
+[data-theme="light"] .tv-product-card.coming-soon-card { background: #FFF5F5; border-color: rgba(239,68,68,.35); }
 
 .tv-product-icon {
   width: 48px; height: 48px; border-radius: 12px;
@@ -181,12 +200,17 @@
     <!-- Product Grid -->
     <div class="tv-product-grid">
       {% for item in product_list %}
-      <div class="tv-product-card {% if item.has_access %}active-card{% endif %} animate-on-scroll">
+      <div class="tv-product-card {% if item.has_access %}active-card{% elif item.product.is_coming_soon %}coming-soon-card{% endif %} animate-on-scroll">
 
         {% if item.has_access %}
           <div class="tv-product-status active">
             <i class="bi bi-check-circle-fill"></i>
             <span data-i18n="tv.status.active">Đang hoạt động</span>
+          </div>
+        {% elif item.product.is_coming_soon %}
+          <div class="tv-product-status coming-soon">
+            <i class="bi bi-hourglass-split"></i>
+            <span data-i18n="tv.status.coming_soon">Sắp ra mắt</span>
           </div>
         {% else %}
           <div class="tv-product-status inactive">
@@ -240,6 +264,11 @@
               onclick="openTVBuyModal(this)">
               <i class="bi bi-arrow-clockwise"></i>
             </button>
+          </div>
+        {% elif item.product.is_coming_soon %}
+          <div class="tv-coming-soon-banner">
+            <i class="bi bi-hourglass-split"></i>
+            <span data-i18n="tv.coming_soon.label">Sản phẩm sắp ra mắt — hãy theo dõi!</span>
           </div>
         {% else %}
           <div class="tv-product-price-hint">
