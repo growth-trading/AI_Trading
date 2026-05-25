@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('landing')
-    form = RegisterForm(request.POST or None)
+    ref = request.GET.get('ref', '')
+    initial = {'referral_code_input': ref} if ref else {}
+    form = RegisterForm(request.POST or None, initial=initial)
     if request.method == 'POST' and form.is_valid():
         try:
             user = form.save()

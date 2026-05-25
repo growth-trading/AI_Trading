@@ -65,22 +65,23 @@
     background: var(--bg-card-2);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 20px 24px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; gap: 6px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+    gap: 4px;
   }
+  .ref-stat-top { display: flex; align-items: flex-end; gap: 8px; line-height: 1; }
   .ref-stat-box i { font-size: 1.8rem; }
-  .ref-stat-val { font-size: 1.8rem; font-weight: 800; line-height: 1; }
-  .ref-stat-label { font-size: 0.78rem; color: var(--text-sub); font-weight: 500; }
+  .ref-stat-val { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+  .ref-stat-label { font-size: 0.78rem; color: var(--text-sub); font-weight: 500; padding-left: 2px; }
   .ref-stat-rate { font-size: 0.82rem; font-weight: 700; line-height: 1.4; }
   .referral-code-box {
     font-family: 'Courier New', monospace;
     font-size: 1.4rem; font-weight: 700; letter-spacing: 0.15em;
     color: var(--accent);
-    background: var(--bg-card-2);
+    background: #fff;
     border: 1px dashed var(--accent);
     border-radius: var(--radius-sm);
-    padding: 8px 20px;
+    padding: 6px 14px;
     user-select: all;
   }
   /* Payout xu display */
@@ -90,7 +91,13 @@
   .payout-coins-val { font-size: 2.2rem; font-weight: 800; color: #F59E0B; line-height: 1; }
   .payout-coins-unit { font-size: 1rem; color: var(--text-sub); }
   [data-theme="light"] .ref-stat-box { background: #F8FAFC; border-color: #E2E8F0; }
-  [data-theme="light"] .referral-code-box { background: #EFF6FF; }
+  [data-theme="light"] .referral-code-box { background: #fff; }
+  .ref-share-toggle { display:flex; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:3px; gap:2px; margin-bottom:14px; }
+  .ref-share-tab { flex:1; background:transparent; border:none; border-radius:6px; padding:6px 10px; font-size:.8rem; font-weight:600; color:var(--text-sub); cursor:pointer; transition:all .2s; }
+  .ref-share-tab.active { background:var(--accent); color:#fff; }
+  .ref-share-tab:hover:not(.active) { color:var(--text-main); }
+  .referral-link-box { font-size:1.4rem; color:var(--accent); background:rgba(59,130,246,.06); border:1px dashed var(--accent); border-radius:var(--radius-sm); padding:7px 14px; word-break:break-all; user-select:all; flex:1; line-height:1.5; }
+  [data-theme="light"] .referral-link-box { background: #fff; }
   .btn-icon-copy { background:none; border:1px solid transparent; border-radius:6px; color:var(--text-sub); padding:4px 6px; cursor:pointer; transition:color .2s, border-color .2s; line-height:1; outline:none; box-shadow:none; }
   .btn-icon-copy:hover { color:var(--accent); border-color:var(--accent); }
   .btn-icon-copy:focus, .btn-icon-copy:active, .btn-icon-copy:focus-visible { outline:none; box-shadow:none; background:none; }
@@ -289,22 +296,28 @@
           <div class="row g-3 mb-4">
             <div class="col-4">
               <div class="ref-stat-box">
-                <i class="bi bi-person-fill-add text-accent"></i>
-                <div class="ref-stat-val text-accent">{{ f1_count }}</div>
+                <div class="ref-stat-top">
+                  <i class="bi bi-person-fill-add text-accent"></i>
+                  <div class="ref-stat-val text-accent">{{ f1_count }}</div>
+                </div>
                 <div class="ref-stat-label">F1 <span data-i18n="prof.referral.stat.direct">trực tiếp</span></div>
               </div>
             </div>
             <div class="col-4">
               <div class="ref-stat-box">
-                <i class="bi bi-people-fill" style="color:#6366F1;"></i>
-                <div class="ref-stat-val" style="color:#6366F1;">{{ f2_count }}</div>
+                <div class="ref-stat-top">
+                  <i class="bi bi-people-fill" style="color:#6366F1;"></i>
+                  <div class="ref-stat-val" style="color:#6366F1;">{{ f2_count }}</div>
+                </div>
                 <div class="ref-stat-label">F2 <span data-i18n="prof.referral.stat.indirect">cấp 2</span></div>
               </div>
             </div>
             <div class="col-4">
               <div class="ref-stat-box">
-                <i class="bi bi-coin" style="color:#F59E0B;"></i>
-                <div class="ref-stat-val" style="color:#F59E0B;">{{ request.user.referral_coins_earned|floatformat:0 }}</div>
+                <div class="ref-stat-top">
+                  <i class="bi bi-coin" style="color:#F59E0B;"></i>
+                  <div class="ref-stat-val" style="color:#F59E0B;">{{ request.user.referral_coins_earned|floatformat:0 }}</div>
+                </div>
                 <div class="ref-stat-label" data-i18n="prof.referral.stat.earned">Hoa hồng tích lũy</div>
               </div>
             </div>
@@ -312,17 +325,42 @@
 
           <!-- Mã giới thiệu + Ví rút (2 cột) -->
           <div class="row g-4">
-            <!-- Mã giới thiệu -->
+            <!-- Mã / Link giới thiệu -->
             <div class="col-md-6">
               <div class="p-3 h-100" style="background:var(--bg-card-2);border:1px solid var(--border);border-radius:12px;">
-                <div class="form-label-dark mb-2" data-i18n="prof.referral.your_code">Mã giới thiệu của bạn</div>
-                <div class="referral-code-box d-flex align-items-center justify-content-between gap-2" id="referralCodeBox">
-                  <span>{{ request.user.referral_code }}</span>
-                  <button type="button" class="btn btn-icon-copy" id="btnCopyCode" title="Sao chép">
-                    <i class="bi bi-copy"></i>
+
+                <!-- Toggle tab -->
+                <div class="ref-share-toggle">
+                  <button class="ref-share-tab active" id="tabCode" onclick="switchRefTab('code')">
+                    <i class="bi bi-upc me-1"></i><span data-i18n="prof.referral.tab.code">Mã giới thiệu</span>
+                  </button>
+                  <button class="ref-share-tab" id="tabLink" onclick="switchRefTab('link')">
+                    <i class="bi bi-link-45deg me-1"></i><span data-i18n="prof.referral.tab.link">Link giới thiệu</span>
                   </button>
                 </div>
-                <div class="mt-2 text-sub" style="font-size:0.8rem;" data-i18n="prof.referral.hint">Chia sẻ mã này để nhận hoa hồng khi bạn bè nạp xu.</div>
+
+                <!-- Code view -->
+                <div id="refCodeView">
+                  <div class="referral-code-box d-flex align-items-center justify-content-between gap-2" id="referralCodeBox">
+                    <span>{{ request.user.referral_code }}</span>
+                    <button type="button" class="btn btn-icon-copy" id="btnCopyCode" title="Sao chép">
+                      <i class="bi bi-copy"></i>
+                    </button>
+                  </div>
+                  <div class="mt-2 text-sub" style="font-size:0.8rem;" data-i18n="prof.referral.hint">Chia sẻ mã này để nhận hoa hồng khi bạn bè nạp xu.</div>
+                </div>
+
+                <!-- Link view -->
+                <div id="refLinkView" style="display:none;">
+                  <div class="referral-link-box d-flex align-items-center justify-content-between gap-2">
+                    <span id="referralLinkBox" style="word-break:break-all; flex:1;"></span>
+                    <button type="button" class="btn btn-icon-copy" id="btnCopyLink" title="Sao chép" style="flex-shrink:0;">
+                      <i class="bi bi-copy"></i>
+                    </button>
+                  </div>
+                  <div class="mt-2 text-sub" style="font-size:0.8rem;" data-i18n="prof.referral.link_hint">Người đăng ký qua link này sẽ tự động liên kết với bạn.</div>
+                </div>
+
                 <div class="mt-2 text-sub" style="font-size:.8rem;"><i class="bi bi-percent text-success me-1"></i><span data-i18n="prof.referral.rate_label">Hoa hồng:</span> <span class="fw-600" style="color:#10B981;">F1: 40% / F2: 20%</span></div>
                 {% if request.user.referred_by %}
                 <div class="mt-2 text-sub" style="font-size:0.8rem;">
@@ -676,6 +714,42 @@
     try { ok = document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
     return ok;
+  }
+
+  /* ── Referral tab toggle ── */
+  var _refCode = '{{ request.user.referral_code }}';
+  var _refLink = window.location.origin + '{% url "register" %}?ref=' + _refCode;
+  var linkBox = document.getElementById('referralLinkBox');
+  if (linkBox) linkBox.textContent = _refLink;
+
+  window.switchRefTab = function(tab) {
+    var codeView = document.getElementById('refCodeView');
+    var linkView = document.getElementById('refLinkView');
+    var tCode = document.getElementById('tabCode');
+    var tLink = document.getElementById('tabLink');
+    if (tab === 'code') {
+      codeView.style.display = ''; linkView.style.display = 'none';
+      tCode.classList.add('active'); tLink.classList.remove('active');
+    } else {
+      codeView.style.display = 'none'; linkView.style.display = '';
+      tLink.classList.add('active'); tCode.classList.remove('active');
+    }
+  }
+
+  /* ── Copy referral link ── */
+  var btnCopyLink = document.getElementById('btnCopyLink');
+  if (btnCopyLink) {
+    btnCopyLink.addEventListener('click', function () {
+      function onOk() {
+        btnCopyLink.innerHTML = '<i class="bi bi-check-lg"></i>';
+        setTimeout(function () { btnCopyLink.innerHTML = '<i class="bi bi-copy"></i>'; }, 2000);
+      }
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(_refLink).then(onOk).catch(function () { fallbackCopy(_refLink) && onOk(); });
+      } else {
+        fallbackCopy(_refLink) && onOk();
+      }
+    });
   }
 
   /* ── Avatar upload ── */
