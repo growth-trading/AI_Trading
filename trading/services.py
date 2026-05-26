@@ -124,7 +124,13 @@ def analyze_with_gemini(image_bytes: bytes, indicators: dict, symbol: str, inter
 Dữ liệu indicator chính xác từ hệ thống:
 {indicator_text}
 
-Nhìn vào biểu đồ và kết hợp với các chỉ số trên, hãy đưa ra phân tích và tín hiệu giao dịch. Entry/SL/TP phải sát với giá hiện tại.
+Nhìn vào biểu đồ và kết hợp với các chỉ số trên, hãy đưa ra phân tích và tín hiệu giao dịch.
+
+Quy tắc bắt buộc cho Entry/SL/TP:
+- Entry: sát giá hiện tại
+- TP: cách entry 0.3%–0.5% (ưu tiên mức gần, dễ đạt)
+- SL: cách entry 0.6%–1.0% (rộng hơn TP để tránh bị quét)
+- SL phải luôn rộng hơn TP tối thiểu 30%
 
 Trả về JSON hợp lệ (không có markdown, không có text thừa) theo đúng format sau:
 {{
