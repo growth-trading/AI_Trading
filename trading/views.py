@@ -40,7 +40,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 
 from accounts.models import CustomUser, pay_referral_commission
-from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings
+from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings, BrokerLink
 from .services import compute_indicators_local, analyze_with_gemini
 
 
@@ -79,6 +79,17 @@ def tradingview_view(request):
     return render(request, 'trading/tradingview.html', {
         'product_list': product_list,
     })
+
+
+@require_GET
+def services_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not request.user.is_email_verified:
+        return redirect('verify_otp')
+
+    brokers = BrokerLink.objects.filter(is_active=True).order_by('category', 'sort_order', 'pk')
+    return render(request, 'trading/services.html', {'brokers': brokers})
 
 
 

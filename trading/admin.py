@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog, AIPlanSettings
+from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog, AIPlanSettings, BrokerLink
 
 
 @admin.register(TradingViewProduct)
@@ -30,6 +30,22 @@ class UserTVSubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'product', 'expires_at')
     list_filter = ('product',)
     raw_id_fields = ('user',)
+
+
+@admin.register(BrokerLink)
+class BrokerLinkAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'is_active', 'sort_order')
+    list_editable = ('is_active', 'sort_order')
+    list_filter = ('category', 'is_active')
+    prepopulated_fields = {'slug': ('name',)}
+    fieldsets = (
+        (None, {'fields': ('name', 'slug', 'is_active', 'sort_order', 'category')}),
+        ('Thông tin cơ bản', {'fields': ('logo', 'hero_title', 'hero_title_en', 'register_url', 'partner_code')}),
+        ('Mô tả', {'fields': ('description', 'description_en')}),
+        ('Promo card (hero phải)', {'fields': ('promo_pct', 'promo_subline', 'promo_subline_en')}),
+        ('Cấp đối tác & Hoàn phí', {'fields': ('partner_level', 'partner_level_en', 'partner_level_date', 'rebate_standard', 'rebate_pro', 'rebate_raw', 'rebate_raw_en')}),
+        ('Bảng hoàn phí', {'fields': ('rebate_table',)}),
+    )
 
 
 @admin.register(ChartAnalysisLog)

@@ -85,6 +85,16 @@ body {
 }
 .nav-link:hover { color: var(--text-main) !important; background: rgba(255,255,255,0.05); }
 .nav-link.active { color: var(--accent) !important; background: rgba(59,130,246,0.1); }
+
+/* Navbar dropdown override — bỏ nền xanh đậm Bootstrap */
+#mainNav .dropdown-menu { background: #111827; border: 1px solid #1E293B; border-radius: 10px; padding: 6px; }
+#mainNav .dropdown-item { color: #94A3B8 !important; font-size: .88rem; border-radius: 6px; padding: 8px 14px; transition: all .15s; background-color: transparent !important; }
+#mainNav .dropdown-item:hover { color: #F1F5F9 !important; background-color: rgba(255,255,255,.06) !important; }
+#mainNav .dropdown-item.active { color: #3B82F6 !important; background-color: rgba(59,130,246,.12) !important; font-weight: 600; }
+[data-theme="light"] #mainNav .dropdown-menu { background: #fff; border-color: #E2E8F0; }
+[data-theme="light"] #mainNav .dropdown-item { color: #475569 !important; }
+[data-theme="light"] #mainNav .dropdown-item:hover { color: #0F172A !important; background-color: #F1F5F9 !important; }
+[data-theme="light"] #mainNav .dropdown-item.active { color: #3B82F6 !important; background-color: rgba(59,130,246,.1) !important; }
 .nav-coins {
   font-size: 0.875rem;
   color: var(--text-sub);
