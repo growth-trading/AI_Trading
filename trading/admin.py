@@ -34,18 +34,11 @@ class UserTVSubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(BrokerLink)
 class BrokerLinkAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'is_active', 'sort_order')
+    list_display = ('name', 'slug', 'category', 'partner_code', 'is_active', 'sort_order')
     list_editable = ('is_active', 'sort_order')
     list_filter = ('category', 'is_active')
     prepopulated_fields = {'slug': ('name',)}
-    fieldsets = (
-        (None, {'fields': ('name', 'slug', 'is_active', 'sort_order', 'category')}),
-        ('Thông tin cơ bản', {'fields': ('logo', 'hero_title', 'hero_title_en', 'register_url', 'partner_code')}),
-        ('Mô tả', {'fields': ('description', 'description_en')}),
-        ('Promo card (hero phải)', {'fields': ('promo_pct', 'promo_subline', 'promo_subline_en')}),
-        ('Cấp đối tác & Hoàn phí', {'fields': ('partner_level', 'partner_level_en', 'partner_level_date', 'rebate_standard', 'rebate_pro', 'rebate_raw', 'rebate_raw_en')}),
-        ('Bảng hoàn phí', {'fields': ('rebate_table',)}),
-    )
+    fields = ('name', 'slug', 'category', 'logo', 'register_url', 'partner_code', 'is_active', 'sort_order')
 
 
 @admin.register(ChartAnalysisLog)

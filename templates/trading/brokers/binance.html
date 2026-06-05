@@ -1,0 +1,533 @@
+{% load static %}
+
+{# ===== HERO ===== #}
+<div class="bkex-section bkex-section-alt" style="text-align:center;padding:72px 48px 60px;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 65%);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;">
+    <div class="bnex-hero-badge">🔶 <span class="vi-text">1000+ Trader Đã Tham Gia</span><span class="en-text" style="display:none;">1000+ Traders Joined</span></div>
+    <h1 class="bnex-hero-title">Backcom <span class="bnex-b">Binance</span></h1>
+    <p class="bnex-hero-desc vi-text">Backcom <span class="bnex-b">Binance</span> là chương trình hoàn phí giao dịch <span class="bnex-b">Binance</span> giúp trader nhận lại đến 40% phí khi trade Spot &amp; Futures, hoàn tự động mỗi ngày, không giới hạn thời gian hay khối lượng giao dịch.</p>
+    <p class="bnex-hero-desc en-text" style="display:none;">Backcom <span class="bnex-b">Binance</span> is a <span class="bnex-b">Binance</span> trading fee rebate program that helps traders earn back up to 40% of fees on Spot &amp; Futures trades — automatic daily rebates with no time or volume limits.</p>
+    {% if broker.partner_code %}
+    <div class="bnex-ref-box">
+      <span class="bnex-ref-label vi-text">Mã Giới Thiệu:</span>
+      <span class="bnex-ref-label en-text" style="display:none;">Referral Code:</span>
+      <span class="bnex-ref-val">{{ broker.partner_code }}</span>
+      <button class="bnex-ref-copy" onclick="copyText('{{ broker.partner_code }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+    </div>
+    {% endif %}
+    <div class="bnex-hero-btns">
+      <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bnex-btn-primary">
+  
+        <span class="vi-text">Đăng Ký Tài Khoản <span class="bnex-b">Binance</span></span>
+        <span class="en-text" style="display:none;">Register <span class="bnex-b">Binance</span> Account</span>
+      </a>
+      <a href="#bnex-guide" class="bnex-btn-outline">
+        <i class="bi bi-book"></i>
+        <span class="vi-text">Xem Hướng Dẫn Nhanh</span>
+        <span class="en-text" style="display:none;">View Quick Guide</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ===== SOLUTIONS ===== #}
+<div class="bkex-section">
+  <h2 class="bkex-title vi-text">Giải Pháp Toàn Diện Cho Trader</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Complete Solution for Traders</h2>
+  <div class="bnex-solution-grid">
+
+    {# Benefits card #}
+    <div class="bnex-card-inner">
+      <div class="bnex-card-header vi-text">Lợi Ích Khi Sử Dụng Backcom <span class="bnex-b">Binance</span></div>
+      <div class="bnex-card-header en-text" style="display:none;">Benefits of Using Backcom <span class="bnex-b">Binance</span></div>
+      <div class="bnex-benefit-list">
+        <div class="bnex-benefit-item">
+          <div class="bnex-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Tối Ưu Chi Phí Giao Dịch</strong><br>Giảm trực tiếp đến 40% phí giao dịch <span class="bnex-b">Binance</span> cho cả Spot &amp; Futures, giúp trader tiết kiệm chi phí lâu dài.</p>
+          <p class="en-text" style="display:none;"><strong>Optimize Trading Costs</strong><br>Directly reduce up to 40% of <span class="bnex-b">Binance</span> trading fees for both Spot &amp; Futures.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Tự Động</strong><br>Phí giao dịch được hoàn tự động từ <span class="bnex-b">Binance</span> &amp; RichAITrading, đăng ký 1 lần duy nhất – nhận hoàn phí trọn đời.</p>
+          <p class="en-text" style="display:none;"><strong>Automatic Rebates</strong><br>Fees are automatically rebated from <span class="bnex-b">Binance</span> &amp; RichAITrading. Register once, earn forever.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Áp Dụng Cho Spot &amp; Futures</strong><br>Hỗ trợ hoàn phí giao dịch cho cả Spot và Futures, phù hợp với mọi chiến lược giao dịch.</p>
+          <p class="en-text" style="display:none;"><strong>Applies to Spot &amp; Futures</strong><br>Supports fee rebates for both Spot and Futures trading strategies.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Trọn Đời</strong><br>Hoàn phí <span class="bnex-b">Binance</span> áp dụng trọn đời, không giới hạn thời gian và khối lượng giao dịch.</p>
+          <p class="en-text" style="display:none;"><strong>Lifetime Rebates</strong><br><span class="bnex-b">Binance</span> rebates apply for life with no time or volume restrictions.</p>
+        </div>
+      </div>
+    </div>
+
+    {# Stats grid #}
+    <div class="bnex-card-inner">
+      <div class="bnex-card-header vi-text">Thống Kê Nền Tảng</div>
+      <div class="bnex-card-header en-text" style="display:none;">Platform Statistics</div>
+      <div class="bnex-stats-grid" style="margin-top:16px;">
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-percent"></i></div>
+          <div class="bnex-stat-val">40%</div>
+          <div class="bnex-stat-label vi-text">Tỉ Lệ Hoàn Tốt Nhất Thị Trường</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Best Rebate Rate on the Market</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="bnex-stat-val">1,000+</div>
+          <div class="bnex-stat-label vi-text">Trader Đang Nhận Hoàn Phí</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Traders Earning Rebates</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-currency-dollar"></i></div>
+          <div class="bnex-stat-val">$500K+</div>
+          <div class="bnex-stat-label vi-text">Tiền Phí Đã Được Hoàn</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Total Fees Rebated</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="bnex-stat-val">2.5B+</div>
+          <div class="bnex-stat-label vi-text">Tổng Volume Giao Dịch</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Total Trading Volume</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;">
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bnex-btn-primary">
+
+      <span class="vi-text">Đăng Ký Tài Khoản <span class="bnex-b">Binance</span> Ngay</span>
+      <span class="en-text" style="display:none;">Register <span class="bnex-b">Binance</span> Account Now</span>
+    </a>
+  </div>
+</div>
+
+{# ===== REGISTRATION GUIDE ===== #}
+<div id="bnex-guide" class="broker-guide-section">
+  <h2 class="section-heading vi-text">Hướng Dẫn Đăng Ký Backcom <span class="bnex-b">Binance</span></h2>
+  <h2 class="section-heading en-text" style="display:none;">Backcom <span class="bnex-b">Binance</span> Registration Guide</h2>
+
+  <!-- Tabs -->
+  <div class="reg-tabs">
+    <button class="reg-tab-btn active" onclick="switchBnexTab(1)">
+      <div class="reg-tab-label">
+        <span class="vi-text">Trường Hợp 1</span>
+        <span class="en-text" style="display:none;">Case 1</span>
+      </div>
+      <div class="reg-tab-sub">
+        <span class="vi-text">Chưa có tài khoản</span>
+        <span class="en-text" style="display:none;">New to <span class="bnex-b">Binance</span></span>
+      </div>
+    </button>
+    <button class="reg-tab-btn" onclick="switchBnexTab(2)">
+      <div class="reg-tab-label">
+        <span class="vi-text">Trường Hợp 2</span>
+        <span class="en-text" style="display:none;">Case 2</span>
+      </div>
+      <div class="reg-tab-sub">
+        <span class="vi-text">Đã có tài khoản</span>
+        <span class="en-text" style="display:none;">Have an account</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Panels -->
+  <div class="reg-panels">
+
+    <!-- Panel 1 — Chưa có tài khoản -->
+    <div class="reg-panel active">
+      <div class="reg-panel-card">
+
+        <div class="vi-text">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">Chưa Có Tài Khoản <span class="bnex-b">Binance</span></div>
+              <div class="reg-panel-sub">Đăng ký mới qua link giới thiệu để nhận hoàn phí ngay</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Đăng ký qua link giới thiệu</div>
+                <p class="reg-step-desc">Tạo tài khoản <span class="bnex-b">Binance</span> mới qua <strong>link giới thiệu</strong> của RichAITrading.</p>
+                <div class="reg-inline-row">
+                  {% if broker.partner_code %}
+                  <div class="guide-code-box">
+                    <span class="guide-code-label">Mã Giới Thiệu</span>
+                    <span class="guide-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-lightning-fill"></i> Đăng Ký Ngay
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Xác minh tài khoản (KYC)</div>
+                <p class="reg-step-desc">Xác minh danh tính bằng <strong>CCCD, Bằng Lái Xe hoặc Hộ Chiếu (Passport)</strong>.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">3</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Nạp tiền & bắt đầu giao dịch</div>
+                <p class="reg-step-desc">Nạp tiền vào tài khoản và bắt đầu giao dịch để nhận hoàn phí.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="en-text" style="display:none;">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">New to <span class="bnex-b">Binance</span></div>
+              <div class="reg-panel-sub">Register via referral link to start earning rebates</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Register via referral link</div>
+                <p class="reg-step-desc">Create a new <span class="bnex-b">Binance</span> account through RichAITrading's <strong>referral link</strong>.</p>
+                <div class="reg-inline-row">
+                  {% if broker.partner_code %}
+                  <div class="guide-code-box">
+                    <span class="guide-code-label">Referral Code</span>
+                    <span class="guide-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-lightning-fill"></i> Register Now
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Complete KYC verification</div>
+                <p class="reg-step-desc">Verify your identity with a <strong>National ID, Driver's License, or Passport</strong>.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">3</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Fund your account & start trading</div>
+                <p class="reg-step-desc">Deposit funds and start trading to receive rebates.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Panel 2 — Đã có tài khoản -->
+    <div class="reg-panel">
+      <div class="reg-panel-card">
+
+        <div class="vi-text">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-person-check-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">Đã Có Tài Khoản <span class="bnex-b">Binance</span></div>
+              <div class="reg-panel-sub">Liên kết mã giới thiệu về RichAITrading để nhận hoàn phí</div>
+            </div>
+          </div>
+          <div class="reg-note" style="margin-bottom:20px;">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>Áp dụng khi tài khoản <strong>không đăng ký dưới mã giới thiệu</strong> của bên khác và <strong>không giao dịch trong 6 tháng</strong> gần nhất.</span>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Đăng nhập qua link kích hoạt</div>
+                <p class="reg-step-desc">Đăng nhập tài khoản <span class="bnex-b">Binance</span> qua link bên dưới để liên kết mã giới thiệu.</p>
+                <div class="reg-inline-row" style="margin-top:10px;">
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-link-45deg"></i> Link Kích Hoạt Tài Khoản Cũ
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Đăng nhập vào tài khoản <span class="bnex-b">Binance</span></div>
+                <p class="reg-step-desc">Thực hiện đăng nhập vào tài khoản <span class="bnex-b">Binance</span> của bạn.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">3</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Chọn "Bind Now" để hoàn tất</div>
+                <p class="reg-step-desc">Nhấn <strong>"Bind Now"</strong> (Liên Kết Ngay) để hoàn tất quá trình liên kết.</p>
+                <div class="bnex-step-warning" style="margin-top:10px;">Nếu <strong>không có Popup nào hiện ra</strong> — bạn <strong>không đủ điều kiện</strong>. Vui lòng tạo 1 tài khoản <span class="bnex-b">Binance</span> mới.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="en-text" style="display:none;">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-person-check-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">Existing <span class="bnex-b">Binance</span> Account</div>
+              <div class="reg-panel-sub">Link your referral code to RichAITrading to earn rebates</div>
+            </div>
+          </div>
+          <div class="reg-note" style="margin-bottom:20px;">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>Applies if your account is <strong>not registered under another referral code</strong> and has <strong>no trades in the past 6 months</strong>.</span>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Log in via activation link</div>
+                <p class="reg-step-desc">Log in to your <span class="bnex-b">Binance</span> account through the link below to link your referral code.</p>
+                <div class="reg-inline-row" style="margin-top:10px;">
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-link-45deg"></i> Activate Existing Account
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Log in to your <span class="bnex-b">Binance</span> account</div>
+                <p class="reg-step-desc">Sign in to your existing <span class="bnex-b">Binance</span> account.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">3</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Click "Bind Now" to complete</div>
+                <p class="reg-step-desc">Click <strong>"Bind Now"</strong> to finish the referral code linking process.</p>
+                <div class="bnex-step-warning" style="margin-top:10px;">If <strong>no popup appears</strong>, you do <strong>not qualify</strong> for account linking. You must create a new <span class="bnex-b">Binance</span> account.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  {# UID Note #}
+  <div class="reg-note" style="margin-top:20px;align-items:flex-start;">
+    <i class="bi bi-info-circle-fill" style="margin-top:2px;flex-shrink:0;"></i>
+    <div>
+      <p class="vi-text" style="margin:0 0 10px;font-size:.85rem;color:var(--text-sub);line-height:1.7;">Sau khi hoàn thành tạo tài khoản hoặc chuyển đổi về hệ thống RichAITrading, hãy liên kết <strong>UID tài khoản</strong> sàn với <strong>RichAITrading</strong> để kích hoạt hoàn phí tự động. Hệ thống sẽ tự động tính toán và thanh toán hoàn phí định kỳ dựa trên dữ liệu UID.</p>
+      <p class="en-text" style="display:none;margin:0 0 10px;font-size:.85rem;color:var(--text-sub);line-height:1.7;">After creating or linking your account to RichAITrading, connect your exchange <strong>UID</strong> with the <strong>RichAITrading</strong> to activate automatic rebates. The system uses your UID data to calculate and pay rebates periodically.</p>
+      <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register" style="display:inline-flex;">
+        <i class="bi bi-plus-lg"></i>
+        <span class="vi-text">Hướng Dẫn Liên Kết UID</span>
+        <span class="en-text" style="display:none;">UID Linking Guide</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ===== COMPARISON ===== #}
+<div class="bkex-section bkex-section-alt">
+  <h2 class="bkex-title vi-text">Có Nên Dùng RichAITrading <span class="bnex-b">Binance</span> Hay Không?</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Should You Use RichAITrading <span class="bnex-b">Binance</span>?</h2>
+  <p class="bkex-subtitle vi-text">Nếu bạn đang giao dịch trên <span class="bnex-b">Binance</span>, đăng ký qua RichAITrading là điều nên làm ngay — dù volume ít hay nhiều. Hoàn phí là khoản tiết kiệm trực tiếp, không ảnh hưởng đến chiến lược trading của bạn.</p>
+  <p class="bkex-subtitle en-text" style="display:none;">If you're trading on <span class="bnex-b">Binance</span>, registering through RichAITrading is a no-brainer — regardless of volume. Rebates are direct savings with zero impact on your trading strategy.</p>
+
+  <div class="bkex-cmp-grid">
+    <div class="bkex-cmp-box bkex-cmp-yes">
+      <div class="bkex-cmp-title vi-text">Khi Dùng RichAITrading</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">With RichAITrading</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận lại <strong>đến 40% phí giao dịch</strong> Spot &amp; Futures đã trả</p>
+          <p class="en-text" style="display:none;">Get back <strong>up to 40% of Spot &amp; Futures fees</strong> paid</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Hoàn phí <strong>tự động</strong> từ <span class="bnex-b">Binance</span> &amp; RichAITrading, không cần thao tác</p>
+          <p class="en-text" style="display:none;"><strong>Automatic</strong> rebates from <span class="bnex-b">Binance</span> &amp; RichAITrading — no manual action needed</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận hoàn phí <strong>trọn đời</strong>, không giới hạn thời gian và volume</p>
+          <p class="en-text" style="display:none;">Earn rebates <strong>for life</strong>, unlimited duration and volume</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text"><strong>Không ảnh hưởng</strong> đến spread, chiến lược và cách giao dịch</p>
+          <p class="en-text" style="display:none;"><strong>Zero impact</strong> on spreads, strategy, or trading style</p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Trade càng nhiều → hoàn phí càng nhiều → lợi nhuận tối ưu hơn</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Trade more → earn more rebates → optimize your profits</div>
+    </div>
+
+    <div class="bkex-cmp-box bkex-cmp-no">
+      <div class="bkex-cmp-title vi-text">Không Dùng RichAITrading</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">Without RichAITrading</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Không nhận bất kỳ <strong>khoản hoàn phí</strong> nào từ <span class="bnex-b">Binance</span></p>
+          <p class="en-text" style="display:none;">Receive <strong>zero rebates</strong> of any kind</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Mất toàn bộ <strong>phí Spot &amp; Futures</strong> cho mỗi lệnh giao dịch</p>
+          <p class="en-text" style="display:none;">Lose all <strong>Spot &amp; Futures fees</strong> on every order</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Chi phí giao dịch <strong>tích lũy</strong> âm thầm theo thời gian</p>
+          <p class="en-text" style="display:none;">Trading costs silently <strong>accumulate</strong> over time</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Lợi nhuận bị <strong>bào mòn</strong> mà không nhận ra</p>
+          <p class="en-text" style="display:none;">Profits are <strong>silently eroded</strong> without you realizing</p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Cùng một cách trade, nhưng kết quả hoàn toàn khác</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Same trading approach — completely different results</div>
+    </div>
+  </div>
+
+  <div class="bnex-example-box">
+    <span class="vi-text">Ví dụ thực tế: Với $10,000,000 volume/tháng, bạn có thể nhận lại <strong>$2,500 – $5,000 tiền hoàn phí</strong> trong khi trader khác không được gì. Đừng để chi phí thành gánh nặng — hãy <strong>kích hoạt RichAITrading <span class="bnex-b">Binance</span></strong> ngay hôm nay.</span>
+    <span class="en-text" style="display:none;">Real example: With $10M monthly volume, earn back <strong>$2,500–$5,000 in rebates</strong> while other traders earn nothing. Don't let fees eat your profits — <strong>activate RichAITrading <span class="bnex-b">Binance</span></strong> today.</span>
+  </div>
+
+  <div class="bkex-cmp-cta">
+    <p class="vi-text">Hãy biến RichAITrading trở thành <strong>"lợi thế"</strong> của bạn so với Trader khác!</p>
+    <p class="en-text" style="display:none;">Make RichAITrading your <strong>"edge"</strong> over other traders!</p>
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bnex-btn-primary">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span class="vi-text">Kích Hoạt Hoàn Phí <span class="bnex-b">Binance</span> Ngay</span>
+      <span class="en-text" style="display:none;">Activate <span class="bnex-b">Binance</span> Rebates Now</span>
+    </a>
+  </div>
+</div>
+
+{# ===== MECHANISM ===== #}
+<div class="bkex-section bkex-section-alt">
+  <div class="bkex-center">
+    <div class="bkex-badge vi-text">CƠ CHẾ TỐT NHẤT</div>
+    <div class="bkex-badge en-text" style="display:none;">BEST MECHANISM</div>
+    <h2 class="bkex-title vi-text">Cơ Chế Hoàn Phí <span class="bnex-b">Binance</span></h2>
+    <h2 class="bkex-title en-text" style="display:none;"><span class="bnex-b">Binance</span> Rebate Mechanism</h2>
+    <p class="bkex-subtitle vi-text">RichAITrading là đối tác cấp cao của <span class="bnex-b">Binance</span>, giúp trader nhận hoàn phí giao dịch <span class="bnex-b">Binance</span> lên đến 40% cho cả Spot &amp; Futures, hoàn tự động và minh bạch.</p>
+    <p class="bkex-subtitle en-text" style="display:none;">RichAITrading is a premier <span class="bnex-b">Binance</span> partner, enabling traders to earn up to 40% fee rebates on Spot &amp; Futures — automatic and transparent.</p>
+  </div>
+
+  {# Flow: Binance 20% + RichAITrading 20% = 40% #}
+  <div class="bnex-mech-flow">
+
+    {# Binance source #}
+    <div class="bnex-mech-src bnex-mech-src-bn">
+      <div class="bnex-mech-src-logo">
+        {% if broker.logo %}
+        <img src="{{ broker.logo.url }}" alt="Binance" style="width:70%;height:70%;object-fit:contain;">
+        {% else %}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 126.61 126.61" style="width:62%;height:62%;">
+          <path d="M38.73,53.2,63.3,28.58,87.89,53.2l14.1-14.09L63.3,0.4,24.64,39.11Z" fill="#F0B90B"/>
+          <path d="M0.4,63.3,14.49,49.21l14.1,14.09L14.49,77.39Z" fill="#F0B90B"/>
+          <path d="M38.73,73.4,63.3,98l24.59-24.6,14.1,14.09L63.3,126.21,24.64,87.49Z" fill="#F0B90B"/>
+          <path d="M97.93,63.3l14.1-14.09,14.1,14.09L112,77.39Z" fill="#F0B90B"/>
+          <path d="M77.83,63.3,63.3,48.78,48.78,63.3,63.3,77.83Z" fill="#F0B90B"/>
+        </svg>
+        {% endif %}
+      </div>
+      <div class="bnex-mech-src-pct bnex-mech-src-pct-bn">20%</div>
+      <div class="bnex-mech-src-name vi-text">Từ <span class="bnex-b">Binance</span></div>
+      <div class="bnex-mech-src-name en-text" style="display:none;">From <span class="bnex-b">Binance</span></div>
+      <div class="bnex-mech-src-sub vi-text">Hoàn sau khi đóng mở lệnh</div>
+      <div class="bnex-mech-src-sub en-text" style="display:none;">Paid after order close</div>
+    </div>
+
+    <div class="bnex-mech-op">+</div>
+
+    {# RichAITrading source #}
+    <div class="bnex-mech-src bnex-mech-src-rich">
+      <div class="bnex-mech-src-logo bnex-mech-src-logo-rich">
+        <img src="{% static 'images/logo.png' %}" alt="RichAITrading" style="width:65%;height:65%;object-fit:contain;">
+      </div>
+      <div class="bnex-mech-src-pct bnex-mech-src-pct-rich">20%</div>
+      <div class="bnex-mech-src-name vi-text">Từ RichAITrading</div>
+      <div class="bnex-mech-src-name en-text" style="display:none;">From RichAITrading</div>
+      <div class="bnex-mech-src-sub vi-text">Trả vào mỗi thứ Hai hàng tuần</div>
+      <div class="bnex-mech-src-sub en-text" style="display:none;">Paid every Monday</div>
+    </div>
+
+    <div class="bnex-mech-op">=</div>
+
+    {# Total #}
+    <div class="bnex-mech-total">
+      <div class="bnex-mech-total-lbl vi-text">Tổng Hoàn Phí</div>
+      <div class="bnex-mech-total-lbl en-text" style="display:none;">Total Rebate</div>
+      <div class="bnex-mech-total-num">40%</div>
+      <div class="bnex-mech-total-sub vi-text">Spot &amp; Futures · Tự động · Trọn đời</div>
+      <div class="bnex-mech-total-sub en-text" style="display:none;">Spot &amp; Futures · Automatic · Lifetime</div>
+    </div>
+  </div>
+
+  {# Calculation example #}
+  <div class="bnex-calc-box">
+    <div class="bnex-calc-title"><i class="bi bi-calculator" style="color:var(--accent);"></i> <span class="vi-text">Ví Dụ Thực Tế</span><span class="en-text" style="display:none;">Real Example</span></div>
+    <div class="bnex-calc-row">
+      <div class="bnex-calc-item">
+        <div class="bnex-calc-label vi-text">Phí đã trả</div>
+        <div class="bnex-calc-label en-text" style="display:none;">Fee Paid</div>
+        <div class="bnex-calc-val">$100</div>
+      </div>
+      <div class="bnex-calc-arrow"><i class="bi bi-arrow-right"></i></div>
+      <div class="bnex-calc-item">
+        <div class="bnex-calc-label vi-text">Từ <span class="bnex-b">Binance</span></div>
+        <div class="bnex-calc-label en-text" style="display:none;">From <span class="bnex-b">Binance</span></div>
+        <div class="bnex-calc-val bnex-calc-val-bn">+$20</div>
+      </div>
+      <div class="bnex-calc-plus">+</div>
+      <div class="bnex-calc-item">
+        <div class="bnex-calc-label vi-text">Từ RichAITrading</div>
+        <div class="bnex-calc-label en-text" style="display:none;">From RichAITrading</div>
+        <div class="bnex-calc-val bnex-calc-val-rich">+$20</div>
+      </div>
+      <div class="bnex-calc-arrow"><i class="bi bi-arrow-right"></i></div>
+      <div class="bnex-calc-item">
+        <div class="bnex-calc-label vi-text">Bạn nhận lại</div>
+        <div class="bnex-calc-label en-text" style="display:none;">You Get Back</div>
+        <div class="bnex-calc-val bnex-calc-val-total">$40</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bnex-mech-cta">
+    <p class="vi-text">Đăng Ký Tài Khoản <span class="bnex-b">Binance</span> Nhận Ngay Bonus Cực Hấp Dẫn</p>
+    <p class="en-text" style="display:none;">Register a <span class="bnex-b">Binance</span> Account and Claim Exclusive Bonuses Now</p>
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bnex-btn-primary">
+      <i class="bi bi-gift-fill"></i>
+      <span class="vi-text">Nhận Bonus Sàn <span class="bnex-b">Binance</span> Ngay</span>
+      <span class="en-text" style="display:none;">Claim <span class="bnex-b">Binance</span> Bonus Now</span>
+    </a>
+  </div>
+</div>

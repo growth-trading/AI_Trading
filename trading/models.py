@@ -103,31 +103,9 @@ class BrokerLink(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=50, unique=True)
     logo = models.ImageField(upload_to='broker_logos/', blank=True, null=True, help_text='Upload ảnh logo sàn')
-    hero_title = models.CharField(max_length=200, blank=True, help_text='VD: EXNESS REBATES')
-    hero_title_en = models.CharField(max_length=200, blank=True)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='forex')
     register_url = models.URLField(help_text='Link đăng ký IB/affiliate')
-    partner_code = models.CharField(max_length=100, blank=True, help_text='Mã đối tác, VD: backcomio')
-    description = models.TextField(blank=True, help_text='Mô tả chương trình (Tiếng Việt)')
-    description_en = models.TextField(blank=True)
-
-    # Promo card (hero bên phải)
-    promo_pct = models.CharField(max_length=20, blank=True, help_text='VD: 100%')
-    promo_subline = models.CharField(max_length=100, blank=True, help_text='VD: HÀNG NGÀY LÊN TỚI $14.4')
-    promo_subline_en = models.CharField(max_length=100, blank=True, help_text='VD: DAILY UP TO $14.4')
-
-    # Partner level
-    partner_level = models.CharField(max_length=50, blank=True, help_text='VD: Kim cương')
-    partner_level_en = models.CharField(max_length=50, blank=True)
-    partner_level_date = models.CharField(max_length=50, blank=True, help_text='VD: Đến 28 Th03, 2026')
-    rebate_standard = models.CharField(max_length=20, blank=True, help_text='VD: 40%')
-    rebate_pro = models.CharField(max_length=20, blank=True, help_text='VD: 25%')
-    rebate_raw = models.CharField(max_length=100, blank=True, help_text='VD: Cố định trên mỗi lô')
-    rebate_raw_en = models.CharField(max_length=100, blank=True)
-
-    # Bảng hoàn phí (HTML — admin tự soạn)
-    rebate_table = models.TextField(blank=True, help_text='Bảng hoàn phí (HTML — paste từ editor)')
-
+    partner_code = models.CharField(max_length=100, blank=True, help_text='Mã đối tác / mã mời')
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveSmallIntegerField(default=0)
 

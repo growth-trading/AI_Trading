@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}{{ service.name }} — RichAITrading{% endblock %}
+{% block title %}Backcom — RichAITrading{% endblock %}
 
 {% block extra_css %}
 <style>
 .svc-page { padding-top: 72px; min-height: 100vh; }
 .svc-layout { display: flex; min-height: calc(100vh - 72px); }
+.svc-common-why { border-top: 1px solid var(--border); }
 
 /* Sidebar */
 .svc-sidebar {
@@ -19,8 +20,7 @@
 }
 .svc-cat-header {
   font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--text-sub); opacity: .5;
-  padding: 14px 16px 5px; margin-top: 4px;
+  color: var(--text-sub); opacity: .5; padding: 14px 16px 5px; margin-top: 4px;
 }
 .svc-tab {
   display: flex; align-items: center; gap: 10px;
@@ -30,26 +30,23 @@
 }
 .svc-tab:hover { background: rgba(59,130,246,.07); color: var(--text-main); }
 .svc-tab.active { background: rgba(59,130,246,.12); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
-.svc-tab img { width: 24px; height: 24px; object-fit: contain; border-radius: 4px; flex-shrink: 0; }
-.svc-tab-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.svc-tab-cat { font-size: .68rem; color: var(--text-sub); display: block; }
+.svc-tab img { width: 24px; height: 24px; object-fit: contain; border-radius: 8px; flex-shrink: 0; }
+.svc-tab-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
 
-/* Main */
+/* Content */
 .svc-content { flex: 1; overflow-x: hidden; }
 .broker-panel { display: none; }
 .broker-panel.active { display: block; }
 
 /* Hero */
 .broker-hero {
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-card); border-bottom: 1px solid var(--border);
   padding: 52px 48px 48px;
   display: flex; gap: 40px; align-items: center; justify-content: center;
   position: relative; overflow: hidden;
 }
 .broker-hero::before {
-  content: '';
-  position: absolute; top: -80px; right: 280px;
+  content: ''; position: absolute; top: -80px; right: 280px;
   width: 500px; height: 500px;
   background: radial-gradient(circle, rgba(59,130,246,.07) 0%, transparent 70%);
   pointer-events: none;
@@ -61,145 +58,116 @@
 .hero-visual-card {
   width: 340px;
   background: linear-gradient(145deg, #0D1117 0%, #0A0F1E 100%);
-  border: 1px solid rgba(59,130,246,.2);
-  border-radius: 20px;
-  padding: 32px 30px 28px;
+  border: 1px solid rgba(59,130,246,.2); border-radius: 20px; padding: 32px 30px 28px;
   position: relative; overflow: hidden;
   box-shadow: 0 0 0 1px rgba(59,130,246,.08), 0 20px 60px rgba(0,0,0,.4), 0 0 80px rgba(59,130,246,.08);
 }
 .hero-visual-card::before {
-  content: '';
-  position: absolute; top: 0; right: 0;
-  width: 200px; height: 200px;
+  content: ''; position: absolute; top: 0; right: 0; width: 200px; height: 200px;
   background: radial-gradient(circle at top right, rgba(59,130,246,.14) 0%, transparent 60%);
   pointer-events: none;
 }
-.hvc-brand-row {
-  display: flex; align-items: center; gap: 8px;
-  font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(255,255,255,.45); margin-bottom: 18px;
-}
-.hvc-brand-logo { height: 22px; width: auto; object-fit: contain; }
+.hvc-brand-row { display: flex; align-items: center; gap: 8px; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 18px; }
+.hvc-brand-logo { height: 22px; width: auto; object-fit: contain; border-radius: 6px; }
 .hvc-brand-sep { color: rgba(255,255,255,.25); }
-.hvc-title {
-  font-size: .85rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(255,255,255,.6); margin-bottom: 10px;
-}
-.hvc-big {
-  font-size: 5.5rem; font-weight: 900; line-height: 1;
-  background: linear-gradient(135deg, #fff 40%, rgba(59,130,246,.8) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 2px;
-}
+.hvc-title { font-size: .85rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 10px; }
+.hvc-big { font-size: 5.5rem; font-weight: 900; line-height: 1; background: linear-gradient(135deg, #fff 40%, rgba(59,130,246,.8) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 2px; }
 .hvc-icon-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 .hvc-wing { font-size: 2rem; line-height: 1; }
-.hvc-subline {
-  font-size: 1rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  color: rgba(255,255,255,.7); line-height: 1.4;
-}
+.hvc-subline { font-size: 1rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(255,255,255,.7); line-height: 1.4; }
 
 .broker-logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.broker-logo { height: 40px; width: auto; object-fit: contain; }
-.broker-category-pill {
-  font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
-  padding: 4px 12px; border-radius: 99px;
-  background: var(--bg-card-2); color: var(--text-sub); border: 1px solid var(--border);
-}
-.broker-hero-title {
-  font-size: 2.2rem; font-weight: 800; line-height: 1.15;
-  color: var(--text-main); margin-bottom: 12px;
-}
+.broker-logo { height: 40px; width: auto; object-fit: contain; border-radius: 10px; }
+.broker-category-pill { font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 4px 12px; border-radius: 99px; background: var(--bg-card-2); color: var(--text-sub); border: 1px solid var(--border); }
+.broker-hero-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; color: var(--text-main); margin-bottom: 12px; }
 .broker-hero-desc { font-size: .95rem; color: var(--text-sub); line-height: 1.75; margin-bottom: 28px; max-width: 480px; }
-
-.partner-code-box {
-  display: inline-flex; align-items: center; gap: 10px;
-  background: var(--bg-card-2); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 16px; margin-bottom: 24px;
-}
+.partner-code-box { display: inline-flex; align-items: center; gap: 10px; background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; margin-bottom: 24px; }
 .partner-code-label { font-size: .75rem; color: var(--text-sub); }
 .partner-code-val { font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: 800; color: var(--accent); letter-spacing: .08em; }
 .btn-copy-code { background: none; border: 1px solid transparent; border-radius: 6px; color: var(--text-sub); padding: 3px 7px; cursor: pointer; transition: all .2s; }
 .btn-copy-code:hover { color: var(--accent); border-color: var(--accent); }
-
 .broker-hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.btn-register-main {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: linear-gradient(135deg, var(--accent), #6366F1);
-  color: #fff; border: none; border-radius: 10px;
-  padding: 12px 26px; font-size: .95rem; font-weight: 700;
-  text-decoration: none; transition: opacity .2s, box-shadow .2s;
-}
+.btn-register-main { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--accent), #6366F1); color: #fff; border: none; border-radius: 10px; padding: 12px 26px; font-size: .95rem; font-weight: 700; text-decoration: none; transition: opacity .2s, box-shadow .2s; }
 .btn-register-main:hover { opacity: .88; color: #fff; box-shadow: 0 4px 20px rgba(59,130,246,.4); }
-.broker-hero-cat-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: .78rem; color: var(--text-sub); font-weight: 500;
-}
+.broker-hero-cat-badge { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--text-sub); font-weight: 500; }
 
 [data-theme="light"] .broker-hero { background: #F8FAFC; }
-[data-theme="light"] .broker-hero::before { background: radial-gradient(circle, rgba(59,130,246,.05) 0%, transparent 70%); }
 
 /* Stats */
-.broker-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid var(--border);
-}
-.stat-box {
-  padding: 28px 20px; text-align: center;
-  border-right: 1px solid var(--border);
-}
+.broker-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); }
+.stat-box { padding: 28px 20px; text-align: center; border-right: 1px solid var(--border); }
 .stat-box:last-child { border-right: none; }
 .stat-icon { font-size: 1.8rem; margin-bottom: 8px; color: var(--accent); }
 .stat-val { font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1; margin-bottom: 4px; }
 .stat-label { font-size: .82rem; color: var(--text-sub); }
 
-/* Partner level */
-.broker-partner-section { padding: 36px 48px; border-bottom: 1px solid var(--border); }
-.partner-card {
-  background: var(--bg-card-2); border: 1px solid var(--border);
-  border-radius: 14px; padding: 24px 28px; max-width: 520px;
-}
-.partner-level-name { font-size: 1.2rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.partner-level-date { font-size: .8rem; color: var(--text-sub); margin-bottom: 20px; }
-.rebate-grid { display: flex; gap: 28px; }
-.rebate-pct { font-size: 1.5rem; font-weight: 800; color: var(--accent); line-height: 1; }
-.rebate-raw-val { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
-.rebate-type { font-size: .78rem; color: var(--text-sub); margin-top: 2px; }
-
 /* Guide */
 .broker-guide-section { padding: 40px 48px; border-bottom: 1px solid var(--border); }
-.section-heading { font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 28px; }
+.section-heading { font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 28px; text-align: center; }
 .broker-guide-content { color: var(--text-main); line-height: 1.8; }
 .broker-guide-content h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0 0 14px; }
 .broker-guide-content p { font-size: .88rem; color: var(--text-sub); margin-bottom: 6px; }
 .broker-guide-content .step { font-size: .85rem; font-weight: 700; color: #F59E0B; margin-bottom: 2px; }
 .broker-guide-content .mt-3 { margin-top: 14px !important; }
 .broker-guide-content .note { background: rgba(245,158,11,.08); border-left: 3px solid #F59E0B; border-radius: 6px; padding: 10px 14px; margin: 12px 0 0; font-size: .82rem; color: var(--text-sub); }
-
 .guide-cases-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 700px) { .guide-cases-row { grid-template-columns: 1fr; } }
-
 .case-card { background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; }
 .case-card.case-recommended { border-color: rgba(59,130,246,.4); background: linear-gradient(180deg, rgba(59,130,246,.05) 0%, var(--bg-card-2) 60%); }
-.case-card.case-wide { }
-
 .case-badge { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 .case-badge.recommended { color: var(--accent); }
 .rec-tag { background: var(--accent); color: #fff; font-size: .65rem; padding: 2px 7px; border-radius: 99px; letter-spacing: .04em; }
-
 .guide-code-box { display: inline-flex; align-items: center; gap: 8px; background: rgba(59,130,246,.08); border: 1px dashed var(--accent); border-radius: 8px; padding: 7px 14px; margin: 8px 0; }
 .guide-code-label { font-size: .72rem; color: var(--text-sub); }
 .guide-code-val { font-family: 'Courier New', monospace; font-size: 1.1rem; font-weight: 800; color: var(--accent); letter-spacing: .08em; }
-
 .btn-case-register { display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, var(--accent), #6366F1); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: .85rem; font-weight: 700; text-decoration: none; margin: 10px 0 4px; transition: opacity .2s; }
 .btn-case-register:hover { opacity: .88; color: #fff; }
-
+.reg-note .btn-case-register i { color: inherit; }
 .guide-link-box { display: flex; align-items: center; gap: 10px; background: rgba(59,130,246,.06); border: 1px dashed var(--accent); border-radius: 8px; padding: 8px 14px; margin: 8px 0; font-size: .82rem; color: var(--accent); word-break: break-all; font-family: 'Courier New', monospace; flex-wrap: wrap; }
 .guide-link-box .btn-copy-code { flex-shrink: 0; font-family: inherit; font-size: .78rem; display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--accent); color: var(--accent); background: none; cursor: pointer; transition: all .2s; white-space: nowrap; }
 .guide-link-box .btn-copy-code:hover { background: var(--accent); color: #fff; }
-
 [data-theme="light"] .case-card { background: #fff; border-color: #E2E8F0; }
 [data-theme="light"] .case-card.case-recommended { background: #EFF6FF; border-color: rgba(59,130,246,.3); }
+
+/* Registration tabs */
+.reg-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.reg-tab-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  padding: 12px 18px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--bg-card-2); cursor: pointer; transition: all .2s; text-align: left;
+}
+.reg-tab-label { display: flex; align-items: center; gap: 7px; font-size: .9rem; font-weight: 700; color: var(--text-main); }
+.reg-tab-sub { font-size: .75rem; color: var(--text-sub); }
+.reg-tab-btn:hover { border-color: var(--accent); }
+.reg-tab-btn.active { border-color: var(--accent); background: rgba(59,130,246,.1); }
+.reg-tab-btn.active .reg-tab-label { color: var(--accent); }
+.reg-rec-badge { font-size: .63rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; background: linear-gradient(135deg, var(--accent), #6366F1); color: #fff; padding: 2px 7px; border-radius: 4px; }
+.reg-panels {}
+.reg-panel { display: none; }
+.reg-panel.active { display: block; }
+.reg-panel-card { background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; }
+.reg-panel-card.reg-panel-recommended { border-color: rgba(59,130,246,.35); background: linear-gradient(180deg, rgba(59,130,246,.05) 0%, var(--bg-card-2) 50%); }
+.reg-panel-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 24px; }
+.reg-panel-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.25); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.reg-panel-icon.recommended { background: rgba(59,130,246,.18); }
+.reg-panel-name { font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1.3; }
+.reg-panel-sub { font-size: .82rem; color: var(--text-sub); margin-top: 4px; }
+.reg-timeline { display: flex; flex-direction: column; }
+.reg-step { display: flex; gap: 16px; }
+.reg-step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.reg-step-num { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366F1); color: #fff; font-size: .82rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reg-step-line { width: 2px; flex: 1; background: var(--border); min-height: 16px; margin: 5px 0; }
+.reg-step-body { padding-bottom: 22px; flex: 1; min-width: 0; }
+.reg-step.last .reg-step-body { padding-bottom: 0; }
+.reg-step-title { font-size: .92rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; line-height: 1.35; }
+.reg-step-desc { font-size: .85rem; color: var(--text-sub); line-height: 1.7; margin: 0; }
+.reg-inline-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.reg-inline-row .btn-case-register { margin: 0; }
+.reg-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; background: rgba(59,130,246,.07); border: 1px solid rgba(59,130,246,.2); border-radius: 8px; padding: 10px 14px; font-size: .83rem; color: var(--text-sub); line-height: 1.6; }
+.reg-note i { color: var(--accent); margin-top: 2px; flex-shrink: 0; }
+[data-theme="light"] .reg-panel-card { background: #fff; border-color: #E2E8F0; }
+[data-theme="light"] .reg-panel-card.reg-panel-recommended { background: #EFF6FF; border-color: rgba(59,130,246,.3); }
+[data-theme="light"] .reg-tab-btn { background: #F8FAFC; }
+[data-theme="light"] .reg-tab-btn.active { background: #EFF6FF; }
 
 /* Rebate table */
 .broker-table-section { padding: 40px 48px 60px; }
@@ -215,38 +183,359 @@
 .rebate-table-wrap .val-green { color: #10B981; font-weight: 700; }
 .rebate-table-wrap .val-purple { color: #6366F1; font-weight: 700; }
 .rebate-table-wrap .val-blue { color: var(--accent); font-weight: 700; }
+[data-theme="light"] .rebate-table-wrap { background: #fff; border-color: #E2E8F0; }
 
-/* Mobile broker selector */
-.svc-mobile-tabs {
-  display: none; padding: 10px 16px;
-  background: var(--bg-card); border-bottom: 1px solid var(--border);
-  overflow-x: auto; gap: 8px;
-  position: sticky; top: 72px; z-index: 10;
-}
+/* Mobile */
+.svc-mobile-tabs { display: none; padding: 10px 16px; background: var(--bg-card); border-bottom: 1px solid var(--border); overflow-x: auto; gap: 8px; position: sticky; top: 72px; z-index: 10; }
+.svc-mobile-tab { flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 99px; border: 1px solid var(--border); background: transparent; color: var(--text-sub); font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.svc-mobile-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.svc-mobile-tab img { width: 18px; height: 18px; object-fit: contain; border-radius: 6px; }
 @media (max-width: 900px) {
   .svc-sidebar { display: none; }
   .svc-mobile-tabs { display: flex; }
   .broker-hero { flex-direction: column; padding: 28px 20px 24px; gap: 24px; }
-  .broker-hero-right { width: 100%; }
+  .broker-hero-right { width: 100%; margin-right: 0; justify-content: center; }
   .broker-hero-title { font-size: 1.8rem; }
   .hvc-big { font-size: 4rem; }
   .broker-stats { grid-template-columns: 1fr 1fr; }
   .stat-box { border-bottom: 1px solid var(--border); }
-  .broker-partner-section, .broker-guide-section, .broker-table-section { padding: 24px 20px; }
+  .broker-guide-section, .broker-table-section { padding: 24px 20px; }
+  .guide-cases-row { grid-template-columns: 1fr; }
 }
-.svc-mobile-tab {
-  flex-shrink: 0; display: flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: 99px; border: 1px solid var(--border);
-  background: transparent; color: var(--text-sub); font-size: .82rem; font-weight: 600; cursor: pointer;
-  transition: all .2s; white-space: nowrap;
-}
-.svc-mobile-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.svc-mobile-tab img { width: 18px; height: 18px; object-fit: contain; border-radius: 3px; }
-
 [data-theme="light"] .svc-sidebar { background: #F8FAFC; border-color: #E2E8F0; }
-[data-theme="light"] .broker-hero { background: linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%); }
-[data-theme="light"] .partner-card, [data-theme="light"] .rebate-table-wrap { background: #fff; border-color: #E2E8F0; }
-[data-theme="light"] .broker-guide-content .case-card { background: #F8FAFC; border-color: #E2E8F0; }
+
+/* ===== BACKCOM EXNESS EXTRA SECTIONS ===== */
+
+/* Common */
+.bkex-section { padding: 60px 48px; border-bottom: 1px solid var(--border); }
+.bkex-section-alt { background: var(--bg-card); }
+[data-theme="light"] .bkex-section-alt { background: #F8FAFC; }
+.bkex-badge {
+  display: inline-block; border: 1px solid rgba(59,130,246,.35); border-radius: 99px;
+  padding: 4px 14px; font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+}
+.bkex-title { font-size: 1.8rem; font-weight: 800; color: var(--text-main); text-align: center; margin-bottom: 12px; }
+.bkex-subtitle { font-size: .92rem; color: var(--text-sub); text-align: center; max-width: 660px; margin: 0 auto 36px; line-height: 1.75; }
+.bkex-center { text-align: center; }
+
+/* Feature grid */
+.bkex-feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 980px; margin: 0 auto; }
+.bkex-feat-card {
+  background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 28px 22px; transition: all .25s;
+}
+.bkex-feat-card:hover { border-color: rgba(59,130,246,.4); transform: translateY(-4px); box-shadow: 0 8px 30px rgba(59,130,246,.12); }
+.bkex-feat-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.bkex-feat-icon { font-size: 2rem; color: var(--accent); line-height: 1; flex-shrink: 0; }
+.bkex-feat-title { font-size: 1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0; flex: 1; }
+.bkex-feat-desc { font-size: .85rem; color: var(--text-sub); line-height: 1.75; margin: 0; }
+.bkex-feat-desc strong { color: var(--text-main); font-weight: 600; }
+[data-theme="light"] .bkex-feat-card { background: #fff; border-color: #E2E8F0; }
+
+/* Account slider */
+.bkex-acc-wrap { max-width: 980px; margin: 0 auto; }
+.bkex-acc-viewport {
+  overflow: hidden; border-radius: 14px;
+  cursor: grab; user-select: none; -webkit-user-select: none;
+}
+.bkex-acc-viewport.is-dragging { cursor: grabbing; }
+.bkex-acc-track { display: flex; gap: 20px; will-change: transform; }
+.bkex-acc-item { flex-shrink: 0; display: flex; }
+.bkex-acc-card {
+  background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 22px 20px; display: flex; flex-direction: column; transition: border-color .2s; width: 100%;
+}
+.bkex-acc-card:hover { border-color: rgba(59,130,246,.35); }
+.bkex-acc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.bkex-acc-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; color: var(--accent); flex-shrink: 0;
+}
+.bkex-acc-name { font-size: 1rem; font-weight: 800; color: var(--text-main); }
+.bkex-acc-type { font-size: .72rem; color: var(--text-sub); margin-top: 2px; }
+.bkex-acc-desc { font-size: .83rem; color: var(--text-sub); line-height: 1.65; margin-bottom: 14px; flex: 1; }
+.bkex-acc-stats { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.bkex-acc-stat { display: flex; justify-content: space-between; align-items: center; font-size: .84rem; }
+.bkex-acc-stat-k { color: var(--text-sub); }
+.bkex-acc-stat-v { font-weight: 700; color: var(--text-main); }
+.bkex-acc-stat-v.hl { color: var(--accent); }
+.bkex-acc-btn {
+  display: block; text-align: center;
+  background: linear-gradient(135deg, var(--accent), #6366F1);
+  color: #fff; font-weight: 700; font-size: .9rem; border: none; border-radius: 8px;
+  padding: 10px 12px; text-decoration: none; cursor: pointer; transition: opacity .2s; margin-top: auto;
+}
+.bkex-acc-btn:hover { opacity: .88; color: #fff; }
+.bkex-acc-nav { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 20px; }
+.bkex-acc-nav-btn {
+  background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.25); color: var(--accent);
+  border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; transition: all .2s; font-size: .9rem;
+}
+.bkex-acc-nav-btn:hover { background: rgba(59,130,246,.18); }
+[data-theme="light"] .bkex-acc-card { background: #fff; border-color: #E2E8F0; }
+
+/* Comparison */
+.bkex-cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 0 auto 36px; }
+.bkex-cmp-box { border-radius: 16px; padding: 28px 26px; }
+.bkex-cmp-yes { background: var(--bg-card-2); border: 1px solid rgba(16,185,129,.35); }
+.bkex-cmp-no { background: var(--bg-card-2); border: 1px solid rgba(239,68,68,.25); }
+.bkex-cmp-title { font-size: 1rem; font-weight: 800; margin-bottom: 18px; }
+.bkex-cmp-yes .bkex-cmp-title { color: #10B981; }
+.bkex-cmp-no .bkex-cmp-title { color: var(--text-sub); }
+.bkex-cmp-list { display: flex; flex-direction: column; gap: 11px; margin-bottom: 20px; }
+.bkex-cmp-item { display: flex; gap: 10px; align-items: flex-start; font-size: .87rem; }
+.bkex-cmp-icon {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: .72rem; margin-top: 1px;
+}
+.bkex-cmp-yes .bkex-cmp-icon { background: rgba(16,185,129,.12); color: #10B981; }
+.bkex-cmp-no .bkex-cmp-icon { background: rgba(239,68,68,.1); color: #EF4444; }
+.bkex-cmp-item p { color: var(--text-sub); line-height: 1.55; margin: 0; }
+.bkex-cmp-item p strong { color: var(--text-main); }
+.bkex-cmp-footer { font-size: .82rem; text-align: center; padding-top: 14px; border-top: 1px solid var(--border); font-style: italic; }
+.bkex-cmp-yes .bkex-cmp-footer { color: #10B981; }
+.bkex-cmp-no .bkex-cmp-footer { color: var(--text-sub); }
+.bkex-cmp-cta { text-align: center; }
+.bkex-cmp-cta p { font-size: .95rem; font-weight: 700; color: var(--text-main); margin-bottom: 16px; }
+.bkex-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--accent), #6366F1);
+  color: #fff; font-weight: 700; font-size: 1rem;
+  border: none; border-radius: 99px; padding: 14px 32px;
+  text-decoration: none; cursor: pointer; transition: all .2s;
+}
+.bkex-btn-primary:hover { opacity: .88; color: #fff; box-shadow: 0 6px 28px rgba(59,130,246,.35); }
+[data-theme="light"] .bkex-cmp-yes { background: #F0FDF4; }
+[data-theme="light"] .bkex-cmp-no { background: #FFF5F5; }
+
+/* Mechanism flow */
+.bkex-mech-text { max-width: 760px; margin: 0 auto 36px; }
+.bkex-mech-text p { font-size: .9rem; color: var(--text-sub); line-height: 1.85; margin-bottom: 10px; text-align: center; }
+.bkex-mech-text p strong { color: var(--text-main); }
+.bkex-flow {
+  max-width: 860px; margin: 0 auto;
+  background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 20px;
+  padding: 52px 40px 32px; position: relative;
+}
+.bkex-flow-no-label {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3);
+  border-radius: 99px; color: #EF4444; font-size: .72rem; font-weight: 700;
+  padding: 4px 14px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+}
+.bkex-flow-body { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bkex-flow-node { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+.bkex-flow-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--bg-card); border: 2px solid rgba(59,130,246,.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; color: var(--accent);
+}
+.bkex-flow-circle.ex-node { border-color: rgba(255,196,0,.35); background: rgba(255,196,0,.06); color: #FFC400; font-size: .9rem; font-weight: 900; }
+.bkex-flow-circle.kol-node { border-color: rgba(239,68,68,.3); background: rgba(239,68,68,.06); color: #EF4444; }
+.bkex-flow-node-name { font-size: .8rem; font-weight: 700; color: var(--text-main); text-align: center; line-height: 1.3; }
+.bkex-flow-node-sub { font-size: .68rem; color: var(--text-sub); text-align: center; }
+.bkex-flow-node-sub.accent { color: var(--accent); font-weight: 600; }
+.bkex-flow-arr { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+.bkex-flow-line { width: 100%; height: 1px; background: var(--border); position: relative; }
+.bkex-flow-line::after { content: '▶'; position: absolute; right: -4px; top: -8px; font-size: .65rem; color: var(--text-sub); opacity: .5; }
+.bkex-flow-arr-label { font-size: .68rem; color: var(--text-sub); text-align: center; white-space: nowrap; }
+.bkex-flow-right { display: flex; flex-direction: column; gap: 20px; }
+.bkex-flow-rebate {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: rgba(59,130,246,.07); border: 1px solid rgba(59,130,246,.2);
+  border-radius: 10px; padding: 12px 20px; margin-top: 20px;
+}
+.bkex-flow-rebate-tag { font-size: .85rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.bkex-flow-rebate-desc { font-size: .8rem; color: var(--text-sub); line-height: 1.5; }
+
+/* Mobile */
+@media (max-width: 900px) {
+  .bkex-section { padding: 36px 20px; }
+  .bkex-feat-grid { grid-template-columns: 1fr; }
+  .bkex-acc-slide { grid-template-columns: 1fr; }
+  .bkex-acc-s2 { flex-direction: column; }
+  .bkex-acc-s2 .bkex-acc-card { width: 100%; }
+  .bkex-cmp-grid { grid-template-columns: 1fr; }
+  .bkex-flow-body { flex-direction: column; }
+  .bkex-flow-arr { width: 60px; height: 24px; }
+  .bkex-flow-line { width: 1px; height: 100%; }
+  .bkex-flow-line::after { content: '▼'; right: -8px; top: auto; bottom: -4px; }
+  .bkex-flow-arr-label { display: none; }
+  .bkex-flow-right { flex-direction: row; justify-content: center; }
+  .bkex-flow-rebate { flex-direction: column; text-align: center; }
+}
+
+/* ===== BACKCOM BINANCE SECTIONS ===== */
+.bnex-hero-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid rgba(59,130,246,.4); border-radius: 99px;
+  padding: 5px 16px; font-size: .78rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--accent); margin-bottom: 18px;
+}
+.bnex-hero-title {
+  font-size: 3rem; font-weight: 900; line-height: 1.1;
+  background: linear-gradient(135deg, #F0B90B 40%, #F8D33A 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 16px;
+}
+.bnex-hero-desc { font-size: 1rem; color: var(--text-sub); line-height: 1.75; max-width: 620px; margin: 0 auto 28px; }
+.bnex-ref-box {
+  display: inline-flex; align-items: center; gap: 14px;
+  background: rgba(59,130,246,.06); border: 1px dashed rgba(59,130,246,.45);
+  border-radius: 12px; padding: 10px 20px; margin-bottom: 28px;
+}
+.bnex-ref-label { font-size: .84rem; color: var(--text-sub); font-weight: 600; }
+.bnex-ref-val { font-family: 'Courier New', monospace; font-size: 1.3rem; font-weight: 900; color: var(--accent); letter-spacing: .1em; }
+.bnex-ref-copy { background: none; border: none; color: var(--text-sub); cursor: pointer; padding: 4px 8px; border-radius: 6px; font-size: 1rem; transition: color .2s; line-height: 1; }
+.bnex-ref-copy:hover { color: var(--accent); }
+.bnex-hero-btns { display: flex; align-items: center; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.bnex-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--accent), #6366F1);
+  color: #fff; border: none; border-radius: 99px;
+  padding: 13px 28px; font-size: .97rem; font-weight: 800;
+  text-decoration: none; transition: opacity .2s, box-shadow .2s; cursor: pointer;
+}
+.bnex-btn-primary:hover { opacity: .88; color: #fff; box-shadow: 0 5px 24px rgba(59,130,246,.35); }
+.bnex-btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; border: 1px solid rgba(59,130,246,.5);
+  color: var(--accent); border-radius: 99px; padding: 13px 28px;
+  font-size: .97rem; font-weight: 700; text-decoration: none; transition: all .2s; cursor: pointer;
+}
+.bnex-btn-outline:hover { background: rgba(59,130,246,.08); color: var(--accent); border-color: var(--accent); }
+
+/* Solution section */
+.bnex-solution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 960px; margin: 0 auto 36px; }
+.bnex-card-inner { background: var(--bg-card-2); border: 1px solid rgba(59,130,246,.2); border-radius: 16px; padding: 26px 24px; height: 100%; }
+.bnex-card-header {
+  font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(59,130,246,.15);
+}
+.bnex-benefit-list { display: flex; flex-direction: column; gap: 14px; }
+.bnex-benefit-item { display: flex; gap: 10px; align-items: flex-start; }
+.bnex-check { width: 22px; height: 22px; border-radius: 50%; background: rgba(16,185,129,.15); color: #10B981; display: flex; align-items: center; justify-content: center; font-size: .72rem; flex-shrink: 0; margin-top: 1px; }
+.bnex-benefit-item p { font-size: .88rem; color: var(--text-sub); line-height: 1.55; margin: 0; }
+.bnex-benefit-item p strong { color: var(--text-main); }
+.bnex-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.bnex-stat-card { background: linear-gradient(160deg,#0D1117 0%,#0F1628 100%); border: 1px solid rgba(59,130,246,.3); border-radius: 14px; padding: 22px 16px; text-align: center; transition: all .2s; position: relative; overflow: hidden; }
+.bnex-stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),#6366F1); opacity:.7; }
+.bnex-stat-card:hover { border-color: rgba(59,130,246,.6); box-shadow: 0 4px 20px rgba(59,130,246,.15); transform: translateY(-2px); }
+.bnex-stat-icon { font-size: 1.6rem; margin-bottom: 8px; color: var(--accent); line-height: 1; }
+.bnex-stat-val { font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg,#fff 30%,#94A3B8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 5px; }
+.bnex-stat-label { font-size: .78rem; color: var(--text-sub); line-height: 1.4; }
+
+/* Registration guide */
+.bnex-cases { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.bnex-case { background: var(--bg-card-2); border: 1px solid rgba(59,130,246,.25); border-radius: 14px; padding: 24px 22px; }
+.bnex-case-title { font-size: .95rem; font-weight: 800; color: var(--accent); margin-bottom: 18px; text-align: center; }
+.bnex-cond-list { list-style: none; padding: 0; margin: 8px 0 14px; display: flex; flex-direction: column; gap: 7px; }
+.bnex-cond-list li { display: flex; gap: 8px; align-items: flex-start; font-size: .84rem; color: var(--text-sub); line-height: 1.5; }
+.bnex-cond-list li i { color: #10B981; flex-shrink: 0; margin-top: 2px; font-size: .75rem; }
+.bnex-cond-intro { font-size: .85rem; color: var(--text-sub); line-height: 1.65; margin-bottom: 14px; }
+.bnex-steps { display: flex; flex-direction: column; gap: 12px; }
+.bnex-step { font-size: .85rem; }
+.bnex-step-label { font-weight: 700; color: var(--accent); margin-bottom: 4px; font-size: .82rem; }
+.bnex-step-text { color: var(--text-sub); line-height: 1.65; }
+.bnex-step-text strong { color: var(--text-main); font-weight: 700; }
+.bnex-step-code-box { text-align: center; background: rgba(59,130,246,.05); border: 1px dashed rgba(59,130,246,.35); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+.bnex-step-code-lbl { font-size: .72rem; color: var(--text-sub); margin-bottom: 4px; }
+.bnex-step-code-val { font-family: 'Courier New', monospace; font-size: 1.1rem; font-weight: 900; color: var(--accent); letter-spacing: .1em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.bnex-step-warning { font-size: .82rem; color: var(--text-sub); line-height: 1.6; margin-top: 8px; background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; padding: 8px 12px; }
+.bnex-uid-note {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: rgba(59,130,246,.06); border: 1px solid rgba(59,130,246,.3);
+  border-radius: 12px; padding: 16px 20px;
+}
+.bnex-uid-note i { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.bnex-uid-note-body { flex: 1; }
+.bnex-uid-note-body p { font-size: .85rem; color: var(--text-sub); line-height: 1.7; margin: 0 0 12px; }
+.bnex-uid-note-body p strong { color: var(--text-main); }
+
+/* Comparison */
+.bnex-cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 0 auto 24px; }
+.bnex-cmp-no { background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; }
+.bnex-cmp-yes { background: rgba(59,130,246,.04); border: 1px solid rgba(59,130,246,.3); border-radius: 16px; padding: 28px 24px; position: relative; overflow: hidden; }
+.bnex-cmp-yes::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), #6366F1); }
+.bnex-cmp-lbl-no { font-size: .95rem; font-weight: 800; color: var(--text-sub); margin-bottom: 18px; }
+.bnex-cmp-lbl-yes { font-size: .95rem; font-weight: 800; color: var(--accent); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bnex-smart-badge { font-size: .62rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; background: rgba(59,130,246,.12); color: var(--accent); border: 1px solid rgba(59,130,246,.3); padding: 2px 8px; border-radius: 6px; }
+.bnex-cmp-items { display: flex; flex-direction: column; gap: 11px; }
+.bnex-cmp-item { display: flex; gap: 9px; align-items: flex-start; font-size: .87rem; color: var(--text-sub); line-height: 1.5; }
+.bnex-cmp-x { color: #EF4444; flex-shrink: 0; margin-top: 2px; }
+.bnex-cmp-ok { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.bnex-example-box { max-width: 900px; margin: 0 auto 32px; background: rgba(59,130,246,.04); border: 1px solid rgba(59,130,246,.18); border-radius: 12px; padding: 16px 22px; font-size: .87rem; color: var(--text-sub); line-height: 1.75; }
+.bnex-example-box strong { color: var(--accent); }
+
+/* Mechanism flow */
+.bnex-mech-flow { display: flex; align-items: stretch; gap: 0; max-width: 900px; margin: 0 auto 36px; }
+.bnex-mech-src { flex: 1; border-radius: 16px; padding: 32px 24px; text-align: center; position: relative; overflow: hidden; transition: all .2s; }
+.bnex-mech-src:hover { transform: translateY(-3px); }
+.bnex-mech-src-bn { border: 1px solid rgba(240,185,11,.35); background: linear-gradient(160deg,rgba(240,185,11,.07) 0%,var(--bg-card-2) 65%); }
+.bnex-mech-src-bn::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:#F0B90B; }
+.bnex-mech-src-rich { border: 1px solid rgba(59,130,246,.35); background: linear-gradient(160deg,rgba(59,130,246,.07) 0%,var(--bg-card-2) 65%); }
+.bnex-mech-src-rich::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),#6366F1); }
+.bnex-mech-src-logo { width:72px; height:72px; border-radius:18px; background:#000; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; overflow:hidden; }
+.bnex-mech-src-logo-rich { background:#0B0B1A; border:1.5px solid rgba(99,102,241,.4); }
+.bnex-mech-src-pct { font-size:3rem; font-weight:900; line-height:1; margin-bottom:8px; }
+.bnex-mech-src-pct-bn { color:#F0B90B; text-shadow:0 0 30px rgba(240,185,11,.3); }
+.bnex-mech-src-pct-rich { background:linear-gradient(135deg,var(--accent),#6366F1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.bnex-mech-src-name { font-size:.88rem; font-weight:700; color:var(--text-main); margin-bottom:5px; }
+.bnex-mech-src-sub { font-size:.76rem; color:var(--text-sub); line-height:1.4; }
+.bnex-mech-op { display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:900; color:var(--text-sub); padding:0 18px; flex-shrink:0; opacity:.5; }
+.bnex-mech-total { flex:1.15; background:linear-gradient(160deg,rgba(59,130,246,.14) 0%,rgba(99,102,241,.08) 100%); border:1.5px solid rgba(59,130,246,.45); border-radius:16px; padding:32px 24px; text-align:center; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.bnex-mech-total::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),#6366F1); }
+.bnex-mech-total-lbl { font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+.bnex-mech-total-num { font-size:4rem; font-weight:900; background:linear-gradient(135deg,#60A5FA,#818CF8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; margin-bottom:10px; }
+.bnex-mech-total-sub { font-size:.82rem; color:var(--text-sub); }
+/* Calc example */
+.bnex-calc-box { max-width:900px; margin:0 auto 36px; background:var(--bg-card-2); border:1px solid var(--border); border-radius:16px; padding:24px 32px; }
+.bnex-calc-title { font-size:.88rem; font-weight:700; color:var(--text-main); margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+.bnex-calc-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; }
+.bnex-calc-item { text-align:center; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:12px 18px; min-width:90px; }
+.bnex-calc-label { font-size:.72rem; color:var(--text-sub); margin-bottom:5px; }
+.bnex-calc-val { font-size:1.35rem; font-weight:900; color:var(--text-main); }
+.bnex-calc-val-bn { color:#F0B90B; }
+.bnex-calc-val-rich { color:var(--accent); }
+.bnex-calc-val-total { font-size:1.5rem; background:linear-gradient(135deg,#10B981,#34D399); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.bnex-calc-arrow { font-size:1.1rem; color:var(--text-sub); opacity:.5; }
+.bnex-calc-plus { font-size:1.2rem; font-weight:700; color:var(--text-sub); opacity:.6; }
+.bnex-mech-cta { text-align:center; }
+.bnex-mech-cta p { font-size:.92rem; color:var(--text-sub); margin-bottom:14px; }
+
+[data-theme="light"] .bnex-card-inner,
+[data-theme="light"] .bnex-case,
+[data-theme="light"] .bnex-cmp-no { background: #fff; border-color: #E2E8F0; }
+[data-theme="light"] .bnex-stat-card { background: linear-gradient(160deg,#F8FAFF 0%,#EEF2FF 100%); border-color: rgba(59,130,246,.25); }
+[data-theme="light"] .bnex-stat-val { background: linear-gradient(135deg,#0F172A 30%,#475569); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+[data-theme="light"] .bnex-mech-src-bn { background: linear-gradient(160deg,rgba(240,185,11,.06) 0%,#fff 65%); border-color: rgba(240,185,11,.4); }
+[data-theme="light"] .bnex-mech-src-rich { background: linear-gradient(160deg,rgba(59,130,246,.06) 0%,#fff 65%); border-color: rgba(59,130,246,.35); }
+[data-theme="light"] .bnex-mech-total { background: linear-gradient(160deg,rgba(59,130,246,.1) 0%,rgba(99,102,241,.06) 100%); }
+[data-theme="light"] .bnex-mech-src-logo { background: #F1F5F9; }
+[data-theme="light"] .bnex-calc-box { background: #fff; border-color: #E2E8F0; }
+[data-theme="light"] .bnex-calc-item { background: #F8FAFC; border-color: #E2E8F0; }
+
+/* Binance brand color */
+.bnex-b { color: #F0B90B; }
+.bnex-btn-primary .bnex-b,
+.bnex-btn-outline .bnex-b,
+.btn-case-register .bnex-b,
+.bkex-btn-primary .bnex-b,
+.btn-register-main .bnex-b { color: inherit; }
+
+@media (max-width: 768px) {
+  .bnex-hero-title { font-size: 2.2rem; }
+  .bnex-solution-grid,
+  .bnex-cases,
+  .bnex-cmp-grid,
+  .bnex-mech-grid { grid-template-columns: 1fr; }
+  .bnex-stats-grid { grid-template-columns: 1fr 1fr; }
+}
 </style>
 {% endblock %}
 
@@ -284,324 +573,109 @@
       {% endfor %}
     </div>
 
-    <!-- Content -->
+    <!-- Content panels — mỗi sàn một file riêng trong brokers/ -->
     <main class="svc-content">
       {% for broker in brokers %}
       <div class="broker-panel{% if forloop.first %} active{% endif %}" id="panel-{{ broker.slug }}">
-
-        <!-- Hero -->
-        <div class="broker-hero">
-          <div class="broker-hero-left">
-            <div class="broker-logo-wrap">
-              {% if broker.logo %}<img src="{{ broker.logo.url }}" alt="{{ broker.name }}" class="broker-logo">{% else %}<span style="font-size:2.5rem;">🏦</span>{% endif %}
-              <span class="broker-category-pill">{{ broker.get_category_display }}</span>
-            </div>
-
-            <h1 class="broker-hero-title">
-              {% if broker.hero_title %}
-                <span class="vi-text">{{ broker.hero_title }}</span>
-                {% if broker.hero_title_en %}<span class="en-text" style="display:none;">{{ broker.hero_title_en }}</span>{% endif %}
-              {% else %}{{ broker.name }}{% endif %}
-            </h1>
-
-            {% if broker.description %}
-            <p class="broker-hero-desc">
-              <span class="vi-text">{{ broker.description }}</span>
-              {% if broker.description_en %}<span class="en-text" style="display:none;">{{ broker.description_en }}</span>{% endif %}
-            </p>
-            {% endif %}
-
-            {% if broker.partner_code %}
-            <div class="partner-code-box">
-              <div>
-                <div class="partner-code-label">Partner Code:</div>
-                <div class="partner-code-val">{{ broker.partner_code }}</div>
-              </div>
-              <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)" title="Sao chép">
-                <i class="bi bi-copy"></i>
-              </button>
-            </div>
-            {% endif %}
-
-            <div class="broker-hero-actions">
-              <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-register-main">
-                <i class="bi bi-person-plus-fill"></i>
-                <span data-i18n="svc.btn.register">Đăng ký ngay</span>
-              </a>
-              <span class="broker-hero-cat-badge">
-                <i class="bi bi-shield-check text-success"></i>
-                <span class="vi-text">Sàn uy tín</span>
-                <span class="en-text" style="display:none;">Trusted broker</span>
-              </span>
-            </div>
-          </div>
-
-          <div class="broker-hero-right">
-            <div class="hero-visual-card">
-              <!-- Brand row: BACKCOM × BROKER -->
-              <div class="hvc-brand-row">
-                <span>BACKCOM</span>
-                <span class="hvc-brand-sep">×</span>
-                {% if broker.logo %}<img src="{{ broker.logo.url }}" alt="{{ broker.name }}" class="hvc-brand-logo">{% endif %}
-                <span>{{ broker.name|upper }}</span>
-              </div>
-              <!-- Title -->
-              <div class="hvc-title">BACKCOM {{ broker.name|upper }}</div>
-              <!-- Big % -->
-              {% if broker.promo_pct %}
-              <div class="hvc-big">{{ broker.promo_pct }}</div>
-              {% elif broker.rebate_standard %}
-              <div class="hvc-big">{{ broker.rebate_standard }}</div>
-              {% endif %}
-              <!-- Icon + subline -->
-              <div class="hvc-icon-row">
-                <span class="hvc-wing">💸</span>
-                {% if broker.promo_subline %}
-                <span class="hvc-subline">
-                  <span class="vi-text">{{ broker.promo_subline }}</span>
-                  {% if broker.promo_subline_en %}<span class="en-text" style="display:none;">{{ broker.promo_subline_en }}</span>{% endif %}
-                </span>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Stats: tự render từ các field đã có, không lưu DB riêng -->
-        {% if broker.rebate_standard or broker.rebate_pro or broker.rebate_raw or broker.partner_level %}
-        <div class="broker-stats">
-          {% if broker.rebate_standard %}
-          <div class="stat-box">
-            <div class="stat-icon"><i class="bi bi-percent"></i></div>
-            <div class="stat-val">{{ broker.rebate_standard }}</div>
-            <div class="stat-label">
-              <span class="vi-text">Hoàn phí Standard</span>
-              <span class="en-text" style="display:none;">Standard Rebate</span>
-            </div>
-          </div>
-          {% endif %}
-          {% if broker.rebate_pro %}
-          <div class="stat-box">
-            <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
-            <div class="stat-val" style="color:#6366F1;">{{ broker.rebate_pro }}</div>
-            <div class="stat-label">
-              <span class="vi-text">Hoàn phí Pro</span>
-              <span class="en-text" style="display:none;">Pro Rebate</span>
-            </div>
-          </div>
-          {% endif %}
-          {% if broker.rebate_raw %}
-          <div class="stat-box">
-            <div class="stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-            <div class="stat-val" style="font-size:1.3rem;">
-              <span class="vi-text">{{ broker.rebate_raw }}</span>
-              {% if broker.rebate_raw_en %}<span class="en-text" style="display:none;">{{ broker.rebate_raw_en }}</span>{% endif %}
-            </div>
-            <div class="stat-label">Zero &amp; Raw</div>
-          </div>
-          {% endif %}
-          {% if broker.partner_level %}
-          <div class="stat-box">
-            <div class="stat-icon"><i class="bi bi-gem"></i></div>
-            <div class="stat-val" style="font-size:1.3rem;">
-              <span class="vi-text">{{ broker.partner_level }}</span>
-              {% if broker.partner_level_en %}<span class="en-text" style="display:none;">{{ broker.partner_level_en }}</span>{% endif %}
-            </div>
-            <div class="stat-label">
-              <span class="vi-text">Cấp đối tác</span>
-              <span class="en-text" style="display:none;">Partner Level</span>
-            </div>
-          </div>
-          {% endif %}
-        </div>
+        {% if broker.slug == 'exness' %}
+          {% include 'trading/brokers/exness.html' %}
+        {% elif broker.slug == 'binance' %}
+          {% include 'trading/brokers/binance.html' %}
+        {% else %}
+          {% include 'trading/brokers/_generic.html' %}
         {% endif %}
-
-
-        <!-- Guide: hardcode 3 trường hợp -->
-        <div class="broker-guide-section">
-          <h2 class="section-heading vi-text">Hướng Dẫn Đăng Ký {{ broker.name }}</h2>
-          <h2 class="section-heading en-text" style="display:none;">How to Register {{ broker.name }}</h2>
-
-          <div class="broker-guide-content">
-
-            <!-- VI -->
-            <div class="vi-text">
-              <div class="guide-cases-row">
-
-                <div class="case-card">
-                  <div class="case-badge">Trường Hợp 1</div>
-                  <h3>Chưa Có Tài Khoản {{ broker.name }}</h3>
-                  <p class="step"><i class="bi bi-1-circle-fill me-1"></i> Bước 1:</p>
-                  <p>Đăng ký tài khoản {{ broker.name }} qua <strong>link giới thiệu</strong> của chúng tôi.</p>
-                  {% if broker.partner_code %}
-                  <div class="guide-code-box">
-                    <span class="guide-code-label">Mã Giới Thiệu</span>
-                    <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
-                  </div>
-                  {% endif %}
-                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
-                    <i class="bi bi-person-plus-fill me-1"></i> Đăng Ký Tài Khoản Ngay
-                  </a>
-                  <p class="step mt-3"><i class="bi bi-2-circle-fill me-1"></i> Bước 2:</p>
-                  <p>KYC (xác minh tài khoản) bằng CCCD, Bằng Lái Xe hoặc Hộ Chiếu.</p>
-                  <p class="step"><i class="bi bi-3-circle-fill me-1"></i> Bước 3:</p>
-                  <p>Nạp tiền vào tài khoản và bắt đầu giao dịch.</p>
-                </div>
-
-                <div class="case-card case-recommended">
-                  <div class="case-badge recommended">Trường Hợp 2 <span class="rec-tag">KHUYÊN DÙNG</span></div>
-                  <h3>Đã Có Tài Khoản {{ broker.name }}</h3>
-                  <p class="step"><i class="bi bi-1-circle-fill me-1"></i> Bước 1:</p>
-                  <p>Tạo tài khoản mới trên {{ broker.name }} qua <strong>link giới thiệu</strong> của chúng tôi bằng một địa chỉ email mới.</p>
-                  {% if broker.partner_code %}
-                  <div class="guide-code-box">
-                    <span class="guide-code-label">Mã Giới Thiệu</span>
-                    <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
-                  </div>
-                  {% endif %}
-                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
-                    <i class="bi bi-person-plus-fill me-1"></i> Đăng Ký Tài Khoản Ngay
-                  </a>
-                  <p class="step mt-3"><i class="bi bi-2-circle-fill me-1"></i> Bước 2:</p>
-                  <p>KYC và nạp tiền vào tài khoản mới.</p>
-                  <div class="note"><i class="bi bi-info-circle me-1"></i> {{ broker.name }} cho phép 1 giấy tờ tùy thân KYC tối đa 10 tài khoản — chỉ cần dùng email mới.</div>
-                </div>
-
-              </div>
-
-              <div class="case-card case-wide mt-3">
-                <div class="case-badge">Trường Hợp 3</div>
-                <h3>Đã Có Tài Khoản Nhưng Không Muốn Tạo Tài Khoản Mới</h3>
-                <p>Bạn vẫn có thể nhận hoàn phí bằng cách <strong>chuyển đổi đối tác (đổi IB)</strong> sang chúng tôi.</p>
-                <p class="step"><i class="bi bi-1-circle-fill me-1"></i> Bước 1:</p>
-                <p>Đăng nhập vào tài khoản {{ broker.name }}, vào mục <strong>Hồ sơ</strong> và chọn <strong>Chat trực tuyến</strong>.</p>
-                <p class="step"><i class="bi bi-2-circle-fill me-1"></i> Bước 2:</p>
-                <p>Yêu cầu thay đổi mã đối tác bằng cách gửi câu lệnh <strong>"Đổi đối tác"</strong>.</p>
-                <p class="step"><i class="bi bi-3-circle-fill me-1"></i> Bước 3:</p>
-                <p>Nhấn vào liên kết mà BOT gửi trong cửa sổ chat để mở bảng thay đổi đối tác. Đăng nhập lại và nhấn vào liên kết 1 lần nữa.</p>
-                <p class="step"><i class="bi bi-4-circle-fill me-1"></i> Bước 4:</p>
-                <p>Trong bảng thay đổi đối tác, chọn lý do <strong>"Tín hiệu giao dịch"</strong>, sau đó sao chép và dán đường link liên kết đối tác:</p>
-                {% if broker.register_url %}
-                <div class="guide-link-box">
-                  <span>{{ broker.register_url }}</span>
-                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url }}', this)"><i class="bi bi-copy"></i> Sao Chép Link</button>
-                </div>
-                {% endif %}
-                <p class="step"><i class="bi bi-5-circle-fill me-1"></i> Bước 5:</p>
-                <p>Tại mục "Bạn đã tìm thấy đối tác mới của mình ở đâu" — bạn điền link đối tác hoặc điền <strong>facebook.com</strong>.</p>
-                <p class="step"><i class="bi bi-6-circle-fill me-1"></i> Bước 6:</p>
-                <p>Nhấn nút <strong>Gửi</strong>. Sau khi gửi, chờ khoảng <strong>24–48 giờ</strong> để nhận email xác nhận thay đổi đối tác thành công.</p>
-                <p class="step"><i class="bi bi-7-circle-fill me-1"></i> Bước 7:</p>
-                <p>Sau khi được duyệt, hãy tạo 1 tài khoản MT4/MT5 mới và giao dịch trên tài khoản đó để nhận hoàn phí.</p>
-              </div>
-            </div>
-
-            <!-- EN -->
-            <div class="en-text" style="display:none;">
-              <div class="guide-cases-row">
-
-                <div class="case-card">
-                  <div class="case-badge">Case 1</div>
-                  <h3>New to {{ broker.name }}</h3>
-                  <p class="step"><i class="bi bi-1-circle-fill me-1"></i> Step 1:</p>
-                  <p>Register a {{ broker.name }} account through our <strong>referral link</strong>.</p>
-                  {% if broker.partner_code %}
-                  <div class="guide-code-box">
-                    <span class="guide-code-label">Partner Code</span>
-                    <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
-                  </div>
-                  {% endif %}
-                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
-                    <i class="bi bi-person-plus-fill me-1"></i> Register Now
-                  </a>
-                  <p class="step mt-3"><i class="bi bi-2-circle-fill me-1"></i> Step 2:</p>
-                  <p>Complete KYC with your ID card, driver's license, or passport.</p>
-                  <p class="step"><i class="bi bi-3-circle-fill me-1"></i> Step 3:</p>
-                  <p>Fund your account and start trading.</p>
-                </div>
-
-                <div class="case-card case-recommended">
-                  <div class="case-badge recommended">Case 2 <span class="rec-tag">RECOMMENDED</span></div>
-                  <h3>Already Have a {{ broker.name }} Account</h3>
-                  <p class="step"><i class="bi bi-1-circle-fill me-1"></i> Step 1:</p>
-                  <p>Create a new {{ broker.name }} account via our <strong>referral link</strong> using a new email address.</p>
-                  {% if broker.partner_code %}
-                  <div class="guide-code-box">
-                    <span class="guide-code-label">Partner Code</span>
-                    <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
-                  </div>
-                  {% endif %}
-                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
-                    <i class="bi bi-person-plus-fill me-1"></i> Register Now
-                  </a>
-                  <p class="step mt-3"><i class="bi bi-2-circle-fill me-1"></i> Step 2:</p>
-                  <p>Complete KYC and fund the new account.</p>
-                  <div class="note"><i class="bi bi-info-circle me-1"></i> {{ broker.name }} allows 1 ID document to KYC up to 10 accounts — just use a new email.</div>
-                </div>
-
-              </div>
-
-              <div class="case-card case-wide mt-3">
-                <div class="case-badge">Case 3</div>
-                <h3>Have an Account But Don't Want to Create a New One</h3>
-                <p>You can still receive rebates by <strong>switching your IB partner</strong> to us.</p>
-                <p class="step"><i class="bi bi-1-circle-fill me-1"></i> Step 1:</p>
-                <p>Log in to {{ broker.name }}, go to <strong>Profile</strong> and open <strong>Live Chat</strong>.</p>
-                <p class="step"><i class="bi bi-2-circle-fill me-1"></i> Step 2:</p>
-                <p>Request a partner change by sending the message <strong>"Change partner"</strong>.</p>
-                <p class="step"><i class="bi bi-3-circle-fill me-1"></i> Step 3:</p>
-                <p>Click the link sent by the BOT in chat to open the partner change page. Log in again and click the link once more.</p>
-                <p class="step"><i class="bi bi-4-circle-fill me-1"></i> Step 4:</p>
-                <p>Select reason <strong>"Trading signals"</strong>, then paste the partner link:</p>
-                {% if broker.register_url %}
-                <div class="guide-link-box">
-                  <span>{{ broker.register_url }}</span>
-                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url }}', this)"><i class="bi bi-copy"></i> Copy Link</button>
-                </div>
-                {% endif %}
-                <p class="step"><i class="bi bi-5-circle-fill me-1"></i> Step 5:</p>
-                <p>For "Where did you find your new partner?" — enter the partner link or type <strong>facebook.com</strong>.</p>
-                <p class="step"><i class="bi bi-6-circle-fill me-1"></i> Step 6:</p>
-                <p>Click <strong>Submit</strong> and wait <strong>24–48 hours</strong> for a confirmation email.</p>
-                <p class="step"><i class="bi bi-7-circle-fill me-1"></i> Step 7:</p>
-                <p>Once approved, create a new MT4/MT5 account and trade on it to receive rebates.</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Rebate table -->
-        {% if broker.rebate_table %}
-        <div class="broker-table-section">
-          <h2 class="section-heading" data-i18n="svc.table.title">Bảng hoàn phí</h2>
-          <div class="rebate-table-wrap">
-            {% autoescape off %}{{ broker.rebate_table }}{% endautoescape %}
-          </div>
-        </div>
-        {% endif %}
-
       </div>
       {% endfor %}
+
+      <!-- ===== CHUNG — TẠI SAO CHỌN RICHAITRADING ===== -->
+      <div class="bkex-section bkex-section-alt svc-common-why">
+    <h2 class="bkex-title vi-text">Tại Sao Nên Làm Hoàn Phí Tại RichAITrading?</h2>
+    <h2 class="bkex-title en-text" style="display:none;">Why Choose RichAITrading For Rebates?</h2>
+    <div class="bkex-feat-grid">
+      <div class="bkex-feat-card">
+        <div class="bkex-feat-head">
+          <div class="bkex-feat-icon"><i class="bi bi-percent"></i></div>
+          <div class="bkex-feat-title vi-text">Tỉ Lệ Hoàn Phí Tốt Nhất</div>
+          <div class="bkex-feat-title en-text" style="display:none;">Best Rebate Rate</div>
+        </div>
+        <p class="bkex-feat-desc vi-text">RichAITrading là <strong>đối tác chính thức</strong> của các sàn giao dịch, nhờ đó người dùng luôn được hưởng mức hoàn phí giao dịch cao nhất, ổn định và minh bạch nhất.</p>
+        <p class="bkex-feat-desc en-text" style="display:none;">RichAITrading is an <strong>official broker partner</strong>, giving users the highest, most stable, and most transparent trading rebate rates available.</p>
+      </div>
+      <div class="bkex-feat-card">
+        <div class="bkex-feat-head">
+          <div class="bkex-feat-icon"><i class="bi bi-arrow-repeat"></i></div>
+          <div class="bkex-feat-title vi-text">Hoàn Phí Trọn Đời</div>
+          <div class="bkex-feat-title en-text" style="display:none;">Lifetime Rebates</div>
+        </div>
+        <p class="bkex-feat-desc vi-text">RichAITrading áp dụng <strong>hoàn phí trọn đời cho mọi giao dịch</strong>, không giới hạn thời gian và không yêu cầu điều kiện phức tạp. Chỉ cần phát sinh giao dịch là bạn đủ điều kiện nhận hoàn phí.</p>
+        <p class="bkex-feat-desc en-text" style="display:none;">RichAITrading provides <strong>lifetime rebates on every trade</strong> with no time restrictions or complex conditions. Simply trade and you qualify for rebates.</p>
+      </div>
+      <div class="bkex-feat-card">
+        <div class="bkex-feat-head">
+          <div class="bkex-feat-icon"><i class="bi bi-shield-check"></i></div>
+          <div class="bkex-feat-title vi-text">Hệ Thống Minh Bạch</div>
+          <div class="bkex-feat-title en-text" style="display:none;">Transparent System</div>
+        </div>
+        <p class="bkex-feat-desc vi-text">Thông qua <strong>RichAITrading</strong>, mọi giao dịch và khoản hoàn phí đều được ghi nhận <strong>tự động — minh bạch</strong>, giúp bạn theo dõi số tiền hoàn phí và khối lượng giao dịch theo thời gian thực.</p>
+        <p class="bkex-feat-desc en-text" style="display:none;">Via <strong>RichAITrading</strong>, every trade and rebate is recorded <strong>automatically and transparently</strong> — track your earnings and trade volume in real time.</p>
+      </div>
+      <div class="bkex-feat-card">
+        <div class="bkex-feat-head">
+          <div class="bkex-feat-icon"><i class="bi bi-grid-1x2"></i></div>
+          <div class="bkex-feat-title vi-text">Hỗ Trợ Nhiều Sàn</div>
+          <div class="bkex-feat-title en-text" style="display:none;">Multi-Broker Support</div>
+        </div>
+        <p class="bkex-feat-desc vi-text">RichAITrading hỗ trợ <strong>hoàn phí trên nhiều sàn giao dịch lớn</strong> như <strong>Exness, XM, Bybit, Binance, OKX, BingX…</strong>, giúp bạn linh hoạt lựa chọn nền tảng mà vẫn tối ưu chi phí giao dịch.</p>
+        <p class="bkex-feat-desc en-text" style="display:none;">RichAITrading supports <strong>rebates across major brokers</strong> including <strong>Exness, XM, Bybit, Binance, OKX, BingX…</strong> — flexible choice, optimized costs.</p>
+      </div>
+      <div class="bkex-feat-card">
+        <div class="bkex-feat-head">
+          <div class="bkex-feat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="bkex-feat-title vi-text">Nhóm Private – Độc Quyền</div>
+          <div class="bkex-feat-title en-text" style="display:none;">Exclusive Private Group</div>
+        </div>
+        <p class="bkex-feat-desc vi-text">Người dùng tham gia hoàn phí có cơ hội độc quyền tham gia <strong>Nhóm Private</strong>, nơi chia sẻ tín hiệu giao dịch, góc nhìn thị trường và kinh nghiệm trade, hỗ trợ quá trình ra quyết định hiệu quả hơn.</p>
+        <p class="bkex-feat-desc en-text" style="display:none;">Rebate users get exclusive access to the <strong>Private Group</strong> — trading signals, market insights, and real trading experience to sharpen your edge.</p>
+      </div>
+      <div class="bkex-feat-card">
+        <div class="bkex-feat-head">
+          <div class="bkex-feat-icon"><i class="bi bi-headset"></i></div>
+          <div class="bkex-feat-title vi-text">Hỗ Trợ 24/7</div>
+          <div class="bkex-feat-title en-text" style="display:none;">24/7 Support</div>
+        </div>
+        <p class="bkex-feat-desc vi-text">Đội ngũ RichAITrading luôn sẵn sàng <strong>hỗ trợ 24/7</strong>, phản hồi nhanh chóng và chủ động xử lý vấn đề, giúp bạn yên tâm giao dịch và nhận <strong>hoàn phí đúng – đủ – kịp thời</strong>.</p>
+        <p class="bkex-feat-desc en-text" style="display:none;">RichAITrading's team is available <strong>24/7</strong>, responding quickly and proactively — so you can trade with confidence and receive rebates <strong>accurately and on time</strong>.</p>
+      </div>
+    </div>
+  </div>
     </main>
 
     {% else %}
     <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--text-sub);padding:60px 20px;text-align:center;">
       <i class="bi bi-grid" style="font-size:3rem;opacity:.3;"></i>
-      <p data-i18n="svc.empty">Chưa có dịch vụ nào. Vui lòng quay lại sau.</p>
+      <p>Chưa có dịch vụ nào. Vui lòng quay lại sau.</p>
     </div>
     {% endif %}
 
   </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+function switchRegTab(n) {
+  document.querySelectorAll('.reg-tab-btn').forEach(function(b, i) { b.classList.toggle('active', i + 1 === n); });
+  document.querySelectorAll('.reg-panel').forEach(function(p, i) { p.classList.toggle('active', i + 1 === n); });
+}
+
+function switchBnexTab(n) {
+  var panel = document.getElementById('panel-binance');
+  if (!panel) return;
+  panel.querySelectorAll('.reg-tab-btn').forEach(function(b, i) { b.classList.toggle('active', i + 1 === n); });
+  panel.querySelectorAll('.reg-panel').forEach(function(p, i) { p.classList.toggle('active', i + 1 === n); });
+}
+
 function switchBroker(slug) {
   document.querySelectorAll('.broker-panel').forEach(function(p) { p.classList.remove('active'); });
   var t = document.getElementById('panel-' + slug);
@@ -609,7 +683,16 @@ function switchBroker(slug) {
   document.querySelectorAll('.svc-tab, .svc-mobile-tab').forEach(function(b) {
     b.classList.toggle('active', b.dataset.target === 'panel-' + slug);
   });
+  sessionStorage.setItem('svc-broker', slug);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+(function() {
+  var saved = sessionStorage.getItem('svc-broker');
+  if (saved && document.getElementById('panel-' + saved)) {
+    switchBroker(saved);
+  }
+})();
 
 function copyText(text, btn) {
   navigator.clipboard.writeText(text).catch(function() {
@@ -623,7 +706,6 @@ function copyText(text, btn) {
   setTimeout(function() { btn.innerHTML = orig; }, 1500);
 }
 
-/* i18n */
 function applyBrokerLang(lang) {
   var isEn = lang === 'en';
   document.querySelectorAll('.vi-text').forEach(function(el) { el.style.display = isEn ? 'none' : ''; });
@@ -631,5 +713,126 @@ function applyBrokerLang(lang) {
 }
 applyBrokerLang(localStorage.getItem('ait-lang') || 'vi');
 document.addEventListener('langChanged', function(e) { applyBrokerLang(e.detail); });
+
+// Account slider — infinite drag
+(function() {
+  var GAP = 20;
+  var viewport, track, origCount, itemW, stepW, offset, isDragging, startX, startOffset, hasDragged;
+
+  function init() {
+    viewport = document.getElementById('bkexViewport');
+    track    = document.getElementById('bkexAccTrack');
+    if (!viewport || !track) return;
+
+    var origItems = Array.from(track.children);
+    origCount = origItems.length;
+
+    origItems.forEach(function(el) { track.appendChild(el.cloneNode(true)); });
+    origItems.slice().reverse().forEach(function(el) {
+      track.insertBefore(el.cloneNode(true), track.firstChild);
+    });
+
+    // ResizeObserver handles panel display:none → block (offsetWidth 0 → real width)
+    if (window.ResizeObserver) {
+      new ResizeObserver(function() { calcSizes(); }).observe(viewport);
+    }
+    calcSizes();
+
+    viewport.addEventListener('mousedown', onDragStart);
+    viewport.addEventListener('touchstart', onDragStart, { passive: true });
+    window.addEventListener('mousemove', onDragMove);
+    window.addEventListener('touchmove', onDragMove, { passive: false });
+    window.addEventListener('mouseup', onDragEnd);
+    window.addEventListener('touchend', onDragEnd);
+
+    viewport.addEventListener('click', function(e) {
+      if (hasDragged) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    track.addEventListener('transitionend', function() {
+      if (!isDragging) checkBounds();
+    });
+
+    window.addEventListener('resize', function() { calcSizes(); });
+  }
+
+  function calcSizes() {
+    var vw = viewport.offsetWidth;
+    if (!vw) return; // panel hidden (display:none) — ResizeObserver will fire when visible
+    var vis = vw < 580 ? 1 : vw < 820 ? 2 : 3;
+    itemW = (vw - GAP * (vis - 1)) / vis;
+    stepW = itemW + GAP;
+    Array.from(track.children).forEach(function(el) { el.style.width = itemW + 'px'; });
+    offset = -(origCount * stepW);
+    setPos(false);
+  }
+
+  function setPos(animate) {
+    track.style.transition = animate ? 'transform .45s cubic-bezier(.4,0,.2,1)' : 'none';
+    track.style.transform = 'translateX(' + offset + 'px)';
+  }
+
+  function checkBounds() {
+    var n = origCount;
+    var changed = false;
+    while (offset > -(n * stepW))        { offset -= n * stepW; changed = true; }
+    while (offset <= -(2 * n * stepW))   { offset += n * stepW; changed = true; }
+    if (changed) setPos(false);
+  }
+
+  function snapAndCheck() {
+    offset = Math.round(offset / stepW) * stepW;
+    setPos(true);
+  }
+
+  function onDragStart(e) {
+    isDragging = true;
+    hasDragged = false;
+    startX = (e.touches ? e.touches[0] : e).clientX;
+    startOffset = offset;
+    track.style.transition = 'none';
+    viewport.classList.add('is-dragging');
+  }
+
+  function onDragMove(e) {
+    if (!isDragging) return;
+    var x = (e.touches ? e.touches[0] : e).clientX;
+    var delta = x - startX;
+    if (Math.abs(delta) > 5) hasDragged = true;
+    offset = startOffset + delta;
+    // Live infinite-loop correction during fast drag — adjust startOffset too so drag stays smooth
+    var n = origCount;
+    if (offset > -(n * stepW)) {
+      offset -= n * stepW;
+      startOffset -= n * stepW;
+    } else if (offset <= -(2 * n * stepW)) {
+      offset += n * stepW;
+      startOffset += n * stepW;
+    }
+    track.style.transform = 'translateX(' + offset + 'px)';
+    if (e.cancelable && hasDragged) e.preventDefault();
+  }
+
+  function onDragEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+    viewport.classList.remove('is-dragging');
+    if (hasDragged) {
+      snapAndCheck();
+      setTimeout(function() { hasDragged = false; }, 0);
+    }
+  }
+
+  window.bkexAccSlide = function(dir) {
+    offset -= dir * stepW;
+    setPos(true);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    setTimeout(init, 0);
+  }
+})();
 </script>
 {% endblock %}

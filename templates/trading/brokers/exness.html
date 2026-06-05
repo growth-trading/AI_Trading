@@ -1,0 +1,671 @@
+<div class="broker-hero">
+  <div class="broker-hero-left">
+    <div class="broker-logo-wrap">
+      {% if broker.logo %}<img src="{{ broker.logo.url }}" alt="Exness" class="broker-logo">{% else %}<span style="font-size:2rem;font-weight:900;color:var(--text-main);">Exness</span>{% endif %}
+      <span class="broker-category-pill">Forex</span>
+    </div>
+    <h1 class="broker-hero-title vi-text">Hoàn phí giao dịch<br>Forex hàng đầu thế giới</h1>
+    <h1 class="broker-hero-title en-text" style="display:none;">Top Forex Trading<br>Rebate Program</h1>
+    <p class="broker-hero-desc vi-text">Exness là sàn Forex lớn nhất thế giới với spread thấp, nạp rút tức thì 24/7. Đăng ký qua link của chúng tôi để nhận hoàn phí giao dịch mỗi ngày.</p>
+    <p class="broker-hero-desc en-text" style="display:none;">Exness is the world's largest Forex broker with ultra-low spreads and instant 24/7 deposits/withdrawals. Register via our link to receive daily trading rebates.</p>
+    {% if broker.partner_code %}
+    <div class="partner-code-box">
+      <div>
+        <div class="partner-code-label">Partner Code</div>
+        <div class="partner-code-val">{{ broker.partner_code }}</div>
+      </div>
+      <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+    </div>
+    {% endif %}
+    <div class="broker-hero-actions">
+      <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-register-main">
+        <i class="bi bi-person-plus-fill"></i>
+        <span class="vi-text">Đăng ký ngay</span><span class="en-text" style="display:none;">Register Now</span>
+      </a>
+      <span class="broker-hero-cat-badge"><i class="bi bi-shield-check text-success"></i>
+        <span class="vi-text">Sàn uy tín toàn cầu</span><span class="en-text" style="display:none;">Global trusted broker</span>
+      </span>
+    </div>
+  </div>
+  <div class="broker-hero-right">
+    <div class="hero-visual-card">
+      <div class="hvc-brand-row">
+        <span>BACKCOM</span><span class="hvc-brand-sep">×</span>
+        {% if broker.logo %}<img src="{{ broker.logo.url }}" alt="Exness" class="hvc-brand-logo">{% endif %}
+        <span>EXNESS</span>
+      </div>
+      <div class="hvc-title">BACKCOM EXNESS</div>
+      <div class="hvc-big">40%</div>
+      <div class="hvc-icon-row">
+        <span class="hvc-wing">💸</span>
+        <span class="hvc-subline vi-text">HOÀN PHÍ TÀI KHOẢN STANDARD</span>
+        <span class="hvc-subline en-text" style="display:none;">STANDARD ACCOUNT REBATE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="broker-stats">
+  <div class="stat-box">
+    <div class="stat-icon"><i class="bi bi-percent"></i></div>
+    <div class="stat-val">40%</div>
+    <div class="stat-label vi-text">Hoàn phí Standard</div>
+    <div class="stat-label en-text" style="display:none;">Standard Rebate</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+    <div class="stat-val" style="color:#6366F1;">25%</div>
+    <div class="stat-label vi-text">Hoàn phí Pro</div>
+    <div class="stat-label en-text" style="display:none;">Pro Rebate</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+    <div class="stat-val" style="font-size:1.4rem;">Zero / Raw</div>
+    <div class="stat-label vi-text">Cố định / lô</div>
+    <div class="stat-label en-text" style="display:none;">Fixed per lot</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+    <div class="stat-val" style="font-size:1.4rem;">24/7</div>
+    <div class="stat-label vi-text">Nạp rút tức thì</div>
+    <div class="stat-label en-text" style="display:none;">Instant deposit/withdraw</div>
+  </div>
+</div>
+
+<div class="broker-guide-section">
+  <h2 class="section-heading vi-text">Hướng Dẫn Đăng Ký Exness</h2>
+  <h2 class="section-heading en-text" style="display:none;">How to Register Exness</h2>
+
+  <!-- Tabs -->
+  <div class="reg-tabs">
+    <button class="reg-tab-btn" onclick="switchRegTab(1)">
+      <div class="reg-tab-label">
+        <span class="vi-text">Trường Hợp 1</span>
+        <span class="en-text" style="display:none;">Case 1</span>
+      </div>
+      <div class="reg-tab-sub">
+        <span class="vi-text">Chưa có tài khoản</span>
+        <span class="en-text" style="display:none;">New to Exness</span>
+      </div>
+    </button>
+    <button class="reg-tab-btn reg-tab-recommended active" onclick="switchRegTab(2)">
+      <div class="reg-tab-label">
+        <span class="vi-text">Trường Hợp 2</span>
+        <span class="en-text" style="display:none;">Case 2</span>
+        <span class="reg-rec-badge vi-text">KHUYÊN DÙNG</span>
+        <span class="reg-rec-badge en-text" style="display:none;">RECOMMENDED</span>
+      </div>
+      <div class="reg-tab-sub">
+        <span class="vi-text">Đã có tài khoản</span>
+        <span class="en-text" style="display:none;">Have an account</span>
+      </div>
+    </button>
+    <button class="reg-tab-btn" onclick="switchRegTab(3)">
+      <div class="reg-tab-label">
+        <span class="vi-text">Trường Hợp 3</span>
+        <span class="en-text" style="display:none;">Case 3</span>
+      </div>
+      <div class="reg-tab-sub">
+        <span class="vi-text">Đổi đối tác IB</span>
+        <span class="en-text" style="display:none;">Switch IB partner</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Panels -->
+  <div class="reg-panels">
+
+    <!-- Panel 1 — Chưa có tài khoản -->
+    <div class="reg-panel" id="reg-panel-1">
+      <div class="reg-panel-card">
+
+        <div class="vi-text">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">Chưa Có Tài Khoản Exness</div>
+              <div class="reg-panel-sub">Đăng ký mới qua link giới thiệu để nhận hoàn phí ngay</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Đăng ký qua link giới thiệu</div>
+                <p class="reg-step-desc">Tạo tài khoản Exness mới qua <strong>link giới thiệu</strong> của chúng tôi.</p>
+                <div class="reg-inline-row">
+                  {% if broker.partner_code %}
+                  <div class="guide-code-box">
+                    <span class="guide-code-label">Mã Giới Thiệu</span>
+                    <span class="guide-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-person-plus-fill"></i> Đăng Ký Ngay
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Xác minh tài khoản (KYC)</div>
+                <p class="reg-step-desc">Xác minh danh tính bằng CCCD, Bằng Lái Xe hoặc Hộ Chiếu.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">3</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Nạp tiền & bắt đầu giao dịch</div>
+                <p class="reg-step-desc">Nạp tiền vào tài khoản và bắt đầu giao dịch để nhận hoàn phí.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="en-text" style="display:none;">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">New to Exness</div>
+              <div class="reg-panel-sub">Register via referral link to start earning rebates</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Register via referral link</div>
+                <p class="reg-step-desc">Create a new Exness account through our <strong>referral link</strong>.</p>
+                <div class="reg-inline-row">
+                  {% if broker.partner_code %}
+                  <div class="guide-code-box">
+                    <span class="guide-code-label">Partner Code</span>
+                    <span class="guide-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-person-plus-fill"></i> Register Now
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Complete KYC</div>
+                <p class="reg-step-desc">Verify your identity with an ID card, driver's license, or passport.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">3</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Fund your account & start trading</div>
+                <p class="reg-step-desc">Deposit funds and start trading to receive rebates.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Panel 2 — Đã có tài khoản (default active) -->
+    <div class="reg-panel active" id="reg-panel-2">
+      <div class="reg-panel-card reg-panel-recommended">
+
+        <div class="vi-text">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon recommended"><i class="bi bi-person-check-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">Đã Có Tài Khoản Exness</div>
+              <div class="reg-panel-sub">Tạo tài khoản mới bằng email khác để nhận hoàn phí</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Đăng ký tài khoản mới bằng email khác</div>
+                <p class="reg-step-desc">Dùng một <strong>địa chỉ email mới</strong> để tạo tài khoản Exness thứ hai qua link của chúng tôi.</p>
+                <div class="reg-inline-row">
+                  {% if broker.partner_code %}
+                  <div class="guide-code-box">
+                    <span class="guide-code-label">Mã Giới Thiệu</span>
+                    <span class="guide-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-person-plus-fill"></i> Đăng Ký Ngay
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">2</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">KYC & nạp tiền vào tài khoản mới</div>
+                <p class="reg-step-desc">Xác minh tài khoản và nạp tiền để bắt đầu nhận hoàn phí.</p>
+                <div class="reg-note"><i class="bi bi-info-circle-fill"></i> Exness cho phép dùng 1 giấy tờ tùy thân để KYC nhiều tài khoản — chỉ cần dùng email mới.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="en-text" style="display:none;">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon recommended"><i class="bi bi-person-check-fill"></i></div>
+            <div>
+              <div class="reg-panel-name">Already Have an Exness Account</div>
+              <div class="reg-panel-sub">Create a new account with a different email to receive rebates</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Register a new account with a new email</div>
+                <p class="reg-step-desc">Use a <strong>new email address</strong> to create a second Exness account through our link.</p>
+                <div class="reg-inline-row">
+                  {% if broker.partner_code %}
+                  <div class="guide-code-box">
+                    <span class="guide-code-label">Partner Code</span>
+                    <span class="guide-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
+                    <i class="bi bi-person-plus-fill"></i> Register Now
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">2</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">KYC & fund the new account</div>
+                <p class="reg-step-desc">Verify the new account and deposit to start receiving rebates.</p>
+                <div class="reg-note"><i class="bi bi-info-circle-fill"></i> Exness allows 1 ID document for multiple accounts — just use a new email.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Panel 3 — Đổi đối tác IB -->
+    <div class="reg-panel" id="reg-panel-3">
+      <div class="reg-panel-card">
+
+        <div class="vi-text">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-arrow-left-right"></i></div>
+            <div>
+              <div class="reg-panel-name">Đã Có Tài Khoản Nhưng Không Muốn Tạo Mới</div>
+              <div class="reg-panel-sub">Chuyển đổi đối tác (đổi IB) sang chúng tôi để nhận hoàn phí</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Mở Live Chat trên Exness</div>
+                <p class="reg-step-desc">Đăng nhập vào tài khoản Exness, vào mục <strong>Hồ sơ</strong> và chọn <strong>Chat trực tuyến</strong>.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Yêu cầu đổi đối tác</div>
+                <p class="reg-step-desc">Gửi câu lệnh <strong>"Đổi đối tác"</strong> trong chat để bắt đầu quá trình thay đổi.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">3</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Xác nhận qua link BOT gửi</div>
+                <p class="reg-step-desc">Nhấn vào liên kết mà BOT gửi, đăng nhập lại, sau đó nhấn vào liên kết thêm một lần nữa.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">4</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Dán link đối tác</div>
+                <p class="reg-step-desc">Chọn lý do <strong>"Tín hiệu giao dịch"</strong>, sau đó dán link đối tác bên dưới:</p>
+                <div class="guide-link-box" style="margin-top:8px;">
+                  <span>{{ broker.register_url }}</span>
+                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url }}', this)"><i class="bi bi-copy"></i> Sao Chép</button>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">5</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Điền nguồn tìm thấy đối tác</div>
+                <p class="reg-step-desc">Tại mục <em>"Bạn đã tìm thấy đối tác mới ở đâu"</em> — điền link đối tác hoặc điền <strong>facebook.com</strong>.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">6</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Gửi & chờ duyệt</div>
+                <p class="reg-step-desc">Nhấn <strong>Gửi</strong> và chờ khoảng <strong>24–48 giờ</strong> để nhận email xác nhận thành công.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">7</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Tạo tài khoản MT4/MT5 mới</div>
+                <p class="reg-step-desc">Sau khi được duyệt, tạo 1 tài khoản MT4/MT5 mới và giao dịch trên đó để nhận hoàn phí.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="en-text" style="display:none;">
+          <div class="reg-panel-header">
+            <div class="reg-panel-icon"><i class="bi bi-arrow-left-right"></i></div>
+            <div>
+              <div class="reg-panel-name">Have an Account But Don't Want to Create a New One</div>
+              <div class="reg-panel-sub">Switch your IB partner to us to receive rebates</div>
+            </div>
+          </div>
+          <div class="reg-timeline">
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">1</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Open Live Chat on Exness</div>
+                <p class="reg-step-desc">Log in to Exness, go to <strong>Profile</strong> and select <strong>Live Chat</strong>.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">2</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Request a partner change</div>
+                <p class="reg-step-desc">Send the message <strong>"Change partner"</strong> in chat to start the process.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">3</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Confirm via BOT link</div>
+                <p class="reg-step-desc">Click the link sent by the BOT, log in again, then click the link one more time.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">4</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Paste the partner link</div>
+                <p class="reg-step-desc">Select reason <strong>"Trading signals"</strong>, then paste the partner link below:</p>
+                <div class="guide-link-box" style="margin-top:8px;">
+                  <span>{{ broker.register_url }}</span>
+                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url }}', this)"><i class="bi bi-copy"></i> Copy</button>
+                </div>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">5</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Fill in where you found the partner</div>
+                <p class="reg-step-desc">For <em>"Where did you find your new partner?"</em> — enter the partner link or type <strong>facebook.com</strong>.</p>
+              </div>
+            </div>
+            <div class="reg-step">
+              <div class="reg-step-left"><div class="reg-step-num">6</div><div class="reg-step-line"></div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Submit & wait for approval</div>
+                <p class="reg-step-desc">Click <strong>Submit</strong> and wait <strong>24–48 hours</strong> for a confirmation email.</p>
+              </div>
+            </div>
+            <div class="reg-step last">
+              <div class="reg-step-left"><div class="reg-step-num">7</div></div>
+              <div class="reg-step-body">
+                <div class="reg-step-title">Create a new MT4/MT5 account</div>
+                <p class="reg-step-desc">Once approved, create a new MT4/MT5 account and trade on it to receive rebates.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== CÁC LOẠI TÀI KHOẢN EXNESS ===== -->
+<div class="bkex-section">
+  <h2 class="bkex-title vi-text">Các Loại Tài Khoản Giao Dịch Exness</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Exness Account Types</h2>
+  <p class="bkex-subtitle vi-text">Khám phá các loại tài khoản giao dịch Exness để lựa chọn phương án phù hợp với phong cách trading của bạn. Mỗi loại tài khoản được thiết kế với mức spread, khối lượng và điều kiện giao dịch khác nhau — từ người mới bắt đầu đến trader chuyên nghiệp.</p>
+  <p class="bkex-subtitle en-text" style="display:none;">Explore Exness account types to find the best fit for your trading style — from beginners to professionals, each designed with different spreads, volumes, and conditions.</p>
+  <div class="bkex-acc-wrap">
+    <div class="bkex-acc-viewport" id="bkexViewport">
+      <div class="bkex-acc-track" id="bkexAccTrack">
+        <div class="bkex-acc-item">
+          <div class="bkex-acc-card">
+            <div class="bkex-acc-head">
+              <div class="bkex-acc-icon"><i class="bi bi-gem"></i></div>
+              <div>
+                <div class="bkex-acc-name">Pro</div>
+                <div class="bkex-acc-type vi-text">Tài Khoản Chuyên Nghiệp</div>
+                <div class="bkex-acc-type en-text" style="display:none;">Professional Account</div>
+              </div>
+            </div>
+            <p class="bkex-acc-desc vi-text">Khớp lệnh tức thời hoặc theo thị trường với chênh lệch thấp, dành cho Pro Trader.</p>
+            <p class="bkex-acc-desc en-text" style="display:none;">Instant or market execution with low spreads — built for Pro Traders.</p>
+            <div class="bkex-acc-stats">
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Nạp Tối Thiểu</span><span class="bkex-acc-stat-k en-text" style="display:none;">Min Deposit</span><span class="bkex-acc-stat-v hl">1000 USD</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Spread</span><span class="bkex-acc-stat-v hl">0.1</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Đòn bẩy</span><span class="bkex-acc-stat-k en-text" style="display:none;">Leverage</span><span class="bkex-acc-stat-v hl vi-text">1:Không giới hạn</span><span class="bkex-acc-stat-v hl en-text" style="display:none;">1:Unlimited</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Backcom</span><span class="bkex-acc-stat-v hl">100%</span></div>
+            </div>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn vi-text">Đăng Ký Ngay</a>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn en-text" style="display:none;">Register Now</a>
+          </div>
+        </div>
+        <div class="bkex-acc-item">
+          <div class="bkex-acc-card">
+            <div class="bkex-acc-head">
+              <div class="bkex-acc-icon"><i class="bi bi-credit-card-2-front"></i></div>
+              <div>
+                <div class="bkex-acc-name">Raw Spread</div>
+                <div class="bkex-acc-type vi-text">Tài Khoản Chuyên Nghiệp</div>
+                <div class="bkex-acc-type en-text" style="display:none;">Professional Account</div>
+              </div>
+            </div>
+            <p class="bkex-acc-desc vi-text">Phí cố định. Thiết kế dành riêng cho nhà giao dịch có kinh nghiệm.</p>
+            <p class="bkex-acc-desc en-text" style="display:none;">Fixed fee per lot — designed exclusively for experienced traders.</p>
+            <div class="bkex-acc-stats">
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Nạp Tối Thiểu</span><span class="bkex-acc-stat-k en-text" style="display:none;">Min Deposit</span><span class="bkex-acc-stat-v hl">1000 USD</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Spread</span><span class="bkex-acc-stat-v hl">0.0</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Đòn bẩy</span><span class="bkex-acc-stat-k en-text" style="display:none;">Leverage</span><span class="bkex-acc-stat-v hl vi-text">1:Không giới hạn</span><span class="bkex-acc-stat-v hl en-text" style="display:none;">1:Unlimited</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Backcom</span><span class="bkex-acc-stat-v hl">100%</span></div>
+            </div>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn vi-text">Đăng Ký Ngay</a>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn en-text" style="display:none;">Register Now</a>
+          </div>
+        </div>
+        <div class="bkex-acc-item">
+          <div class="bkex-acc-card">
+            <div class="bkex-acc-head">
+              <div class="bkex-acc-icon"><i class="bi bi-circle-half"></i></div>
+              <div>
+                <div class="bkex-acc-name">Zero</div>
+                <div class="bkex-acc-type vi-text">Tài Khoản Chuyên Nghiệp</div>
+                <div class="bkex-acc-type en-text" style="display:none;">Professional Account</div>
+              </div>
+            </div>
+            <p class="bkex-acc-desc vi-text">Chênh lệch từ 0 pip cho các công cụ giao dịch hàng đầu.</p>
+            <p class="bkex-acc-desc en-text" style="display:none;">Spreads from 0 pips on leading trading instruments.</p>
+            <div class="bkex-acc-stats">
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Nạp Tối Thiểu</span><span class="bkex-acc-stat-k en-text" style="display:none;">Min Deposit</span><span class="bkex-acc-stat-v hl">1000 USD</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Spread</span><span class="bkex-acc-stat-v hl">0.0</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Đòn bẩy</span><span class="bkex-acc-stat-k en-text" style="display:none;">Leverage</span><span class="bkex-acc-stat-v hl vi-text">1:Không giới hạn</span><span class="bkex-acc-stat-v hl en-text" style="display:none;">1:Unlimited</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Backcom</span><span class="bkex-acc-stat-v hl">100%</span></div>
+            </div>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn vi-text">Đăng Ký Ngay</a>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn en-text" style="display:none;">Register Now</a>
+          </div>
+        </div>
+        <div class="bkex-acc-item">
+          <div class="bkex-acc-card">
+            <div class="bkex-acc-head">
+              <div class="bkex-acc-icon"><i class="bi bi-shield-fill"></i></div>
+              <div>
+                <div class="bkex-acc-name">Standard</div>
+                <div class="bkex-acc-type vi-text">Tài Khoản Tiêu Chuẩn</div>
+                <div class="bkex-acc-type en-text" style="display:none;">Standard Account</div>
+              </div>
+            </div>
+            <p class="bkex-acc-desc vi-text">Tiền nạp tối thiểu thấp. Phù hợp với mọi nhà giao dịch từ Scalp đến Swing.</p>
+            <p class="bkex-acc-desc en-text" style="display:none;">Low minimum deposit. Suitable for all traders from scalpers to swing traders.</p>
+            <div class="bkex-acc-stats">
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Nạp Tối Thiểu</span><span class="bkex-acc-stat-k en-text" style="display:none;">Min Deposit</span><span class="bkex-acc-stat-v hl">100 USD</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Spread</span><span class="bkex-acc-stat-v hl">0.2</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Đòn bẩy</span><span class="bkex-acc-stat-k en-text" style="display:none;">Leverage</span><span class="bkex-acc-stat-v hl vi-text">1:Không giới hạn</span><span class="bkex-acc-stat-v hl en-text" style="display:none;">1:Unlimited</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Backcom</span><span class="bkex-acc-stat-v hl">100%</span></div>
+            </div>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn vi-text">Đăng Ký Ngay</a>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn en-text" style="display:none;">Register Now</a>
+          </div>
+        </div>
+        <div class="bkex-acc-item">
+          <div class="bkex-acc-card">
+            <div class="bkex-acc-head">
+              <div class="bkex-acc-icon"><i class="bi bi-coin"></i></div>
+              <div>
+                <div class="bkex-acc-name">Standard Cent</div>
+                <div class="bkex-acc-type vi-text">Tài Khoản Tiêu Chuẩn</div>
+                <div class="bkex-acc-type en-text" style="display:none;">Standard Account</div>
+              </div>
+            </div>
+            <p class="bkex-acc-desc vi-text">Khối lượng nhỏ, rủi ro thấp. Phù hợp với người mới tham gia giao dịch và luyện tập.</p>
+            <p class="bkex-acc-desc en-text" style="display:none;">Small volume, low risk — ideal for beginners learning to trade.</p>
+            <div class="bkex-acc-stats">
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Nạp Tối Thiểu</span><span class="bkex-acc-stat-k en-text" style="display:none;">Min Deposit</span><span class="bkex-acc-stat-v hl">100 USD</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Spread</span><span class="bkex-acc-stat-v hl">0.3</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k vi-text">Đòn bẩy</span><span class="bkex-acc-stat-k en-text" style="display:none;">Leverage</span><span class="bkex-acc-stat-v hl vi-text">1:Không giới hạn</span><span class="bkex-acc-stat-v hl en-text" style="display:none;">1:Unlimited</span></div>
+              <div class="bkex-acc-stat"><span class="bkex-acc-stat-k">Backcom</span><span class="bkex-acc-stat-v hl">100%</span></div>
+            </div>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn vi-text">Đăng Ký Ngay</a>
+            <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-acc-btn en-text" style="display:none;">Register Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CÓ NÊN THAM GIA BACKCOM EXNESS ===== -->
+<div class="bkex-section bkex-section-alt">
+  <h2 class="bkex-title vi-text">Có Nên Tham Gia Backcom Exness Hay Không?</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Should You Join Backcom Exness?</h2>
+  <p class="bkex-subtitle vi-text">Nếu bạn đã chọn giao dịch tại Exness, thì việc tham gia Backcom là điều nên làm — dù giao dịch ít hay nhiều. Hoàn phí thực chất là khoản tiền bạn tiết kiệm trực tiếp, hoàn toàn không ảnh hưởng đến chiến lược hay cách bạn trade.</p>
+  <p class="bkex-subtitle en-text" style="display:none;">If you're trading on Exness, joining Backcom is a no-brainer. Rebates are money you save directly — zero impact on your strategy or trading style.</p>
+  <div class="bkex-cmp-grid">
+    <div class="bkex-cmp-box bkex-cmp-yes">
+      <div class="bkex-cmp-title vi-text">Khi Tham Gia Backcom</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">When Joining Backcom</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận lại khoảng <strong>40% phí spread</strong> đã trả</p>
+          <p class="en-text" style="display:none;">Get back approximately <strong>40% of spreads</strong> paid</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận Backcom <strong>trọn đời</strong>, không giới hạn thời gian</p>
+          <p class="en-text" style="display:none;">Receive Backcom <strong>for life</strong>, unlimited duration</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text"><strong>Không ảnh hưởng</strong> spread, chiến lược giao dịch</p>
+          <p class="en-text" style="display:none;"><strong>No impact</strong> on spreads or your trading strategy</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text"><strong>Không yêu cầu</strong> khối lượng giao dịch tối thiểu</p>
+          <p class="en-text" style="display:none;"><strong>No minimum</strong> trading volume required</p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Trade càng nhiều → hoàn càng nhiều → lợi nhuận tối ưu hơn</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Trade more → earn more rebates → optimize your profits</div>
+    </div>
+    <div class="bkex-cmp-box bkex-cmp-no">
+      <div class="bkex-cmp-title vi-text">Không Tham Gia Backcom</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">Without Backcom</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Không nhận bất kỳ <strong>khoản hoàn phí</strong> nào</p>
+          <p class="en-text" style="display:none;">Receive <strong>zero rebates</strong> of any kind</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Mất toàn bộ chi phí <strong>spread/commission</strong> cho mỗi lệnh</p>
+          <p class="en-text" style="display:none;">Lose all <strong>spread/commission</strong> costs on every trade</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Chi phí giao dịch <strong>tích lũy</strong> theo thời gian</p>
+          <p class="en-text" style="display:none;">Trading costs silently <strong>accumulate</strong> over time</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Lợi nhuận bị <strong>bào mòn</strong> mà không nhận ra</p>
+          <p class="en-text" style="display:none;">Profits are <strong>silently eroded</strong> without you realizing</p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Cùng một cách trade, nhưng kết quả hoàn toàn khác</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Same trading approach — completely different results</div>
+    </div>
+  </div>
+  <div class="bkex-cmp-cta">
+    <p class="vi-text">Hãy biến Backcom trở thành <strong>"lợi thế"</strong> của bạn so với Trader khác!</p>
+    <p class="en-text" style="display:none;">Make Backcom your <strong>"edge"</strong> over other traders!</p>
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bkex-btn-primary">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span class="vi-text">Kích Hoạt Backcom Exness Ngay</span>
+      <span class="en-text" style="display:none;">Activate Backcom Exness Now</span>
+    </a>
+  </div>
+</div>
+
+<div class="broker-table-section">
+  <h2 class="section-heading vi-text">Bảng hoàn phí Exness</h2>
+  <h2 class="section-heading en-text" style="display:none;">Exness Rebate Table</h2>
+  <div class="rebate-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Standard &amp; Cent</th>
+          <th>Pro</th>
+          <th>Raw &amp; Zero</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="cat-row"><td colspan="4">Kim Loại Quý</td></tr>
+        <tr><td><span class="symbol-badge">XAUUSD</span></td><td class="val-green">$11.23 /lot</td><td class="val-purple">$4.95 /lot</td><td class="val-blue">$3.00 /lot</td></tr>
+        <tr><td><span class="symbol-badge">XAGUSD</span></td><td class="val-green">$59.99 /lot</td><td class="val-purple">$26.25 /lot</td><td class="val-blue">$18.50 /lot</td></tr>
+        <tr class="cat-row"><td colspan="4">Ngoại Hối</td></tr>
+        <tr><td><span class="symbol-badge">EURUSD</span></td><td class="val-green">$3.20 /lot</td><td class="val-purple">$1.49 /lot</td><td class="val-blue">$0.87 /lot</td></tr>
+        <tr><td><span class="symbol-badge">GBPUSD</span></td><td class="val-green">$3.99 /lot</td><td class="val-purple">$1.75 /lot</td><td class="val-blue">$1.12 /lot</td></tr>
+        <tr><td><span class="symbol-badge">USDJPY</span></td><td class="val-green">$2.50 /lot</td><td class="val-purple">$1.09 /lot</td><td class="val-blue">$0.75 /lot</td></tr>
+        <tr><td><span class="symbol-badge">AUDUSD</span></td><td class="val-green">$3.60 /lot</td><td class="val-purple">$1.49 /lot</td><td class="val-blue">—</td></tr>
+        <tr><td><span class="symbol-badge">USDCAD</span></td><td class="val-green">$1.80 /lot</td><td class="val-purple">—</td><td class="val-blue">$1.25 /lot</td></tr>
+        <tr class="cat-row"><td colspan="4">Dầu Thô</td></tr>
+        <tr><td><span class="symbol-badge">USOIL</span></td><td class="val-green">$7.99 /lot</td><td class="val-purple">$3.50 /lot</td><td class="val-blue">$2.37 /lot</td></tr>
+        <tr><td><span class="symbol-badge">UKOIL</span></td><td class="val-green">$16.01 /lot</td><td class="val-purple">$7.00 /lot</td><td class="val-blue">$12.51 /lot</td></tr>
+        <tr class="cat-row"><td colspan="4">Tiền Điện Tử</td></tr>
+        <tr><td><span class="symbol-badge">BTCUSD</span></td><td class="val-green">$5.60 /lot</td><td>—</td><td class="val-blue">$1.75 /lot</td></tr>
+        <tr><td><span class="symbol-badge">ETHUSD</span></td><td class="val-green">$0.55 /lot</td><td class="val-purple">$0.24 /lot</td><td class="val-blue">$0.12 /lot</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

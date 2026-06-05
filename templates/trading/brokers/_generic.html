@@ -1,0 +1,40 @@
+<div class="broker-hero">
+  <div class="broker-hero-left">
+    <div class="broker-logo-wrap">
+      {% if broker.logo %}<img src="{{ broker.logo.url }}" alt="{{ broker.name }}" class="broker-logo">{% else %}<span style="font-size:2.5rem;">🏦</span>{% endif %}
+      <span class="broker-category-pill">{{ broker.get_category_display }}</span>
+    </div>
+    <h1 class="broker-hero-title">{{ broker.name }}</h1>
+    <p class="broker-hero-desc vi-text">Đăng ký qua link của chúng tôi để nhận hoàn phí giao dịch.</p>
+    <p class="broker-hero-desc en-text" style="display:none;">Register via our link to receive trading rebates.</p>
+    {% if broker.partner_code %}
+    <div class="partner-code-box">
+      <div>
+        <div class="partner-code-label">Partner Code</div>
+        <div class="partner-code-val">{{ broker.partner_code }}</div>
+      </div>
+      <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+    </div>
+    {% endif %}
+    <div class="broker-hero-actions">
+      <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-register-main">
+        <i class="bi bi-person-plus-fill"></i>
+        <span class="vi-text">Đăng ký ngay</span><span class="en-text" style="display:none;">Register Now</span>
+      </a>
+    </div>
+  </div>
+  <div class="broker-hero-right">
+    <div class="hero-visual-card">
+      <div class="hvc-brand-row">
+        <span>BACKCOM</span><span class="hvc-brand-sep">×</span>
+        <span>{{ broker.name|upper }}</span>
+      </div>
+      <div class="hvc-title">BACKCOM {{ broker.name|upper }}</div>
+      <div class="hvc-icon-row">
+        <span class="hvc-wing">💸</span>
+        <span class="hvc-subline vi-text">CHƯƠNG TRÌNH HOÀN PHÍ</span>
+        <span class="hvc-subline en-text" style="display:none;">REBATE PROGRAM</span>
+      </div>
+    </div>
+  </div>
+</div>
