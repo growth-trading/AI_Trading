@@ -99,7 +99,7 @@ def analyze_with_gemini(image_bytes: bytes, indicators: dict, symbol: str, inter
     if not _GEMINI_CONFIGURED:
         genai.configure(api_key=settings.GEMINI_API_KEY)
         _GEMINI_CONFIGURED = True
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    model = genai.GenerativeModel('gemini-3.5-flash')
 
     clean_symbol = _strip_exchange(symbol)
     tv_interval_label = {
