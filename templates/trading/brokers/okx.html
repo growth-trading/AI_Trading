@@ -549,7 +549,11 @@
     {# OKX source card #}
     <div class="okx-mech-new-src okx-mech-src-okx">
       <div class="okx-mech-new-logo okx-mech-src-logo">
+        {% if broker.logo %}
+        <img src="{{ broker.logo.url }}" alt="OKX" style="width:62%;height:62%;object-fit:contain;">
+        {% else %}
         <span style="font-size:1.1rem;font-weight:900;color:#fff;letter-spacing:-.01em;">OKX</span>
+        {% endif %}
       </div>
       <div class="okx-mech-new-title vi-text">Hoàn Phí Từ <span class="okx-b">OKX</span> (20%)</div>
       <div class="okx-mech-new-title en-text" style="display:none;">Rebate From <span class="okx-b">OKX</span> (20%)</div>
