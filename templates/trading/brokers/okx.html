@@ -1,0 +1,718 @@
+{% load static %}
+
+{# ===== HERO ===== #}
+<div class="bkex-section bkex-section-alt" style="text-align:center;padding:72px 48px 60px;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 65%);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;">
+    <div class="bnex-hero-badge">⬛ <span class="vi-text">1500+ Trader Đã Tham Gia</span><span class="en-text" style="display:none;">1500+ Traders Joined</span></div>
+    <h2 class="bnex-hero-title">Backcom <span class="okx-b">OKX</span></h2>
+    <p class="bnex-hero-desc vi-text">Backcom <span class="okx-b">OKX</span> là chương trình hoàn phí giao dịch <span class="okx-b">OKX</span> giúp trader nhận lại đến 50% phí khi trade Spot &amp; Futures, hoàn tự động mỗi tuần, không giới hạn thời gian hay khối lượng giao dịch.</p>
+    <p class="bnex-hero-desc en-text" style="display:none;">Backcom <span class="okx-b">OKX</span> is an <span class="okx-b">OKX</span> trading fee rebate program helping traders earn back up to 50% of fees on Spot &amp; Futures — automatic weekly rebates with no time or volume limits.</p>
+    {% if broker.partner_code %}
+    <div class="bnex-ref-box">
+      <span class="bnex-ref-label vi-text">Mã Giới Thiệu:</span>
+      <span class="bnex-ref-label en-text" style="display:none;">Referral Code:</span>
+      <span class="bnex-ref-val">{{ broker.partner_code }}</span>
+      <button class="bnex-ref-copy" onclick="copyText('{{ broker.partner_code|escapejs }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+    </div>
+    {% endif %}
+    <div class="bnex-hero-btns">
+      <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="okx-btn-primary">
+        <i class="bi bi-person-plus-fill"></i>
+        <span class="vi-text">Đăng Ký Tài Khoản <span class="okx-b">OKX</span></span>
+        <span class="en-text" style="display:none;">Register <span class="okx-b">OKX</span> Account</span>
+      </a>
+      <a href="#okx-guide" class="bnex-btn-outline">
+        <i class="bi bi-book"></i>
+        <span class="vi-text">Xem Hướng Dẫn Nhanh</span>
+        <span class="en-text" style="display:none;">View Quick Guide</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ===== SOLUTIONS ===== #}
+<div class="bkex-section">
+  <h2 class="bkex-title vi-text">Giải Pháp Toàn Diện Cho Trader</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Complete Solution for Traders</h2>
+  <div class="bnex-solution-grid">
+
+    {# Benefits card #}
+    <div class="bnex-card-inner okx-card-inner">
+      <div class="bnex-card-header vi-text">Lợi Ích Khi Sử Dụng Backcom <span class="okx-b">OKX</span></div>
+      <div class="bnex-card-header en-text" style="display:none;">Benefits of Using Backcom <span class="okx-b">OKX</span></div>
+      <div class="bnex-benefit-list">
+        <div class="bnex-benefit-item">
+          <div class="bnex-check okx-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Đến 50%</strong><br>Nhận lại đến 50% phí giao dịch <span class="okx-b">OKX</span> cho cả Spot &amp; Futures, tiết kiệm chi phí đáng kể mỗi tháng.</p>
+          <p class="en-text" style="display:none;"><strong>Up to 50% Fee Rebate</strong><br>Get back up to 50% of <span class="okx-b">OKX</span> trading fees on Spot &amp; Futures — significant monthly savings.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check okx-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Tự Động Hàng Tuần</strong><br>Phí giao dịch được hoàn tự động từ <span class="okx-b">OKX</span> &amp; RichAITrading mỗi tuần. Đăng ký 1 lần duy nhất – nhận hoàn phí trọn đời.</p>
+          <p class="en-text" style="display:none;"><strong>Automatic Weekly Rebates</strong><br>Fees are automatically rebated from <span class="okx-b">OKX</span> &amp; RichAITrading every week. Register once, earn forever.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check okx-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Spot &amp; Futures</strong><br>Hỗ trợ hoàn phí cho cả Spot và Futures (USDT-margined &amp; Coin-margined), phù hợp mọi chiến lược giao dịch.</p>
+          <p class="en-text" style="display:none;"><strong>Spot &amp; Futures</strong><br>Supports rebates for Spot and Futures (USDT-margined &amp; Coin-margined) — fits every trading strategy.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check okx-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Trọn Đời</strong><br>Không giới hạn thời gian, không giới hạn khối lượng. Giao dịch càng nhiều, hoàn phí càng lớn.</p>
+          <p class="en-text" style="display:none;"><strong>Lifetime Rebates</strong><br>No time limits, no volume caps. The more you trade, the more you earn back.</p>
+        </div>
+      </div>
+    </div>
+
+    {# Stats grid #}
+    <div class="bnex-card-inner">
+      <div class="bnex-card-header vi-text">Thống Kê Nền Tảng</div>
+      <div class="bnex-card-header en-text" style="display:none;">Platform Statistics</div>
+      <div class="bnex-stats-grid" style="margin-top:16px;">
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-percent"></i></div>
+          <div class="bnex-stat-val">50%</div>
+          <div class="bnex-stat-label vi-text">Tỉ Lệ Hoàn Cao Nhất</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Highest Rebate Rate</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="bnex-stat-val">1,500+</div>
+          <div class="bnex-stat-label vi-text">Trader Đang Nhận Hoàn Phí</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Traders Earning Rebates</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-currency-dollar"></i></div>
+          <div class="bnex-stat-val">$500K+</div>
+          <div class="bnex-stat-label vi-text">Tiền Phí Đã Được Hoàn</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Total Fees Rebated</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="bnex-stat-val">2B+</div>
+          <div class="bnex-stat-label vi-text">Tổng Volume Giao Dịch</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Total Trading Volume</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;">
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="okx-btn-primary">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span class="vi-text">Bắt Đầu Nhận Hoàn Phí <span class="okx-b">OKX</span></span>
+      <span class="en-text" style="display:none;">Start Earning <span class="okx-b">OKX</span> Rebates</span>
+    </a>
+  </div>
+</div>
+
+{# ===== REGISTRATION GUIDE ===== #}
+<div id="okx-guide" class="broker-guide-section">
+  <div class="bkex-section">
+    <div class="bkex-center">
+      <div class="bkex-badge vi-text">HƯỚNG DẪN CHI TIẾT</div>
+      <div class="bkex-badge en-text" style="display:none;">STEP-BY-STEP GUIDE</div>
+      <h2 class="bkex-title vi-text">Hướng Dẫn Đăng Ký Backcom <span class="okx-b">OKX</span></h2>
+      <h2 class="bkex-title en-text" style="display:none;">Backcom <span class="okx-b">OKX</span> Registration Guide</h2>
+      <p class="bkex-subtitle vi-text">Hướng dẫn đăng ký Backcom <span class="okx-b">OKX</span> để nhận hoàn phí giao dịch lên đến 50% – áp dụng cho cả trader mới và trader đã có tài khoản <span class="okx-b">OKX</span> trước đó.</p>
+      <p class="bkex-subtitle en-text" style="display:none;">Step-by-step guide to register for Backcom <span class="okx-b">OKX</span> and receive up to 50% trading fee rebates — for new and existing <span class="okx-b">OKX</span> account holders.</p>
+    </div>
+
+    {# 3 Tabs #}
+    <div class="reg-tabs">
+      <button class="reg-tab-btn okx-tab active" onclick="switchOkxTab(1)">
+        <span class="reg-tab-label"><i class="bi bi-person-plus-fill"></i>
+          <span class="vi-text">Chưa Có Tài Khoản</span><span class="en-text" style="display:none;">New Account</span>
+        </span>
+        <span class="reg-tab-sub vi-text">Đăng ký mới qua link</span>
+        <span class="reg-tab-sub en-text" style="display:none;">Register via referral link</span>
+      </button>
+      <button class="reg-tab-btn okx-tab" onclick="switchOkxTab(2)">
+        <span class="reg-tab-label"><i class="bi bi-key-fill"></i>
+          <span class="vi-text">Đã Có Tài Khoản</span><span class="en-text" style="display:none;">Existing Account</span>
+        </span>
+        <span class="reg-tab-sub vi-text">Nhập mã giới thiệu mới</span>
+        <span class="reg-tab-sub en-text" style="display:none;">Apply new referral code</span>
+      </button>
+      <button class="reg-tab-btn okx-tab" onclick="switchOkxTab(3)">
+        <span class="reg-tab-label"><i class="bi bi-arrow-repeat"></i>
+          <span class="vi-text">Không Thể Nhập Mã</span><span class="en-text" style="display:none;">Cannot Apply Code</span>
+        </span>
+        <span class="reg-tab-sub vi-text">Tạo tài khoản mới</span>
+        <span class="reg-tab-sub en-text" style="display:none;">Create new account</span>
+      </button>
+    </div>
+
+    {# Panels #}
+    <div class="reg-panels">
+
+      {# Panel 1: New Account #}
+      <div class="reg-panel active">
+        <div class="reg-panel-card reg-panel-recommended">
+          <div class="vi-text">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon okx-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">Chưa Có Tài Khoản <span class="okx-b">OKX</span></div>
+                <div class="reg-panel-sub">Đăng ký mới qua link giới thiệu để nhận hoàn phí ngay</div>
+              </div>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Đăng ký tài khoản <span class="okx-b">OKX</span></div>
+                  <p class="reg-step-desc">Đăng ký tài khoản <span class="okx-b">OKX</span> qua link giới thiệu của RichAITrading. Nhập mã giới thiệu nếu được yêu cầu để kích hoạt hoàn phí 20% tự động.</p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label">Mã Giới Thiệu:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register okx-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Đăng Ký Tài Khoản <span class="okx-b">OKX</span> Ngay</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Xác minh danh tính (KYC)</div>
+                  <p class="reg-step-desc">Hoàn tất KYC để mở khóa đầy đủ tính năng và nhận hoàn phí. Chấp nhận 3 loại giấy tờ: <strong>CCCD, Bằng Lái Xe, Hộ Chiếu (Passport)</strong>.</p>
+                  <div class="reg-step-note"><i class="bi bi-shield-check"></i> Xác minh danh tính cấp độ 1 là đủ để nhận hoàn phí.</div>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Nạp tiền &amp; bắt đầu giao dịch</div>
+                  <p class="reg-step-desc">Nạp tiền vào tài khoản và bắt đầu giao dịch. Hoàn phí được tính tự động từ lệnh giao dịch đầu tiên.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="en-text" style="display:none;">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon okx-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">New <span class="okx-b">OKX</span> Account</div>
+                <div class="reg-panel-sub">Register via referral link to start earning rebates immediately</div>
+              </div>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Register an <span class="okx-b">OKX</span> account</div>
+                  <p class="reg-step-desc">Create an <span class="okx-b">OKX</span> account via the RichAITrading referral link. Enter the referral code if prompted to activate 20% automatic rebate.</p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label">Referral Code:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register okx-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Register <span class="okx-b">OKX</span> Account Now</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Complete KYC verification</div>
+                  <p class="reg-step-desc">Complete KYC to unlock all features and receive rebates. Accepted documents: <strong>National ID, Driver's License, Passport</strong>.</p>
+                  <div class="reg-step-note"><i class="bi bi-shield-check"></i> KYC Level 1 is sufficient to receive rebates.</div>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Deposit &amp; start trading</div>
+                  <p class="reg-step-desc">Deposit funds and start trading. Rebates are calculated automatically from your first trade.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Panel 2: Existing Account — Apply new referral code #}
+      <div class="reg-panel">
+        <div class="reg-panel-card">
+          <div class="vi-text">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon okx-panel-icon"><i class="bi bi-key-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">Đã Có Tài Khoản <span class="okx-b">OKX</span></div>
+                <div class="reg-panel-sub">Nhập mã giới thiệu mới để tham gia chương trình hoàn phí</div>
+              </div>
+            </div>
+            <div class="reg-note" style="margin-bottom:20px;">
+              <i class="bi bi-info-circle-fill"></i>
+              <span>Áp dụng khi tài khoản <strong>chưa đăng ký dưới bất kỳ mã giới thiệu nào</strong> trước đó. Nếu không thành công, hãy thực hiện <strong>Trường Hợp 3</strong>.</span>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Truy cập link nhập mã <span class="okx-b">OKX</span></div>
+                  <p class="reg-step-desc">Đăng nhập vào tài khoản <span class="okx-b">OKX</span> hiện tại rồi truy cập link bên dưới để mở trang đăng ký broker mới.</p>
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register okx-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Truy Cập Link Nhập Mã</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Nhập mã mới và lý do tham gia</div>
+                  <p class="reg-step-desc">Điền thông tin theo hướng dẫn:</p>
+                  <div style="margin:10px 0 12px;display:flex;flex-direction:column;gap:8px;">
+                    <div class="reg-step-code-box">
+                      <span class="reg-step-code-label">Mã Mới:</span>
+                      <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                      <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                    </div>
+                    <div class="reg-step-code-box">
+                      <span class="reg-step-code-label">Lý Do:</span>
+                      <span class="reg-step-code-val" style="font-size:.85rem;font-family:inherit;letter-spacing:0;">I want to join Private Group</span>
+                      <button class="btn-copy-sm" onclick="copyText('I want to join Private Group', this)"><i class="bi bi-copy"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Bấm Submit và chờ kết quả</div>
+                  <p class="reg-step-desc">Sau khi submit, kết quả sẽ được xử lý trong ngày (khoảng 22h–23h). <span class="okx-b">OKX</span> sẽ thông báo kết quả qua App.</p>
+                  <div class="reg-step-note" style="color:#F59E0B;border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06);">
+                    <i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B;"></i>
+                    <span>Nếu xuất hiện popup <strong>"Không thể tham gia ngay bây giờ"</strong> hoặc <span class="okx-b">OKX</span> không duyệt → thực hiện các bước ở <strong>Trường Hợp 3</strong>.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="en-text" style="display:none;">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon okx-panel-icon"><i class="bi bi-key-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">Existing <span class="okx-b">OKX</span> Account</div>
+                <div class="reg-panel-sub">Apply a new referral code to join the rebate program</div>
+              </div>
+            </div>
+            <div class="reg-note" style="margin-bottom:20px;">
+              <i class="bi bi-info-circle-fill"></i>
+              <span>Applicable when the account is <strong>not registered under any referral code</strong> previously. If unsuccessful, proceed to <strong>Case 3</strong>.</span>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Access <span class="okx-b">OKX</span> code application link</div>
+                  <p class="reg-step-desc">Log into your existing <span class="okx-b">OKX</span> account, then access the link below to open the new broker registration page.</p>
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register okx-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Access Code Application Link</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Enter new code and reason</div>
+                  <p class="reg-step-desc">Fill in the required information:</p>
+                  <div style="margin:10px 0 12px;display:flex;flex-direction:column;gap:8px;">
+                    <div class="reg-step-code-box">
+                      <span class="reg-step-code-label">New Code:</span>
+                      <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                      <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                    </div>
+                    <div class="reg-step-code-box">
+                      <span class="reg-step-code-label">Reason:</span>
+                      <span class="reg-step-code-val" style="font-size:.85rem;font-family:inherit;letter-spacing:0;">I want to join Private Group</span>
+                      <button class="btn-copy-sm" onclick="copyText('I want to join Private Group', this)"><i class="bi bi-copy"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Submit and wait for result</div>
+                  <p class="reg-step-desc">After submitting, results are processed same day (around 10–11 PM). <span class="okx-b">OKX</span> will notify you via the App.</p>
+                  <div class="reg-step-note" style="color:#F59E0B;border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06);">
+                    <i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B;"></i>
+                    <span>If a popup says <strong>"Cannot join right now"</strong> or <span class="okx-b">OKX</span> doesn't approve → proceed to <strong>Case 3</strong>.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Panel 3: Cannot apply code — must create new account #}
+      <div class="reg-panel">
+        <div class="reg-panel-card">
+          <div class="vi-text">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon okx-panel-icon" style="color:#F59E0B;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);"><i class="bi bi-arrow-repeat"></i></div>
+              <div>
+                <div class="reg-panel-name">Đã Có TK <span class="okx-b">OKX</span> &amp; Không Thể Nhập Mã</div>
+                <div class="reg-panel-sub">Cần tạo tài khoản mới để nhận được hoàn phí</div>
+              </div>
+            </div>
+            <div class="reg-note" style="margin-bottom:20px;border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06);">
+              <i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B;"></i>
+              <span>Áp dụng khi tài khoản cũ <strong>đã đăng ký dưới mã giới thiệu khác</strong> hoặc <strong>không thể nhập mã mới</strong> theo Trường Hợp 2. Cần tạo tài khoản <span class="okx-b">OKX</span> mới để nhận hoàn phí.</span>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Chuyển tài sản &amp; đóng tài khoản cũ</div>
+                  <p class="reg-step-desc">Chuyển toàn bộ tài sản sang sàn khác hoặc rút qua P2P. Sau đó thực hiện <strong>"Đóng Tài Khoản"</strong> trong cài đặt <span class="okx-b">OKX</span>. Tiếp theo tạo tài khoản mới qua link giới thiệu bên dưới — <em>lưu ý kiểm tra mã giới thiệu đã được nhập khi đăng ký.</em></p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label">Mã Giới Thiệu:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register okx-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Đăng Ký Tài Khoản <span class="okx-b">OKX</span> Mới</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">KYC bằng loại giấy tờ khác</div>
+                  <p class="reg-step-desc">Tiến hành KYC tài khoản mới bằng <strong>loại giấy tờ khác với tài khoản cũ</strong>. Ví dụ: tài khoản cũ KYC bằng CCCD thì tài khoản mới dùng Bằng Lái Xe hoặc Hộ Chiếu (Passport).</p>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Nạp tiền &amp; giao dịch như bình thường</div>
+                  <p class="reg-step-desc">Nạp tiền vào tài khoản và bắt đầu giao dịch để nhận hoàn phí tự động.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="en-text" style="display:none;">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon okx-panel-icon" style="color:#F59E0B;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);"><i class="bi bi-arrow-repeat"></i></div>
+              <div>
+                <div class="reg-panel-name">Existing <span class="okx-b">OKX</span> Account &amp; Cannot Apply Code</div>
+                <div class="reg-panel-sub">Must create a new account to receive rebates</div>
+              </div>
+            </div>
+            <div class="reg-note" style="margin-bottom:20px;border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06);">
+              <i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B;"></i>
+              <span>Applies when the old account is <strong>registered under another referral code</strong> or <strong>cannot apply new code</strong> as in Case 2. A new <span class="okx-b">OKX</span> account is needed to receive rebates.</span>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Transfer assets &amp; close old account</div>
+                  <p class="reg-step-desc">Move all assets to another exchange or withdraw via P2P. Then do <strong>"Close Account"</strong> in <span class="okx-b">OKX</span> settings. Then create a new account via the referral link below — <em>ensure the referral code is entered during registration.</em></p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label">Referral Code:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register okx-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Register New <span class="okx-b">OKX</span> Account</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">KYC with a different document</div>
+                  <p class="reg-step-desc">Complete KYC for the new account using a <strong>different document than the old account</strong>. For example: if the old account used National ID, use Driver's License or Passport for the new one.</p>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num okx-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Deposit &amp; trade normally</div>
+                  <p class="reg-step-desc">Deposit funds and start trading to receive automatic rebates.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>{# /reg-panels #}
+
+    {# UID Note #}
+    <div class="reg-note" style="margin-top:20px;align-items:flex-start;">
+      <i class="bi bi-info-circle-fill" style="margin-top:2px;flex-shrink:0;color:var(--accent);"></i>
+      <div>
+        <p class="vi-text" style="margin:0 0 10px;font-size:.85rem;color:var(--text-sub);line-height:1.7;">Sau khi hoàn tất đăng ký, hãy liên kết <strong>UID tài khoản OKX</strong> với <strong>RichAITrading</strong> để kích hoạt theo dõi hoàn phí tự động. Hệ thống sẽ tự động tính toán và thanh toán hoàn phí định kỳ dựa trên dữ liệu UID.</p>
+        <p class="en-text" style="display:none;margin:0 0 10px;font-size:.85rem;color:var(--text-sub);line-height:1.7;">After completing registration, link your <strong>OKX UID</strong> with <strong>RichAITrading</strong> to activate automatic rebate tracking. The system calculates and pays rebates periodically based on your UID data.</p>
+        <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register okx-btn-case" style="display:inline-flex;">
+          <i class="bi bi-plus-lg"></i>
+          <span class="vi-text">Hướng Dẫn Liên Kết UID</span>
+          <span class="en-text" style="display:none;">UID Linking Guide</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# ===== PROCESS STEPS ===== #}
+<div class="bkex-section bkex-section-alt">
+  <div class="bkex-center" style="margin-bottom:36px;">
+    <h2 class="bkex-title vi-text">Quy Trình Nhận Hoàn Phí <span class="okx-b">OKX</span></h2>
+    <h2 class="bkex-title en-text" style="display:none;"><span class="okx-b">OKX</span> Rebate Process</h2>
+    <p class="bkex-subtitle vi-text">RichAITrading cung cấp hệ thống hoàn phí <span class="okx-b">OKX</span> tự động, minh bạch và miễn phí, giúp trader tối ưu chi phí giao dịch và tăng lợi nhuận sau mỗi lệnh.</p>
+    <p class="bkex-subtitle en-text" style="display:none;">RichAITrading provides an automated, transparent, and free <span class="okx-b">OKX</span> rebate system, helping traders optimize trading costs and increase profits after every trade.</p>
+  </div>
+  <div class="okx-proc-grid">
+    <div class="okx-proc-card">
+      <div class="okx-proc-header">
+        <div class="okx-proc-icon"><i class="bi bi-person-plus-fill"></i></div>
+        <div class="okx-proc-header-info">
+          <div class="okx-proc-num vi-text">Bước 1</div>
+          <div class="okx-proc-num en-text" style="display:none;">Step 1</div>
+          <div class="okx-proc-title vi-text">Tạo Tài Khoản <span class="okx-b">OKX</span></div>
+          <div class="okx-proc-title en-text" style="display:none;">Create <span class="okx-b">OKX</span> Account</div>
+        </div>
+      </div>
+      <p class="okx-proc-desc vi-text">Tạo tài khoản <span class="okx-b">OKX</span> mới và nhập mã giới thiệu <strong class="okx-b">{{ broker.partner_code }}</strong> để kích hoạt hoàn phí 20% tự động sau khi đóng mở lệnh.</p>
+      <p class="okx-proc-desc en-text" style="display:none;">Create a new <span class="okx-b">OKX</span> account and enter referral code <strong class="okx-b">{{ broker.partner_code }}</strong> to activate 20% automatic rebate after closing positions.</p>
+      <div class="vi-text" style="margin-top:8px;font-size:.8rem;color:var(--text-sub);">Đã có tài khoản trước đó?</div>
+      <div class="en-text" style="display:none;margin-top:8px;font-size:.8rem;color:var(--text-sub);">Already have an existing account?</div>
+      <a href="#okx-guide" class="okx-proc-btn">
+        <span class="vi-text">Xem Hướng Dẫn Tại Đây</span>
+        <span class="en-text" style="display:none;">View Guide Here</span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+    <div class="okx-proc-card">
+      <div class="okx-proc-header">
+        <div class="okx-proc-icon"><i class="bi bi-link-45deg"></i></div>
+        <div class="okx-proc-header-info">
+          <div class="okx-proc-num vi-text">Bước 2</div>
+          <div class="okx-proc-num en-text" style="display:none;">Step 2</div>
+          <div class="okx-proc-title vi-text">Liên Kết <span class="okx-b">OKX</span> UID</div>
+          <div class="okx-proc-title en-text" style="display:none;">Link <span class="okx-b">OKX</span> UID</div>
+        </div>
+      </div>
+      <p class="okx-proc-desc vi-text">Đăng nhập vào RichAITrading và nhập <strong>UID tài khoản OKX</strong> của bạn để kích hoạt hệ thống theo dõi hoàn phí. Sau khi liên kết thành công, hệ thống tự động ghi nhận khối lượng giao dịch và tính toán hoàn phí tối đa <strong>50% hàng tuần</strong>.</p>
+      <p class="okx-proc-desc en-text" style="display:none;">Login to RichAITrading and enter your <strong>OKX account UID</strong> to activate the rebate tracking system. After successful linking, the system automatically records volume and calculates up to <strong>50% weekly rebates</strong>.</p>
+    </div>
+    <div class="okx-proc-card">
+      <div class="okx-proc-header">
+        <div class="okx-proc-icon"><i class="bi bi-cash-coin"></i></div>
+        <div class="okx-proc-header-info">
+          <div class="okx-proc-num vi-text">Bước 3</div>
+          <div class="okx-proc-num en-text" style="display:none;">Step 3</div>
+          <div class="okx-proc-title vi-text">Nhận Hoàn Phí</div>
+          <div class="okx-proc-title en-text" style="display:none;">Receive Rebates</div>
+        </div>
+      </div>
+      <p class="okx-proc-desc vi-text">Sau khi liên kết UID, giao dịch trên <span class="okx-b">OKX</span> như bình thường. RichAITrading tự động theo dõi khối lượng, tính toán phí hoàn lại và trả tối đa <strong>50% phí giao dịch</strong> định kỳ hàng tuần.</p>
+      <p class="okx-proc-desc en-text" style="display:none;">After linking UID, trade on <span class="okx-b">OKX</span> as normal. RichAITrading automatically tracks volume, calculates rebates, and pays up to <strong>50% of trading fees</strong> weekly.</p>
+    </div>
+  </div>
+</div>
+
+{# ===== MECHANISM ===== #}
+<div class="bkex-section">
+  <div class="bkex-center" style="margin-bottom:36px;">
+    <h2 class="bkex-title vi-text">Quy Trình Nhận Thanh Toán Hoàn Phí <span class="okx-b">OKX</span> Tại Backcom.io</h2>
+    <h2 class="bkex-title en-text" style="display:none;"><span class="okx-b">OKX</span> Rebate Payment Process At Backcom.io</h2>
+    <p class="bkex-subtitle vi-text">Backcom.io cung cấp hệ thống hoàn phí giao dịch <span class="okx-b">OKX</span> tự động, minh bạch và miễn phí. Trader có thể theo dõi dữ liệu rebate theo thời gian thực và rút tiền dễ dàng từ Backcom App.</p>
+    <p class="bkex-subtitle en-text" style="display:none;">Backcom.io provides an automated, transparent, and free <span class="okx-b">OKX</span> trading fee rebate system. Traders can track rebate data in real time and withdraw easily from the Backcom App.</p>
+  </div>
+
+  <div class="okx-mech-new-grid">
+    {# OKX source card #}
+    <div class="okx-mech-new-src okx-mech-src-okx">
+      <div class="okx-mech-new-logo okx-mech-src-logo">
+        <span style="font-size:1.1rem;font-weight:900;color:#fff;letter-spacing:-.01em;">OKX</span>
+      </div>
+      <div class="okx-mech-new-title vi-text">Hoàn Phí Từ <span class="okx-b">OKX</span> (20%)</div>
+      <div class="okx-mech-new-title en-text" style="display:none;">Rebate From <span class="okx-b">OKX</span> (20%)</div>
+      <p class="okx-mech-new-desc vi-text">Sau khi bạn đóng lệnh giao dịch trên OKX, hệ thống sẽ tự động xử lý khoản hoàn phí trong khoảng 1–2 giờ. Số tiền này sẽ được chuyển trực tiếp vào tài khoản Funding của bạn.</p>
+      <p class="okx-mech-new-desc en-text" style="display:none;">After you close a trade on OKX, the system automatically processes the rebate within 1–2 hours and transfers it directly to your Funding account.</p>
+    </div>
+    {# Backcom source card #}
+    <div class="okx-mech-new-src bnex-mech-src-rich">
+      <div class="okx-mech-new-logo bnex-mech-src-logo-rich">
+        <img src="{% static 'images/logo.png' %}" alt="Backcom.io" style="width:44px;height:auto;object-fit:contain;">
+      </div>
+      <div class="okx-mech-new-title okx-mech-new-title-rich vi-text">Hoàn Phí Từ Backcom.io (30%)</div>
+      <div class="okx-mech-new-title okx-mech-new-title-rich en-text" style="display:none;">Rebate From Backcom.io (30%)</div>
+      <p class="okx-mech-new-desc vi-text">Hoàn phí sẽ được xử lý và thanh toán vào mỗi thứ Hai hàng tuần vào tài khoản Backcom App sau khi dữ liệu giao dịch được đối chiếu và kiểm toán với hệ thống Affiliate của OKX.</p>
+      <p class="okx-mech-new-desc en-text" style="display:none;">Rebates are processed and paid every Monday to your Backcom App account after trading data is reconciled and audited against OKX's Affiliate system.</p>
+    </div>
+  </div>
+
+  <div class="okx-mech-new-total-wrap">
+    <div class="okx-mech-new-total-label vi-text">TỔNG HOÀN PHÍ</div>
+    <div class="okx-mech-new-total-label en-text" style="display:none;">TOTAL REBATE</div>
+    <div class="okx-mech-new-total-num">50%</div>
+  </div>
+
+  <div class="bnex-mech-cta">
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="okx-btn-primary">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span class="vi-text">Kích Hoạt Hoàn Phí <span class="okx-b">OKX</span> Ngay</span>
+      <span class="en-text" style="display:none;">Activate <span class="okx-b">OKX</span> Rebates Now</span>
+    </a>
+  </div>
+</div>
+
+{# ===== WHY ===== #}
+<div class="bkex-section bkex-section-alt">
+  <div class="bkex-center" style="margin-bottom:32px;">
+    <h2 class="bkex-title vi-text">Tại Sao Nên Làm Hoàn Phí <span class="okx-b">OKX</span>?</h2>
+    <h2 class="bkex-title en-text" style="display:none;">Why Earn <span class="okx-b">OKX</span> Rebates?</h2>
+    <p class="bkex-subtitle vi-text">Chúng tôi cung cấp giải pháp hoàn phí <span class="okx-b">OKX</span> tự động, minh bạch và miễn phí, giúp trader tối đa hóa lợi nhuận sau mỗi giao dịch.</p>
+    <p class="bkex-subtitle en-text" style="display:none;">We provide an automated, transparent, and free <span class="okx-b">OKX</span> rebate solution — helping traders maximize profits after every trade.</p>
+  </div>
+  <div class="okx-why-card">
+    <div class="okx-why-item">
+      <div class="okx-why-check"><i class="bi bi-check-lg"></i></div>
+      <div>
+        <div class="okx-why-title vi-text">Tối Ưu Chi Phí Giao Dịch</div>
+        <div class="okx-why-title en-text" style="display:none;">Optimize Trading Costs</div>
+        <p class="okx-why-desc vi-text">Giảm trực tiếp đến 50% phí giao dịch <span class="okx-b">OKX</span> cho cả Spot &amp; Futures, giúp trader tiết kiệm chi phí lâu dài.</p>
+        <p class="okx-why-desc en-text" style="display:none;">Directly reduce up to 50% of <span class="okx-b">OKX</span> trading fees for Spot &amp; Futures — saving traders significant long-term costs.</p>
+      </div>
+    </div>
+    <div class="okx-why-item">
+      <div class="okx-why-check"><i class="bi bi-check-lg"></i></div>
+      <div>
+        <div class="okx-why-title vi-text">Hoàn Phí Tự Động</div>
+        <div class="okx-why-title en-text" style="display:none;">Automatic Rebates</div>
+        <p class="okx-why-desc vi-text">Phí giao dịch được hoàn tự động từ <span class="okx-b">OKX</span> &amp; Backcom.io, đăng ký 1 lần duy nhất — nhận hoàn phí trọn đời.</p>
+        <p class="okx-why-desc en-text" style="display:none;">Trading fees are automatically rebated from <span class="okx-b">OKX</span> &amp; Backcom.io — register once, earn rebates for life.</p>
+      </div>
+    </div>
+    <div class="okx-why-item">
+      <div class="okx-why-check"><i class="bi bi-check-lg"></i></div>
+      <div>
+        <div class="okx-why-title vi-text">Áp Dụng Cho Spot &amp; Futures</div>
+        <div class="okx-why-title en-text" style="display:none;">Applies to Spot &amp; Futures</div>
+        <p class="okx-why-desc vi-text">Hỗ trợ hoàn phí giao dịch cho cả Spot và Futures, phù hợp với mọi chiến lược giao dịch.</p>
+        <p class="okx-why-desc en-text" style="display:none;">Supports rebates for both Spot and Futures — compatible with any trading strategy.</p>
+      </div>
+    </div>
+    <div class="okx-why-item">
+      <div class="okx-why-check"><i class="bi bi-check-lg"></i></div>
+      <div>
+        <div class="okx-why-title vi-text">Hoàn Phí Trọn Đời</div>
+        <div class="okx-why-title en-text" style="display:none;">Lifetime Rebates</div>
+        <p class="okx-why-desc vi-text">Hoàn phí <span class="okx-b">OKX</span> áp dụng trọn đời, không giới hạn thời gian và khối lượng giao dịch. Chỉ cần phát sinh giao dịch là bạn sẽ được hoàn phí tự động.</p>
+        <p class="okx-why-desc en-text" style="display:none;">OKX rebates apply for life — no time limit, no volume cap. Just trade and receive rebates automatically.</p>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;">
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="okx-btn-primary">
+      <i class="bi bi-arrow-right-circle-fill"></i>
+      <span class="vi-text">Kích Hoạt Backcom <span class="okx-b">OKX</span> Ngay</span>
+      <span class="en-text" style="display:none;">Activate Backcom <span class="okx-b">OKX</span> Now</span>
+    </a>
+  </div>
+</div>
+
+{# ===== COMPARISON ===== #}
+<div class="bkex-section bkex-section-alt">
+  <h2 class="bkex-title vi-text">Tại Sao Nên Dùng RichAITrading <span class="okx-b">OKX</span>?</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Why Use RichAITrading <span class="okx-b">OKX</span>?</h2>
+  <p class="bkex-subtitle vi-text">Nếu bạn đang giao dịch trên <span class="okx-b">OKX</span>, đăng ký qua RichAITrading là điều nên làm ngay — dù volume ít hay nhiều. Hoàn phí là khoản tiết kiệm trực tiếp, không ảnh hưởng đến chiến lược trading của bạn.</p>
+  <p class="bkex-subtitle en-text" style="display:none;">If you trade on <span class="okx-b">OKX</span>, registering through RichAITrading is a no-brainer — regardless of volume. Rebates are direct savings with zero impact on your strategy.</p>
+  <div class="bkex-cmp-grid">
+    <div class="bkex-cmp-box bkex-cmp-yes">
+      <div class="bkex-cmp-title vi-text">Khi Dùng RichAITrading</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">With RichAITrading</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận lại <strong>đến 50% phí giao dịch</strong> Spot &amp; Futures đã trả</p>
+          <p class="en-text" style="display:none;">Get back <strong>up to 50% of Spot &amp; Futures fees</strong> paid</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Hoàn phí <strong>tự động hàng tuần</strong> từ <span class="okx-b">OKX</span> &amp; RichAITrading</p>
+          <p class="en-text" style="display:none;"><strong>Automatic weekly</strong> rebates from <span class="okx-b">OKX</span> &amp; RichAITrading</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận hoàn phí <strong>trọn đời</strong>, không giới hạn thời gian và volume</p>
+          <p class="en-text" style="display:none;">Earn rebates <strong>for life</strong>, unlimited duration and volume</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text"><strong>Không ảnh hưởng</strong> đến spread, chiến lược và cách giao dịch</p>
+          <p class="en-text" style="display:none;"><strong>Zero impact</strong> on spreads, strategy, or trading style</p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Trade càng nhiều → hoàn phí càng nhiều → lợi nhuận tối ưu hơn</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Trade more → earn more rebates → optimize your profits</div>
+    </div>
+    <div class="bkex-cmp-box bkex-cmp-no">
+      <div class="bkex-cmp-title vi-text">Không Dùng RichAITrading</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">Without RichAITrading</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Không nhận bất kỳ <strong>khoản hoàn phí</strong> nào từ <span class="okx-b">OKX</span></p>
+          <p class="en-text" style="display:none;">Receive <strong>zero rebates</strong> of any kind</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Mất toàn bộ <strong>phí Spot &amp; Futures</strong> cho mỗi lệnh</p>
+          <p class="en-text" style="display:none;">Lose all <strong>Spot &amp; Futures fees</strong> on every trade</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Không có <strong>hỗ trợ</strong> từ đội ngũ chuyên gia RichAITrading</p>
+          <p class="en-text" style="display:none;">No <strong>support</strong> from the RichAITrading expert team</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Chi phí giao dịch cao hơn, <strong>giảm lợi nhuận</strong> dài hạn</p>
+          <p class="en-text" style="display:none;">Higher trading costs, <strong>reduced long-term profits</strong></p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Cùng chiến lược trading — kết quả hoàn toàn khác nhau</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Same strategy — completely different results</div>
+    </div>
+  </div>
+  <div class="bnex-example-box okx-example-box">
+    <span class="vi-text">Ví dụ thực tế: Với $10,000,000 volume/tháng, bạn có thể nhận lại <strong>$2,500 – $5,000 tiền hoàn phí</strong> trong khi trader khác không được gì. Đừng để chi phí thành gánh nặng — hãy <strong>kích hoạt RichAITrading <span class="okx-b">OKX</span></strong> ngay hôm nay.</span>
+    <span class="en-text" style="display:none;">Real example: With $10M monthly volume, earn back <strong>$2,500–$5,000 in rebates</strong> while other traders earn nothing. Don't let fees eat your profits — <strong>activate RichAITrading <span class="okx-b">OKX</span></strong> today.</span>
+  </div>
+  <div class="bkex-cmp-cta">
+    <p class="vi-text">Hãy biến RichAITrading trở thành <strong>"lợi thế"</strong> của bạn so với Trader khác!</p>
+    <p class="en-text" style="display:none;">Make RichAITrading your <strong>"edge"</strong> over other traders!</p>
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="okx-btn-primary">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span class="vi-text">Kích Hoạt Hoàn Phí <span class="okx-b">OKX</span> Ngay</span>
+      <span class="en-text" style="display:none;">Activate <span class="okx-b">OKX</span> Rebates Now</span>
+    </a>
+  </div>
+</div>

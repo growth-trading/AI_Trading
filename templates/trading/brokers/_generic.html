@@ -13,7 +13,7 @@
         <div class="partner-code-label">Partner Code</div>
         <div class="partner-code-val">{{ broker.partner_code }}</div>
       </div>
-      <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+      <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
     </div>
     {% endif %}
     <div class="broker-hero-actions">

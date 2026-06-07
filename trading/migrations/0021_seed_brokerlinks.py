@@ -5,7 +5,6 @@ def seed_brokers(apps, schema_editor):
     BrokerLink = apps.get_model('trading', 'BrokerLink')
     brokers = [
         {
-            'pk': 1,
             'name': 'Exness',
             'slug': 'exness',
             'category': 'forex',
@@ -15,7 +14,6 @@ def seed_brokers(apps, schema_editor):
             'sort_order': 1,
         },
         {
-            'pk': 2,
             'name': 'Binance',
             'slug': 'binance',
             'category': 'crypto',

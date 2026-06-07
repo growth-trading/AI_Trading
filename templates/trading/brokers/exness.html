@@ -14,7 +14,7 @@
         <div class="partner-code-label">Partner Code</div>
         <div class="partner-code-val">{{ broker.partner_code }}</div>
       </div>
-      <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+      <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
     </div>
     {% endif %}
     <div class="broker-hero-actions">
@@ -138,7 +138,7 @@
                   <div class="guide-code-box">
                     <span class="guide-code-label">Mã Giới Thiệu</span>
                     <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
                   </div>
                   {% endif %}
                   <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
@@ -183,7 +183,7 @@
                   <div class="guide-code-box">
                     <span class="guide-code-label">Partner Code</span>
                     <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
                   </div>
                   {% endif %}
                   <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
@@ -235,7 +235,7 @@
                   <div class="guide-code-box">
                     <span class="guide-code-label">Mã Giới Thiệu</span>
                     <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
                   </div>
                   {% endif %}
                   <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
@@ -274,7 +274,7 @@
                   <div class="guide-code-box">
                     <span class="guide-code-label">Partner Code</span>
                     <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
                   </div>
                   {% endif %}
                   <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
@@ -338,7 +338,7 @@
                 <p class="reg-step-desc">Chọn lý do <strong>"Tín hiệu giao dịch"</strong>, sau đó dán link đối tác bên dưới:</p>
                 <div class="guide-link-box" style="margin-top:8px;">
                   <span>{{ broker.register_url }}</span>
-                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url }}', this)"><i class="bi bi-copy"></i> Sao Chép</button>
+                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url|escapejs }}', this)"><i class="bi bi-copy"></i> Sao Chép</button>
                 </div>
               </div>
             </div>
@@ -403,7 +403,7 @@
                 <p class="reg-step-desc">Select reason <strong>"Trading signals"</strong>, then paste the partner link below:</p>
                 <div class="guide-link-box" style="margin-top:8px;">
                   <span>{{ broker.register_url }}</span>
-                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url }}', this)"><i class="bi bi-copy"></i> Copy</button>
+                  <button class="btn-copy-code" onclick="copyText('{{ broker.register_url|escapejs }}', this)"><i class="bi bi-copy"></i> Copy</button>
                 </div>
               </div>
             </div>

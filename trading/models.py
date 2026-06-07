@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.core.validators import URLValidator
 
 
 class TradingViewProduct(models.Model):
@@ -104,7 +105,10 @@ class BrokerLink(models.Model):
     slug = models.SlugField(max_length=50, unique=True)
     logo = models.ImageField(upload_to='broker_logos/', blank=True, null=True, help_text='Upload ảnh logo sàn')
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='forex')
-    register_url = models.URLField(help_text='Link đăng ký IB/affiliate')
+    register_url = models.URLField(
+        help_text='Link đăng ký IB/affiliate',
+        validators=[URLValidator(schemes=['http', 'https'])],
+    )
     partner_code = models.CharField(max_length=100, blank=True, help_text='Mã đối tác / mã mời')
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveSmallIntegerField(default=0)

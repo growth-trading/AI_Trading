@@ -1,0 +1,453 @@
+{% load static %}
+
+{# ===== HERO ===== #}
+<div class="bkex-section bkex-section-alt" style="text-align:center;padding:72px 48px 60px;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 65%);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;">
+    <div class="bnex-hero-badge">🟠 <span class="vi-text">1000+ Trader Đã Tham Gia</span><span class="en-text" style="display:none;">1000+ Traders Joined</span></div>
+    <h2 class="bnex-hero-title">Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></h2>
+    <p class="bnex-hero-desc vi-text">Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> là chương trình hoàn phí giao dịch <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> giúp trader nhận lại đến 50% phí khi trade Spot &amp; Derivatives, hoàn tự động mỗi tuần, không giới hạn thời gian hay khối lượng giao dịch.</p>
+    <p class="bnex-hero-desc en-text" style="display:none;">Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> is a <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> trading fee rebate program helping traders earn back up to 50% of fees on Spot &amp; Derivatives — automatic weekly rebates with no time or volume limits.</p>
+    {% if broker.partner_code %}
+    <div class="bnex-ref-box">
+      <span class="bnex-ref-label vi-text">Mã Giới Thiệu:</span>
+      <span class="bnex-ref-label en-text" style="display:none;">Referral Code:</span>
+      <span class="bnex-ref-val">{{ broker.partner_code }}</span>
+      <button class="bnex-ref-copy" onclick="copyText('{{ broker.partner_code|escapejs }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+    </div>
+    {% endif %}
+    <div class="bnex-hero-btns">
+      <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bbit-btn-primary">
+        <i class="bi bi-person-plus-fill"></i>
+        <span class="vi-text">Đăng Ký Tài Khoản <span class="bbit-b">Bybit</span></span>
+        <span class="en-text" style="display:none;">Register <span class="bbit-b">Bybit</span> Account</span>
+      </a>
+      <a href="#bybit-guide" class="bnex-btn-outline">
+        <i class="bi bi-book"></i>
+        <span class="vi-text">Xem Hướng Dẫn Nhanh</span>
+        <span class="en-text" style="display:none;">View Quick Guide</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ===== SOLUTIONS ===== #}
+<div class="bkex-section">
+  <h2 class="bkex-title vi-text">Giải Pháp Toàn Diện Cho Trader</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Complete Solution for Traders</h2>
+  <div class="bnex-solution-grid">
+
+    {# Benefits card #}
+    <div class="bnex-card-inner bbit-card-inner">
+      <div class="bnex-card-header vi-text">Lợi Ích Khi Sử Dụng Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></div>
+      <div class="bnex-card-header en-text" style="display:none;">Benefits of Using Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></div>
+      <div class="bnex-benefit-list">
+        <div class="bnex-benefit-item">
+          <div class="bnex-check bbit-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Đến 50%</strong><br>Nhận lại đến 50% phí giao dịch <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> cho cả Spot &amp; Derivatives, tiết kiệm chi phí đáng kể mỗi tháng.</p>
+          <p class="en-text" style="display:none;"><strong>Up to 50% Fee Rebate</strong><br>Get back up to 50% of <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> trading fees on Spot &amp; Derivatives — significant monthly savings.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check bbit-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Tự Động Hàng Tuần</strong><br>Phí giao dịch được hoàn tự động từ <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> &amp; RichAITrading mỗi tuần, đăng ký 1 lần duy nhất – nhận hoàn phí trọn đời.</p>
+          <p class="en-text" style="display:none;"><strong>Automatic Weekly Rebates</strong><br>Trading fees are automatically rebated from <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> &amp; RichAITrading every week. Register once, earn forever.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check bbit-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Spot &amp; Derivatives</strong><br>Hỗ trợ hoàn phí cho cả Spot, USDT Perpetual và Inverse Perpetual, phù hợp mọi chiến lược giao dịch.</p>
+          <p class="en-text" style="display:none;"><strong>Spot &amp; Derivatives</strong><br>Supports rebates for Spot, USDT Perpetual and Inverse Perpetual — fits every trading strategy.</p>
+        </div>
+        <div class="bnex-benefit-item">
+          <div class="bnex-check bbit-check"><i class="bi bi-check-lg"></i></div>
+          <p class="vi-text"><strong>Hoàn Phí Trọn Đời</strong><br>Không giới hạn thời gian, không giới hạn khối lượng. Giao dịch càng nhiều, hoàn phí càng lớn.</p>
+          <p class="en-text" style="display:none;"><strong>Lifetime Rebates</strong><br>No time limits, no volume caps. The more you trade, the more you earn back.</p>
+        </div>
+      </div>
+    </div>
+
+    {# Stats grid #}
+    <div class="bnex-card-inner">
+      <div class="bnex-card-header vi-text">Thống Kê Nền Tảng</div>
+      <div class="bnex-card-header en-text" style="display:none;">Platform Statistics</div>
+      <div class="bnex-stats-grid" style="margin-top:16px;">
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-percent"></i></div>
+          <div class="bnex-stat-val">50%</div>
+          <div class="bnex-stat-label vi-text">Tỉ Lệ Hoàn Cao Nhất</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Highest Rebate Rate</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-people-fill"></i></div>
+          <div class="bnex-stat-val">1,000+</div>
+          <div class="bnex-stat-label vi-text">Trader Đang Nhận Hoàn Phí</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Traders Earning Rebates</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-currency-dollar"></i></div>
+          <div class="bnex-stat-val">$300K+</div>
+          <div class="bnex-stat-label vi-text">Tiền Phí Đã Được Hoàn</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Total Fees Rebated</div>
+        </div>
+        <div class="bnex-stat-card">
+          <div class="bnex-stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="bnex-stat-val">1.2B+</div>
+          <div class="bnex-stat-label vi-text">Tổng Volume Giao Dịch</div>
+          <div class="bnex-stat-label en-text" style="display:none;">Total Trading Volume</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;">
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bbit-btn-primary">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span class="vi-text">Bắt Đầu Nhận Hoàn Phí <span class="bbit-b">Bybit</span></span>
+      <span class="en-text" style="display:none;">Start Earning <span class="bbit-b">Bybit</span> Rebates</span>
+    </a>
+  </div>
+</div>
+
+{# ===== REGISTRATION GUIDE ===== #}
+<div id="bybit-guide" class="broker-guide-section">
+  <div class="bkex-section">
+    <div class="bkex-center">
+      <div class="bkex-badge vi-text">HƯỚNG DẪN CHI TIẾT</div>
+      <div class="bkex-badge en-text" style="display:none;">STEP-BY-STEP GUIDE</div>
+      <h2 class="bkex-title vi-text">Hướng Dẫn Đăng Ký Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></h2>
+      <h2 class="bkex-title en-text" style="display:none;">Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> Registration Guide</h2>
+      <p class="bkex-subtitle vi-text">Hướng dẫn đăng ký Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> để nhận hoàn phí giao dịch lên đến 50% – áp dụng cho cả người mới và người đã có tài khoản <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span>.</p>
+      <p class="bkex-subtitle en-text" style="display:none;">Step-by-step guide to register for Backcom <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> and receive up to 50% trading fee rebates — available for both new and existing <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> account holders.</p>
+    </div>
+
+    {# Tabs #}
+    <div class="reg-tabs">
+      <button class="reg-tab-btn bbit-tab active" onclick="switchBybitTab(1)">
+        <span class="reg-tab-label"><i class="bi bi-person-plus-fill"></i>
+          <span class="vi-text">Chưa Có Tài Khoản</span><span class="en-text" style="display:none;">New Account</span>
+        </span>
+        <span class="reg-tab-sub vi-text">Đăng ký mới qua link</span>
+        <span class="reg-tab-sub en-text" style="display:none;">Register via referral link</span>
+      </button>
+      <button class="reg-tab-btn bbit-tab" onclick="switchBybitTab(2)">
+        <span class="reg-tab-label"><i class="bi bi-person-check-fill"></i>
+          <span class="vi-text">Đã Có Tài Khoản</span><span class="en-text" style="display:none;">Existing Account</span>
+        </span>
+        <span class="reg-tab-sub vi-text">Chuyển Định Danh</span>
+        <span class="reg-tab-sub en-text" style="display:none;">Identity Transfer</span>
+      </button>
+    </div>
+
+    {# Panels #}
+    <div class="reg-panels">
+
+      {# Panel 1: New Account #}
+      <div class="reg-panel active">
+        <div class="reg-panel-card reg-panel-recommended">
+
+          <div class="vi-text">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon bbit-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">Chưa Có Tài Khoản <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></div>
+                <div class="reg-panel-sub">Đăng ký mới qua link giới thiệu để nhận hoàn phí ngay</div>
+              </div>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Đăng ký tài khoản <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></div>
+                  <p class="reg-step-desc">Đăng ký tài khoản <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> qua link giới thiệu của RichAITrading. Nhập mã giới thiệu nếu được yêu cầu.</p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label vi-text">Mã Giới Thiệu:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register bbit-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Đăng Ký Tài Khoản <span class="bbit-b">Bybit</span> Ngay</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Xác minh danh tính (KYC)</div>
+                  <p class="reg-step-desc">Hoàn tất KYC để mở khóa đầy đủ tính năng và nhận hoàn phí. Chấp nhận 3 loại giấy tờ: <strong>CCCD, Bằng Lái Xe, Hộ Chiếu (Passport)</strong>.</p>
+                  <div class="reg-step-note"><i class="bi bi-shield-check"></i> Xác minh danh tính cấp độ 1 là đủ để nhận hoàn phí.</div>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Nạp tiền &amp; bắt đầu giao dịch</div>
+                  <p class="reg-step-desc">Nạp tiền vào tài khoản và bắt đầu giao dịch. Hoàn phí được tính tự động từ lệnh giao dịch đầu tiên.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="en-text" style="display:none;">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon bbit-panel-icon"><i class="bi bi-person-plus-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">New <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> Account</div>
+                <div class="reg-panel-sub">Register via referral link to start earning rebates immediately</div>
+              </div>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Register a <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> account</div>
+                  <p class="reg-step-desc">Create a <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> account via the RichAITrading referral link. Enter the referral code if prompted.</p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label">Referral Code:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register bbit-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Register <span class="bbit-b">Bybit</span> Account Now</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Complete KYC verification</div>
+                  <p class="reg-step-desc">Complete KYC to unlock all features and receive rebates. Accepted documents: <strong>National ID, Driver's License, Passport</strong>.</p>
+                  <div class="reg-step-note"><i class="bi bi-shield-check"></i> KYC Level 1 is sufficient to receive rebates.</div>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Deposit &amp; start trading</div>
+                  <p class="reg-step-desc">Deposit funds and start trading. Rebates are calculated automatically from your first trade.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {# Panel 2: Existing Account — Chuyển Định Danh #}
+      <div class="reg-panel">
+        <div class="reg-panel-card">
+
+          <div class="vi-text">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon bbit-panel-icon"><i class="bi bi-person-check-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">Đã Có Tài Khoản <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></div>
+                <div class="reg-panel-sub">Đăng ký mới + Chuyển Định Danh từ tài khoản cũ</div>
+              </div>
+            </div>
+            <div class="reg-note" style="margin-bottom:20px;">
+              <i class="bi bi-info-circle-fill"></i>
+              <span>Áp dụng khi tài khoản cũ <strong>không đăng ký dưới mã giới thiệu</strong> của bên khác và <strong>không giao dịch trong 30 ngày</strong> gần nhất.</span>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Đăng ký tài khoản <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> mới</div>
+                  <p class="reg-step-desc">Tạo tài khoản <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> mới qua link giới thiệu bên dưới hoặc sao chép mã giới thiệu.</p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label vi-text">Mã Giới Thiệu:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register bbit-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Đăng Ký Tài Khoản <span class="bbit-b">Bybit</span> Mới</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Thực hiện Chuyển Định Danh</div>
+                  <p class="reg-step-desc">Đăng nhập vào <strong>tài khoản cũ</strong> → vào mục <strong>Hồ sơ → Chuyển Định Danh (Identity Transfer)</strong> → chuyển KYC sang tài khoản mới đã đăng ký ở Bước 1.</p>
+                  <div class="reg-step-note"><i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B;"></i> Sau khi chuyển, tài khoản cũ sẽ không còn KYC. Hoàn tất trước khi chuyển tiền.</div>
+                  <a href="https://learn.bybit.com/bybit-guide/bybit-kyc-identity-transfer/" target="_blank" rel="noopener noreferrer" class="btn-case-register bbit-btn-case" style="margin-top:10px;">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Xem Hướng Dẫn Chuyển Định Danh</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Chuyển tài sản &amp; giao dịch</div>
+                  <p class="reg-step-desc">Chuyển toàn bộ tài sản từ tài khoản cũ sang tài khoản mới và bắt đầu giao dịch để nhận hoàn phí.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="en-text" style="display:none;">
+            <div class="reg-panel-header">
+              <div class="reg-panel-icon bbit-panel-icon"><i class="bi bi-person-check-fill"></i></div>
+              <div>
+                <div class="reg-panel-name">Existing <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> Account</div>
+                <div class="reg-panel-sub">Register new account + Identity Transfer from old account</div>
+              </div>
+            </div>
+            <div class="reg-note" style="margin-bottom:20px;">
+              <i class="bi bi-info-circle-fill"></i>
+              <span>Applicable when the old account is <strong>not registered under another referral</strong> and has <strong>not traded in the last 30 days</strong>.</span>
+            </div>
+            <div class="reg-timeline">
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">1</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Register a new <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> account</div>
+                  <p class="reg-step-desc">Create a new <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> account via the referral link or enter the code manually.</p>
+                  {% if broker.partner_code %}
+                  <div class="reg-step-code-box">
+                    <span class="reg-step-code-label">Referral Code:</span>
+                    <span class="reg-step-code-val">{{ broker.partner_code }}</span>
+                    <button class="btn-copy-sm" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
+                  </div>
+                  {% endif %}
+                  <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register bbit-btn-case">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Register New <span class="bbit-b">Bybit</span> Account</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">2</div><div class="reg-step-line"></div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Complete Identity Transfer</div>
+                  <p class="reg-step-desc">Log into your <strong>old account</strong> → go to <strong>Profile → Identity Transfer</strong> → transfer KYC to the new account created in Step 1.</p>
+                  <div class="reg-step-note"><i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B;"></i> After transfer, the old account will lose KYC. Complete this before moving funds.</div>
+                  <a href="https://learn.bybit.com/bybit-guide/bybit-kyc-identity-transfer/" target="_blank" rel="noopener noreferrer" class="btn-case-register bbit-btn-case" style="margin-top:10px;">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>View Identity Transfer Guide</span>
+                  </a>
+                </div>
+              </div>
+              <div class="reg-step last">
+                <div class="reg-step-left"><div class="reg-step-num bbit-step-num">3</div></div>
+                <div class="reg-step-body">
+                  <div class="reg-step-title">Transfer assets &amp; start trading</div>
+                  <p class="reg-step-desc">Move all assets from the old account to the new one and start trading to earn rebates.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    {# UID Note #}
+    <div class="reg-note" style="margin-top:20px;align-items:flex-start;">
+      <i class="bi bi-info-circle-fill" style="margin-top:2px;flex-shrink:0;color:var(--accent);"></i>
+      <div>
+        <p class="vi-text" style="margin:0 0 10px;font-size:.85rem;color:var(--text-sub);line-height:1.7;">Sau khi hoàn thành tạo tài khoản hoặc chuyển định danh về hệ thống RichAITrading, hãy liên kết <strong>UID tài khoản</strong> sàn với <strong>RichAITrading</strong> để kích hoạt hoàn phí tự động. Hệ thống sẽ tự động tính toán và thanh toán hoàn phí định kỳ dựa trên dữ liệu UID.</p>
+        <p class="en-text" style="display:none;margin:0 0 10px;font-size:.85rem;color:var(--text-sub);line-height:1.7;">After creating or transferring your account to RichAITrading, link your exchange <strong>UID</strong> with <strong>RichAITrading</strong> to activate automatic rebates. The system calculates and pays rebates periodically based on your UID data.</p>
+        <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register bbit-btn-case" style="display:inline-flex;">
+          <i class="bi bi-plus-lg"></i>
+          <span class="vi-text">Hướng Dẫn Liên Kết UID</span>
+          <span class="en-text" style="display:none;">UID Linking Guide</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# ===== COMPARISON ===== #}
+<div class="bkex-section bkex-section-alt">
+  <h2 class="bkex-title vi-text">Có Nên Dùng RichAITrading <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> Hay Không?</h2>
+  <h2 class="bkex-title en-text" style="display:none;">Should You Use RichAITrading <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span>?</h2>
+  <p class="bkex-subtitle vi-text">Nếu bạn đang giao dịch trên <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span>, đăng ký qua RichAITrading là điều nên làm ngay — dù volume ít hay nhiều. Hoàn phí là khoản tiết kiệm trực tiếp, không ảnh hưởng đến chiến lược trading của bạn.</p>
+  <p class="bkex-subtitle en-text" style="display:none;">If you trade on <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span>, registering through RichAITrading is a no-brainer — regardless of volume. Rebates are direct savings with zero impact on your strategy.</p>
+
+  <div class="bkex-cmp-grid">
+    <div class="bkex-cmp-box bkex-cmp-yes">
+      <div class="bkex-cmp-title vi-text">Khi Dùng RichAITrading</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">With RichAITrading</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận lại <strong>đến 50% phí giao dịch</strong> Spot &amp; Derivatives đã trả</p>
+          <p class="en-text" style="display:none;">Get back <strong>up to 50% of Spot &amp; Derivatives fees</strong> paid</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Hoàn phí <strong>tự động hàng tuần</strong> từ <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> &amp; RichAITrading</p>
+          <p class="en-text" style="display:none;"><strong>Automatic weekly</strong> rebates from <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span> &amp; RichAITrading</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text">Nhận hoàn phí <strong>trọn đời</strong>, không giới hạn thời gian và volume</p>
+          <p class="en-text" style="display:none;">Earn rebates <strong>for life</strong>, unlimited duration and volume</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-check2"></i></span>
+          <p class="vi-text"><strong>Không ảnh hưởng</strong> đến spread, chiến lược và cách giao dịch</p>
+          <p class="en-text" style="display:none;"><strong>Zero impact</strong> on spreads, strategy, or trading style</p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Trade càng nhiều → hoàn phí càng nhiều → lợi nhuận tối ưu hơn</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Trade more → earn more rebates → optimize your profits</div>
+    </div>
+
+    <div class="bkex-cmp-box bkex-cmp-no">
+      <div class="bkex-cmp-title vi-text">Không Dùng RichAITrading</div>
+      <div class="bkex-cmp-title en-text" style="display:none;">Without RichAITrading</div>
+      <div class="bkex-cmp-list">
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Không nhận bất kỳ <strong>khoản hoàn phí</strong> nào từ <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></p>
+          <p class="en-text" style="display:none;">Receive <strong>zero rebates</strong> of any kind</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Mất toàn bộ <strong>phí Spot &amp; Derivatives</strong> cho mỗi lệnh</p>
+          <p class="en-text" style="display:none;">Lose all <strong>Spot &amp; Derivatives fees</strong> on every trade</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Không có <strong>hỗ trợ</strong> từ đội ngũ chuyên gia RichAITrading</p>
+          <p class="en-text" style="display:none;">No <strong>support</strong> from the RichAITrading expert team</p>
+        </div>
+        <div class="bkex-cmp-item">
+          <span class="bkex-cmp-icon"><i class="bi bi-x-lg"></i></span>
+          <p class="vi-text">Chi phí giao dịch cao hơn, <strong>giảm lợi nhuận</strong> dài hạn</p>
+          <p class="en-text" style="display:none;">Higher trading costs, <strong>reduced long-term profits</strong></p>
+        </div>
+      </div>
+      <div class="bkex-cmp-footer vi-text">Cùng chiến lược trading — kết quả hoàn toàn khác nhau</div>
+      <div class="bkex-cmp-footer en-text" style="display:none;">Same strategy — completely different results</div>
+    </div>
+  </div>
+
+  <div class="bnex-example-box bbit-example-box">
+    <span class="vi-text">Ví dụ thực tế: Với $10,000,000 volume/tháng, bạn có thể nhận lại <strong>$2,500 – $5,000 tiền hoàn phí</strong> trong khi trader khác không được gì. Đừng để chi phí thành gánh nặng — hãy <strong>kích hoạt RichAITrading <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></strong> ngay hôm nay.</span>
+    <span class="en-text" style="display:none;">Real example: With $10M monthly volume, earn back <strong>$2,500–$5,000 in rebates</strong> while other traders earn nothing. Don't let fees eat your profits — <strong>activate RichAITrading <span class="bbit-b">Byb<span class="bbit-i">i</span>t</span></strong> today.</span>
+  </div>
+
+  <div class="bkex-cmp-cta">
+    <p class="vi-text">Hãy biến RichAITrading trở thành <strong>"lợi thế"</strong> của bạn so với Trader khác!</p>
+    <p class="en-text" style="display:none;">Make RichAITrading your <strong>"edge"</strong> over other traders!</p>
+    <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bbit-btn-primary">
+      <i class="bi bi-lightning-charge-fill"></i>
+      <span class="vi-text">Kích Hoạt Hoàn Phí <span class="bbit-b">Bybit</span> Ngay</span>
+      <span class="en-text" style="display:none;">Activate <span class="bbit-b">Bybit</span> Rebates Now</span>
+    </a>
+  </div>
+</div>

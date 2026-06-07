@@ -5,7 +5,7 @@
   <div style="position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 65%);pointer-events:none;"></div>
   <div style="position:relative;z-index:1;">
     <div class="bnex-hero-badge">🔶 <span class="vi-text">1000+ Trader Đã Tham Gia</span><span class="en-text" style="display:none;">1000+ Traders Joined</span></div>
-    <h1 class="bnex-hero-title">Backcom <span class="bnex-b">Binance</span></h1>
+    <h2 class="bnex-hero-title">Backcom <span class="bnex-b">Binance</span></h2>
     <p class="bnex-hero-desc vi-text">Backcom <span class="bnex-b">Binance</span> là chương trình hoàn phí giao dịch <span class="bnex-b">Binance</span> giúp trader nhận lại đến 40% phí khi trade Spot &amp; Futures, hoàn tự động mỗi ngày, không giới hạn thời gian hay khối lượng giao dịch.</p>
     <p class="bnex-hero-desc en-text" style="display:none;">Backcom <span class="bnex-b">Binance</span> is a <span class="bnex-b">Binance</span> trading fee rebate program that helps traders earn back up to 40% of fees on Spot &amp; Futures trades — automatic daily rebates with no time or volume limits.</p>
     {% if broker.partner_code %}
@@ -13,12 +13,12 @@
       <span class="bnex-ref-label vi-text">Mã Giới Thiệu:</span>
       <span class="bnex-ref-label en-text" style="display:none;">Referral Code:</span>
       <span class="bnex-ref-val">{{ broker.partner_code }}</span>
-      <button class="bnex-ref-copy" onclick="copyText('{{ broker.partner_code }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
+      <button class="bnex-ref-copy" onclick="copyText('{{ broker.partner_code|escapejs }}', this)" title="Sao chép"><i class="bi bi-copy"></i></button>
     </div>
     {% endif %}
     <div class="bnex-hero-btns">
       <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bnex-btn-primary">
-  
+        <i class="bi bi-person-plus-fill"></i>
         <span class="vi-text">Đăng Ký Tài Khoản <span class="bnex-b">Binance</span></span>
         <span class="en-text" style="display:none;">Register <span class="bnex-b">Binance</span> Account</span>
       </a>
@@ -100,7 +100,7 @@
 
   <div style="text-align:center;">
     <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="bnex-btn-primary">
-
+      <i class="bi bi-lightning-charge-fill"></i>
       <span class="vi-text">Đăng Ký Tài Khoản <span class="bnex-b">Binance</span> Ngay</span>
       <span class="en-text" style="display:none;">Register <span class="bnex-b">Binance</span> Account Now</span>
     </a>
@@ -115,24 +115,18 @@
   <!-- Tabs -->
   <div class="reg-tabs">
     <button class="reg-tab-btn active" onclick="switchBnexTab(1)">
-      <div class="reg-tab-label">
-        <span class="vi-text">Trường Hợp 1</span>
-        <span class="en-text" style="display:none;">Case 1</span>
-      </div>
-      <div class="reg-tab-sub">
-        <span class="vi-text">Chưa có tài khoản</span>
-        <span class="en-text" style="display:none;">New to <span class="bnex-b">Binance</span></span>
-      </div>
+      <span class="reg-tab-label"><i class="bi bi-person-plus-fill"></i>
+        <span class="vi-text">Chưa Có Tài Khoản</span><span class="en-text" style="display:none;">New Account</span>
+      </span>
+      <span class="reg-tab-sub vi-text">Đăng ký mới qua link</span>
+      <span class="reg-tab-sub en-text" style="display:none;">Register via referral link</span>
     </button>
     <button class="reg-tab-btn" onclick="switchBnexTab(2)">
-      <div class="reg-tab-label">
-        <span class="vi-text">Trường Hợp 2</span>
-        <span class="en-text" style="display:none;">Case 2</span>
-      </div>
-      <div class="reg-tab-sub">
-        <span class="vi-text">Đã có tài khoản</span>
-        <span class="en-text" style="display:none;">Have an account</span>
-      </div>
+      <span class="reg-tab-label"><i class="bi bi-person-check-fill"></i>
+        <span class="vi-text">Đã Có Tài Khoản</span><span class="en-text" style="display:none;">Existing Account</span>
+      </span>
+      <span class="reg-tab-sub vi-text">Liên kết mã giới thiệu</span>
+      <span class="reg-tab-sub en-text" style="display:none;">Link referral code</span>
     </button>
   </div>
 
@@ -162,11 +156,11 @@
                   <div class="guide-code-box">
                     <span class="guide-code-label">Mã Giới Thiệu</span>
                     <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
                   </div>
                   {% endif %}
                   <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
-                    <i class="bi bi-lightning-fill"></i> Đăng Ký Ngay
+                    <i class="bi bi-person-plus-fill"></i> Đăng Ký Ngay
                   </a>
                 </div>
               </div>
@@ -207,11 +201,11 @@
                   <div class="guide-code-box">
                     <span class="guide-code-label">Referral Code</span>
                     <span class="guide-code-val">{{ broker.partner_code }}</span>
-                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code }}', this)"><i class="bi bi-copy"></i></button>
+                    <button class="btn-copy-code" onclick="copyText('{{ broker.partner_code|escapejs }}', this)"><i class="bi bi-copy"></i></button>
                   </div>
                   {% endif %}
                   <a href="{{ broker.register_url }}" target="_blank" rel="noopener noreferrer" class="btn-case-register">
-                    <i class="bi bi-lightning-fill"></i> Register Now
+                    <i class="bi bi-person-plus-fill"></i> Register Now
                   </a>
                 </div>
               </div>
