@@ -757,12 +757,20 @@ function switchBroker(slug) {
 })();
 
 function copyText(text, btn) {
-  navigator.clipboard.writeText(text).catch(function() {
+  var fallback = function() {
     var ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select();
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
     try { document.execCommand('copy'); } catch(e) {}
     document.body.removeChild(ta);
-  });
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).catch(fallback);
+  } else {
+    fallback();
+  }
   var orig = btn.innerHTML;
   btn.innerHTML = '<i class="bi bi-check-lg"></i>';
   setTimeout(function() { btn.innerHTML = orig; }, 1500);
