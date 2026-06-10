@@ -40,7 +40,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 
 from accounts.models import CustomUser, pay_referral_commission
-from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings, BrokerLink
+from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings, BrokerLink, CopyTradeExchange
 from .services import compute_indicators_local, analyze_with_gemini
 
 
@@ -90,6 +90,18 @@ def services_view(request):
 
     brokers = BrokerLink.objects.filter(is_active=True).order_by('category', 'sort_order', 'pk')
     return render(request, 'trading/services.html', {'brokers': brokers})
+
+
+@require_GET
+def copy_trade_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not request.user.is_email_verified:
+        return redirect('verify_otp')
+
+    brokers = {b.slug: b for b in BrokerLink.objects.filter(is_active=True)}
+    copy_exchanges = CopyTradeExchange.objects.filter(is_active=True)
+    return render(request, 'trading/copytrade.html', {'brokers': brokers, 'copy_exchanges': copy_exchanges})
 
 
 

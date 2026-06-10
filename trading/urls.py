@@ -11,4 +11,5 @@ urlpatterns = [
     path('tradingview/subscribe/', views.subscribe_tradingview_view, name='subscribe_tradingview'),
     path('trade-status/<int:log_id>/', views.trade_status_view, name='trade_status'),
     path('services/', views.services_view, name='services'),
+    path('copy-trade/', views.copy_trade_view, name='copy_trade'),
 ]

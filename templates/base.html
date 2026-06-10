@@ -45,6 +45,7 @@
         <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'landing' %} active{% endif %}" href="{% url 'landing' %}"><i class="bi bi-house-fill me-1"></i><span data-i18n="nav.home">Trang chủ</span></a></li>
         <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'trading' %} active{% endif %}" href="{% url 'trading' %}"><i class="bi bi-stars me-1"></i><span data-i18n="nav.ai-trading">AI Trading</span></a></li>
         <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'tradingview' %} active{% endif %}" href="{% url 'tradingview' %}"><i class="bi bi-tv me-1"></i>TradingView</a></li>
+        <li class="nav-item"><a class="nav-link{% if request.resolver_match.url_name == 'copy_trade' %} active{% endif %}" href="{% url 'copy_trade' %}"><i class="bi bi-people-fill me-1"></i>Copy Trade</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle{% if request.resolver_match.url_name == 'services' %} active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-grid-3x3-gap-fill me-1"></i><span data-i18n="nav.services">Dịch vụ</span></a>
           <ul class="dropdown-menu dropdown-menu-dark" style="min-width:160px;">
@@ -131,6 +132,7 @@
         <ul class="footer-links">
           <li><a href="{% url 'trading' %}" data-i18n="nav.ai-trading">AI Trading Bot</a></li>
           <li><a href="{% url 'tradingview' %}">TradingView</a></li>
+          <li><a href="{% url 'copy_trade' %}">Copy Trade</a></li>
           <li><a href="{% url 'services' %}" data-i18n="nav.services">Dịch vụ</a></li>
           <li><a href="{% url 'deposit' %}" data-i18n="nav.deposit">Nạp tiền</a></li>
         </ul>

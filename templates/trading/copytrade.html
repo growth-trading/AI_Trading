@@ -1,0 +1,628 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Copy Trade — RichAITrading{% endblock %}
+
+{% block extra_css %}
+<style>
+.ct-page { padding-top: 72px; min-height: 100vh; }
+
+/* ===== HERO ===== */
+.ct-hero {
+  padding: 80px 24px 64px; text-align: center;
+  position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.ct-hero::before {
+  content: ''; position: absolute; top: -150px; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(59,130,246,.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+.ct-hero-inner { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+.ct-hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25);
+  color: var(--accent); border-radius: 99px; padding: 6px 16px;
+  font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: 22px;
+}
+.ct-hero-title {
+  font-size: 3rem; font-weight: 900; line-height: 1.1; margin-bottom: 18px;
+  background: linear-gradient(135deg, #F1F5F9 0%, #3B82F6 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.ct-hero-desc { font-size: 1.05rem; color: var(--text-sub); max-width: 580px; margin: 0 auto 40px; line-height: 1.75; }
+.ct-hero-stats {
+  display: flex; justify-content: center; gap: 52px; flex-wrap: wrap;
+  padding-top: 32px; border-top: 1px solid var(--border);
+}
+.ct-stat-val { font-size: 2rem; font-weight: 900; color: var(--accent); }
+.ct-stat-lbl { font-size: .78rem; color: var(--text-sub); margin-top: 4px; }
+
+/* ===== LAYOUT ===== */
+.ct-section { padding: 72px 24px; max-width: 1100px; margin: 0 auto; }
+.ct-section-alt { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.ct-section-alt-inner { max-width: 1100px; margin: 0 auto; padding: 72px 24px; }
+.ct-heading { font-size: 1.85rem; font-weight: 800; margin-bottom: 12px; }
+.ct-subheading { color: var(--text-sub); line-height: 1.75; margin-bottom: 40px; max-width: 580px; }
+
+/* ===== WHAT IS ===== */
+.ct-what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.ct-check-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.ct-check-item { display: flex; align-items: flex-start; gap: 10px; font-size: .9rem; color: var(--text-sub); line-height: 1.6; }
+.ct-check-icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(59,130,246,.12); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; flex-shrink: 0; margin-top: 1px;
+}
+.ct-example-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
+.ct-example-badge { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-sub); margin-bottom: 16px; }
+.ct-example-step { border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.ct-example-step-lbl { font-size: .75rem; color: var(--text-sub); margin-bottom: 4px; }
+.ct-example-step-val { font-weight: 700; }
+.ct-example-arrow { text-align: center; color: var(--text-sub); padding: 6px 0; }
+.ct-example-arrow-lbl { font-size: .8rem; margin-top: 4px; }
+
+/* ===== STEPS ===== */
+.ct-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.ct-step-card {
+  background: var(--bg-main); border: 1px solid var(--border); border-radius: 16px;
+  padding: 28px 24px; transition: all .2s;
+}
+.ct-step-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(59,130,246,.12); border-color: rgba(59,130,246,.3); }
+.ct-step-num {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: #fff; font-size: 1.05rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+}
+.ct-step-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+.ct-step-desc { font-size: .87rem; color: var(--text-sub); line-height: 1.65; }
+
+/* ===== EXCHANGE CARDS ===== */
+.ct-exchanges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.ct-exchange-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; transition: all .2s; display: flex; flex-direction: column;
+}
+.ct-exchange-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,.25); border-color: rgba(59,130,246,.25); }
+.ct-exchange-header {
+  padding: 22px 22px 18px; display: flex; align-items: center; gap: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ct-exchange-logo {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: #111827; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+}
+.ct-exchange-logo img { width: 80%; height: 80%; object-fit: contain; }
+.ct-exchange-name { font-size: 1.05rem; font-weight: 800; }
+.ct-exchange-tag {
+  display: inline-flex; padding: 3px 9px; border-radius: 99px; margin-top: 4px;
+  font-size: .68rem; font-weight: 700;
+  background: rgba(16,185,129,.1); color: #10B981; border: 1px solid rgba(16,185,129,.2);
+}
+.ct-exchange-body { padding: 20px 22px; flex: 1; display: flex; flex-direction: column; }
+.ct-exchange-rate { display: flex; align-items: baseline; gap: 6px; margin-bottom: 16px; }
+.ct-exchange-rate-num { font-size: 1.9rem; font-weight: 900; color: var(--accent); }
+.ct-exchange-rate-lbl { font-size: .8rem; color: var(--text-sub); }
+.ct-exchange-features { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.ct-exchange-features li { display: flex; align-items: flex-start; gap: 8px; font-size: .87rem; color: var(--text-sub); line-height: 1.55; }
+.ct-exchange-features li i { color: var(--accent); margin-top: 2px; flex-shrink: 0; }
+.ct-exchange-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ===== BUTTONS ===== */
+.ct-btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: #fff; border: none; border-radius: 8px;
+  padding: 10px 18px; font-size: .88rem; font-weight: 700;
+  text-decoration: none; cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.ct-btn-primary:hover { opacity: .88; color: #fff; transform: translateY(-1px); text-decoration: none; }
+.ct-btn-outline {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; border: 1px solid rgba(59,130,246,.4); color: var(--accent);
+  border-radius: 8px; padding: 10px 18px; font-size: .88rem; font-weight: 600;
+  text-decoration: none; cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.ct-btn-outline:hover { background: rgba(59,130,246,.08); color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+/* ===== WARNING ===== */
+.ct-warning {
+  background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2);
+  border-radius: 12px; padding: 16px 20px;
+  display: flex; gap: 12px; align-items: flex-start; margin-bottom: 32px;
+  font-size: .88rem; color: var(--text-sub); line-height: 1.65;
+}
+.ct-warning > i { color: #F59E0B; font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ===== TIPS ===== */
+.ct-tips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.ct-tip-card { background: var(--bg-main); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+.ct-tip-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ct-tip-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(59,130,246,.1); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+}
+.ct-tip-title { font-size: .95rem; font-weight: 700; }
+.ct-tip-desc { font-size: .85rem; color: var(--text-sub); line-height: 1.65; }
+
+/* ===== GUIDE BUTTON ===== */
+.ct-btn-guide {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; border: 1px solid var(--border); color: var(--text-sub);
+  border-radius: 8px; padding: 10px 16px; font-size: .88rem; font-weight: 600;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.ct-btn-guide:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.06); }
+
+/* ===== MODAL ===== */
+.ct-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.ct-modal-overlay.active { display: flex; }
+.ct-modal {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+  width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.95) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)  translateY(0); }
+}
+.ct-modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 24px 24px 16px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg-card); z-index: 1;
+}
+.ct-modal-label {
+  font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 6px;
+}
+.ct-modal-title { font-size: 1.15rem; font-weight: 800; margin: 0; }
+.ct-modal-close {
+  background: var(--bg-main); border: 1px solid var(--border); color: var(--text-sub);
+  border-radius: 8px; width: 34px; height: 34px; font-size: 1.1rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  flex-shrink: 0; transition: all .15s;
+}
+.ct-modal-close:hover { border-color: var(--accent); color: var(--accent); }
+.ct-modal-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 12px; }
+.ct-guide-step {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--bg-main); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+}
+.ct-guide-num {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: #fff; font-size: .82rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+.ct-guide-text { font-size: .9rem; color: var(--text-sub); line-height: 1.65; }
+
+/* ===== CTA ===== */
+.ct-cta {
+  text-align: center; padding: 80px 24px;
+  border-top: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.ct-cta::before {
+  content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(59,130,246,.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.ct-cta-inner { position: relative; z-index: 1; max-width: 580px; margin: 0 auto; }
+.ct-cta-title { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
+.ct-cta-desc { color: var(--text-sub); margin-bottom: 32px; font-size: 1rem; line-height: 1.7; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .ct-exchanges { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .ct-what-grid { grid-template-columns: 1fr; gap: 32px; }
+  .ct-steps { grid-template-columns: 1fr; }
+  .ct-exchanges { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .ct-exchanges { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .ct-hero-title { font-size: 2.1rem; }
+  .ct-hero-stats { gap: 28px; }
+  .ct-tips-grid { grid-template-columns: 1fr; }
+  .ct-section { padding: 48px 16px; }
+  .ct-section-alt-inner { padding: 48px 16px; }
+}
+@media (max-width: 480px) {
+  .ct-exchange-btns { flex-direction: column; }
+  .ct-btn-primary, .ct-btn-outline { justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ct-page">
+
+{# ===== HERO ===== #}
+<div class="ct-hero">
+  <div class="ct-hero-inner">
+    <div class="ct-hero-badge">
+      <i class="bi bi-people-fill"></i>
+      <span class="vi-text">Tính Năng Copy Trade</span><span class="en-text" style="display:none;">Copy Trade Feature</span>
+    </div>
+    <h1 class="ct-hero-title vi-text">Sao Chép Giao Dịch<br>Từ Trader Chuyên Nghiệp</h1>
+    <h1 class="ct-hero-title en-text" style="display:none;">Copy Trades<br>From Professional Traders</h1>
+    <p class="ct-hero-desc vi-text">Copy Trade giúp bạn <strong>tự động sao chép</strong> chiến lược giao dịch của các trader chuyên nghiệp — không cần kinh nghiệm, không cần theo dõi thị trường 24/7, vẫn sinh lời.</p>
+    <p class="ct-hero-desc en-text" style="display:none;">Copy Trade lets you <strong>automatically replicate</strong> professional traders' strategies — no experience needed, no 24/7 market monitoring, still profitable.</p>
+    <div class="ct-hero-stats">
+      <div>
+        <div class="ct-stat-val">{{ copy_exchanges.count }}+</div>
+        <div class="ct-stat-lbl vi-text">Sàn Hỗ Trợ</div>
+        <div class="ct-stat-lbl en-text" style="display:none;">Supported Exchanges</div>
+      </div>
+      <div>
+        <div class="ct-stat-val">6,000+</div>
+        <div class="ct-stat-lbl vi-text">Trader Chuyên Nghiệp</div>
+        <div class="ct-stat-lbl en-text" style="display:none;">Professional Traders</div>
+      </div>
+      <div>
+        <div class="ct-stat-val">24/7</div>
+        <div class="ct-stat-lbl vi-text">Tự Động Hoàn Toàn</div>
+        <div class="ct-stat-lbl en-text" style="display:none;">Fully Automated</div>
+      </div>
+      <div>
+        <div class="ct-stat-val">$0</div>
+        <div class="ct-stat-lbl vi-text">Phí Dịch Vụ</div>
+        <div class="ct-stat-lbl en-text" style="display:none;">Service Fee</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ===== WHAT IS COPY TRADE ===== #}
+<div class="ct-section">
+  <div class="ct-what-grid">
+    <div>
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;" class="vi-text">COPY TRADE LÀ GÌ?</div>
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;" class="en-text" style="display:none;">WHAT IS COPY TRADE?</div>
+      <h2 class="ct-heading vi-text">Giao Dịch Thông Minh<br>Không Cần Kinh Nghiệm</h2>
+      <h2 class="ct-heading en-text" style="display:none;">Smart Trading<br>Without Experience</h2>
+      <p style="color:var(--text-sub);line-height:1.75;" class="vi-text">Copy Trade (Social Trading) là tính năng cho phép bạn <strong style="color:var(--text-main);">tự động sao chép</strong> toàn bộ lệnh giao dịch của trader khác — khi họ mở lệnh, hệ thống tự động mở lệnh tương tự trong tài khoản của bạn với tỷ lệ vốn bạn chọn.</p>
+      <p style="color:var(--text-sub);line-height:1.75;" class="en-text" style="display:none;">Copy Trade (Social Trading) allows you to <strong style="color:var(--text-main);">automatically replicate</strong> another trader's orders — when they open a position, the system mirrors it in your account at your chosen capital ratio.</p>
+      <div class="ct-check-list">
+        <div class="ct-check-item"><div class="ct-check-icon"><i class="bi bi-check-lg"></i></div><span class="vi-text">Không cần phân tích thị trường mỗi ngày</span><span class="en-text" style="display:none;">No daily market analysis required</span></div>
+        <div class="ct-check-item"><div class="ct-check-icon"><i class="bi bi-check-lg"></i></div><span class="vi-text">Phù hợp cho người mới và người bận rộn</span><span class="en-text" style="display:none;">Perfect for beginners and busy professionals</span></div>
+        <div class="ct-check-item"><div class="ct-check-icon"><i class="bi bi-check-lg"></i></div><span class="vi-text">Tự chủ hoàn toàn — dừng/sửa lệnh bất cứ lúc nào</span><span class="en-text" style="display:none;">Full control — stop or modify positions anytime</span></div>
+        <div class="ct-check-item"><div class="ct-check-icon"><i class="bi bi-check-lg"></i></div><span class="vi-text">Miễn phí — không thu phí ngoài spread/commission sàn</span><span class="en-text" style="display:none;">Free — no extra fees beyond exchange spread/commission</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="ct-example-box">
+        <div class="ct-example-badge vi-text">VÍ DỤ THỰC TẾ</div>
+        <div class="ct-example-badge en-text" style="display:none;">REAL EXAMPLE</div>
+        <div class="ct-example-step" style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);">
+          <div class="ct-example-step-lbl vi-text">Trader A mở lệnh</div>
+          <div class="ct-example-step-lbl en-text" style="display:none;">Trader A opens</div>
+          <div class="ct-example-step-val" style="color:var(--accent);">BUY BTC/USDT · $10,000</div>
+        </div>
+        <div class="ct-example-arrow">
+          <i class="bi bi-arrow-down" style="font-size:1.1rem;color:var(--accent);"></i>
+          <div class="ct-example-arrow-lbl vi-text">Hệ thống tự động sao chép</div>
+          <div class="ct-example-arrow-lbl en-text" style="display:none;">System auto-copies</div>
+        </div>
+        <div class="ct-example-step" style="background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);">
+          <div class="ct-example-step-lbl vi-text">Tài khoản của bạn (10% vốn)</div>
+          <div class="ct-example-step-lbl en-text" style="display:none;">Your account (10% capital)</div>
+          <div class="ct-example-step-val" style="color:#6366F1;">BUY BTC/USDT · $1,000</div>
+        </div>
+        <div class="ct-example-arrow">
+          <i class="bi bi-arrow-down" style="font-size:1.1rem;color:var(--accent);"></i>
+          <div class="ct-example-arrow-lbl vi-text">Trader A chốt lời +3%</div>
+          <div class="ct-example-arrow-lbl en-text" style="display:none;">Trader A takes profit +3%</div>
+        </div>
+        <div class="ct-example-step" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);">
+          <div class="ct-example-step-lbl vi-text">Bạn nhận được</div>
+          <div class="ct-example-step-lbl en-text" style="display:none;">You receive</div>
+          <div class="ct-example-step-val" style="color:#10B981;font-size:1.15rem;">+$30 lợi nhuận 🎉</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ===== HOW IT WORKS ===== #}
+<div class="ct-section-alt">
+<div class="ct-section-alt-inner">
+  <div style="text-align:center;margin-bottom:48px;">
+    <h2 class="ct-heading vi-text" style="margin-bottom:10px;">Quy Trình 3 Bước Đơn Giản</h2>
+    <h2 class="ct-heading en-text" style="display:none;margin-bottom:10px;">3 Simple Steps to Get Started</h2>
+    <p style="color:var(--text-sub);" class="vi-text">Bắt đầu Copy Trade chỉ mất vài phút — không cần cài đặt phức tạp.</p>
+    <p style="color:var(--text-sub);" class="en-text" style="display:none;">Start Copy Trading in minutes — no complex setup required.</p>
+  </div>
+  <div class="ct-steps">
+    <div class="ct-step-card">
+      <div class="ct-step-num">1</div>
+      <div class="ct-step-title vi-text">Tạo Tài Khoản Sàn</div>
+      <div class="ct-step-title en-text" style="display:none;">Create an Exchange Account</div>
+      <p class="ct-step-desc vi-text">Đăng ký tài khoản trên một trong các sàn hỗ trợ Copy Trade bên dưới. Đăng ký qua link của RichAITrading để nhận thêm hoàn phí giao dịch.</p>
+      <p class="ct-step-desc en-text" style="display:none;">Register on one of the supported Copy Trade exchanges below. Register via RichAITrading's link to also earn trading fee rebates.</p>
+    </div>
+    <div class="ct-step-card">
+      <div class="ct-step-num">2</div>
+      <div class="ct-step-title vi-text">Chọn Trader Để Copy</div>
+      <div class="ct-step-title en-text" style="display:none;">Choose a Trader to Copy</div>
+      <p class="ct-step-desc vi-text">Vào mục Copy Trade của sàn, lọc trader theo <strong>Win Rate, PnL, Max Drawdown</strong>. Xem lịch sử giao dịch 90 ngày, chọn trader phù hợp với mức rủi ro bạn chấp nhận được.</p>
+      <p class="ct-step-desc en-text" style="display:none;">Go to the exchange's Copy Trade section, filter by <strong>Win Rate, PnL, Max Drawdown</strong>. Review 90-day trade history and pick a trader matching your risk tolerance.</p>
+    </div>
+    <div class="ct-step-card">
+      <div class="ct-step-num">3</div>
+      <div class="ct-step-title vi-text">Thiết Lập &amp; Chạy Tự Động</div>
+      <div class="ct-step-title en-text" style="display:none;">Configure &amp; Run Automatically</div>
+      <p class="ct-step-desc vi-text">Chọn số vốn copy, đặt Stop Copy Loss để bảo vệ vốn. Từ đây hệ thống tự động sao chép mọi lệnh 24/7 — bạn không cần làm gì thêm.</p>
+      <p class="ct-step-desc en-text" style="display:none;">Set your copy capital and Stop Copy Loss to protect your funds. The system then automatically copies all trades 24/7 — no further action needed from you.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+{# ===== EXCHANGE CARDS (từ DB) ===== #}
+<div class="ct-section">
+  <h2 class="ct-heading vi-text">Các Sàn Hỗ Trợ Copy Trade</h2>
+  <h2 class="ct-heading en-text" style="display:none;">Exchanges Supporting Copy Trade</h2>
+  <p class="ct-subheading vi-text">Chọn sàn phù hợp — tất cả miễn phí, tự động và hỗ trợ người mới bắt đầu.</p>
+  <p class="ct-subheading en-text" style="display:none;">Choose an exchange — all free, automated, and beginner-friendly.</p>
+  <div class="ct-exchanges">
+
+    {% for exchange in copy_exchanges %}
+    <div class="ct-exchange-card">
+      <div class="ct-exchange-header">
+        <div class="ct-exchange-logo">
+          {% if exchange.logo %}
+            <img src="{{ exchange.logo.url }}" alt="{{ exchange.name }}">
+          {% else %}
+            <span style="font-size:.85rem;font-weight:900;color:var(--text-main);">{{ exchange.name|slice:":3"|upper }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <div class="ct-exchange-name">{{ exchange.name }}</div>
+          {% if exchange.tag_vi %}
+          <div class="ct-exchange-tag vi-text">{{ exchange.tag_vi }}</div>
+          <div class="ct-exchange-tag en-text" style="display:none;">{{ exchange.tag_en|default:exchange.tag_vi }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="ct-exchange-body">
+        {% if exchange.trader_count %}
+        <div class="ct-exchange-rate">
+          <span class="ct-exchange-rate-num">{{ exchange.trader_count }}</span>
+          <span class="ct-exchange-rate-lbl vi-text">{{ exchange.trader_count_label_vi|default:"Trader để chọn" }}</span>
+          <span class="ct-exchange-rate-lbl en-text" style="display:none;">{{ exchange.trader_count_label_en|default:"Traders available" }}</span>
+        </div>
+        {% endif %}
+        {% if exchange.copy_features_pairs %}
+        <ul class="ct-exchange-features">
+          {% for vi_feat, en_feat in exchange.copy_features_pairs %}
+          {% if vi_feat %}
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span class="vi-text">{{ vi_feat }}</span>
+            <span class="en-text" style="display:none;">{{ en_feat|default:vi_feat }}</span>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="ct-exchange-btns">
+          {% if exchange.copy_trade_url %}
+          <a href="{{ exchange.copy_trade_url }}" target="_blank" rel="noopener noreferrer" class="ct-btn-primary">
+            <i class="bi bi-people-fill"></i>
+            <span class="vi-text">Vào Copy Trade {{ exchange.name }}</span>
+            <span class="en-text" style="display:none;">Go to {{ exchange.name }} Copy Trade</span>
+          </a>
+          {% endif %}
+          {% if exchange.register_url %}
+          <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer" class="ct-btn-outline">
+            <i class="bi bi-person-plus-fill"></i>
+            <span class="vi-text">Đăng Ký</span>
+            <span class="en-text" style="display:none;">Register</span>
+          </a>
+          {% endif %}
+          {% if exchange.guide_steps_list %}
+          <button class="ct-btn-guide" onclick="showGuide('{{ exchange.slug }}')">
+            <i class="bi bi-book-half"></i>
+            <span class="vi-text">Hướng dẫn</span>
+            <span class="en-text" style="display:none;">Guide</span>
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text-sub);">
+      <i class="bi bi-hourglass" style="font-size:2rem;margin-bottom:12px;display:block;"></i>
+      <p class="vi-text">Chưa có sàn nào được cấu hình. Vui lòng liên hệ Admin.</p>
+      <p class="en-text" style="display:none;">No exchanges configured yet. Please contact Admin.</p>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+{# ===== TIPS ===== #}
+<div class="ct-section-alt">
+<div class="ct-section-alt-inner">
+  <h2 class="ct-heading vi-text">Lời Khuyên Khi Chọn Trader Để Copy</h2>
+  <h2 class="ct-heading en-text" style="display:none;">Tips for Choosing a Trader to Copy</h2>
+  <p style="color:var(--text-sub);line-height:1.7;margin-bottom:28px;" class="vi-text">Không phải trader nào cũng phù hợp với mọi người. Dưới đây là những tiêu chí quan trọng giúp bạn chọn đúng và bảo vệ vốn đầu tư.</p>
+  <p style="color:var(--text-sub);line-height:1.7;margin-bottom:28px;" class="en-text" style="display:none;">Not every trader suits every investor. Here are key criteria to help you choose wisely and protect your capital.</p>
+
+  <div class="ct-warning">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <div>
+      <strong class="vi-text">Cảnh báo rủi ro: </strong><strong class="en-text" style="display:none;">Risk warning: </strong>
+      <span class="vi-text">Copy Trade không đảm bảo lợi nhuận. Hiệu suất trong quá khứ không đảm bảo kết quả tương lai. Chỉ đầu tư số tiền bạn sẵn sàng chấp nhận mất.</span>
+      <span class="en-text" style="display:none;">Copy Trade does not guarantee profits. Past performance does not guarantee future results. Only invest what you can afford to lose.</span>
+    </div>
+  </div>
+
+  <div class="ct-tips-grid">
+    <div class="ct-tip-card">
+      <div class="ct-tip-head">
+        <div class="ct-tip-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="ct-tip-title vi-text">Xem Win Rate Ít Nhất 3 Tháng</div>
+        <div class="ct-tip-title en-text" style="display:none;">Check Win Rate Over 3+ Months</div>
+      </div>
+      <p class="ct-tip-desc vi-text">Tránh trader mới có ít dữ liệu. Win rate >55% trong ít nhất 3 tháng liên tục là tín hiệu tốt. Chú ý xem hiệu suất gần nhất có giảm sút không.</p>
+      <p class="ct-tip-desc en-text" style="display:none;">Avoid new traders with little data. Win rate >55% over 3+ consecutive months is a good signal. Check for recent performance decline.</p>
+    </div>
+    <div class="ct-tip-card">
+      <div class="ct-tip-head">
+        <div class="ct-tip-icon"><i class="bi bi-shield-exclamation"></i></div>
+        <div class="ct-tip-title vi-text">Kiểm Tra Max Drawdown (MDD)</div>
+        <div class="ct-tip-title en-text" style="display:none;">Check Max Drawdown (MDD)</div>
+      </div>
+      <p class="ct-tip-desc vi-text">MDD dưới 30% là an toàn. MDD >50% nghĩa là trader từng mất hơn nửa tài khoản — rủi ro rất cao. Ưu tiên trader có MDD thấp, ROI ổn định theo thời gian.</p>
+      <p class="ct-tip-desc en-text" style="display:none;">MDD under 30% is safe. MDD >50% means the trader once lost over half their account — very risky. Prefer traders with low MDD and stable ROI over time.</p>
+    </div>
+    <div class="ct-tip-card">
+      <div class="ct-tip-head">
+        <div class="ct-tip-icon"><i class="bi bi-people"></i></div>
+        <div class="ct-tip-title vi-text">Không Chọn Trader Quá Nhiều Follower</div>
+        <div class="ct-tip-title en-text" style="display:none;">Avoid Overcrowded Traders</div>
+      </div>
+      <p class="ct-tip-desc vi-text">Trader với quá nhiều follower có thể gây trượt giá (slippage) khi nhiều người copy cùng lúc. Trader tầm trung (500–2,000 follower) thường cho kết quả thực thi tốt hơn.</p>
+      <p class="ct-tip-desc en-text" style="display:none;">Traders with too many followers may cause slippage when copied simultaneously. Mid-range traders (500–2,000 followers) typically deliver better execution.</p>
+    </div>
+    <div class="ct-tip-card">
+      <div class="ct-tip-head">
+        <div class="ct-tip-icon"><i class="bi bi-sliders"></i></div>
+        <div class="ct-tip-title vi-text">Luôn Đặt Stop Copy Loss</div>
+        <div class="ct-tip-title en-text" style="display:none;">Always Set Stop Copy Loss</div>
+      </div>
+      <p class="ct-tip-desc vi-text">Thiết lập Stop Copy Loss (thường 20–30% vốn copy). Khi vốn giảm đến mức này, hệ thống tự dừng copy — bảo vệ bạn khỏi thua lỗ không kiểm soát.</p>
+      <p class="ct-tip-desc en-text" style="display:none;">Set Stop Copy Loss (typically 20–30% of copy capital). When capital drops to this level, the system auto-stops — protecting you from uncontrolled losses.</p>
+    </div>
+    <div class="ct-tip-card">
+      <div class="ct-tip-head">
+        <div class="ct-tip-icon"><i class="bi bi-grid-1x2"></i></div>
+        <div class="ct-tip-title vi-text">Đa Dạng Hóa — Copy 2–3 Trader</div>
+        <div class="ct-tip-title en-text" style="display:none;">Diversify — Copy 2–3 Traders</div>
+      </div>
+      <p class="ct-tip-desc vi-text">Chia vốn cho 2–3 trader khác nhau (khác phong cách, khác sàn). Khi 1 trader thua thì trader khác có thể bù đắp, giảm rủi ro tổng thể đáng kể.</p>
+      <p class="ct-tip-desc en-text" style="display:none;">Split capital across 2–3 traders (different styles, different exchanges). When one trader loses, others may compensate, significantly reducing overall risk.</p>
+    </div>
+    <div class="ct-tip-card">
+      <div class="ct-tip-head">
+        <div class="ct-tip-icon"><i class="bi bi-calendar-check"></i></div>
+        <div class="ct-tip-title vi-text">Theo Dõi Định Kỳ Mỗi 2–4 Tuần</div>
+        <div class="ct-tip-title en-text" style="display:none;">Review Every 2–4 Weeks</div>
+      </div>
+      <p class="ct-tip-desc vi-text">Xem lại hiệu suất định kỳ. Nếu trader liên tục thua lỗ hoặc thay đổi phong cách giao dịch, hãy dừng copy và tìm trader mới phù hợp hơn với thị trường hiện tại.</p>
+      <p class="ct-tip-desc en-text" style="display:none;">Review performance regularly. If a trader consistently loses or changes style, stop copying and find one better suited to current market conditions.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+{# ===== CTA ===== #}
+<div class="ct-cta">
+  <div class="ct-cta-inner">
+    <div style="font-size:2.5rem;margin-bottom:16px;">🚀</div>
+    <h2 class="ct-cta-title vi-text">Bắt Đầu Copy Trade Ngay Hôm Nay</h2>
+    <h2 class="ct-cta-title en-text" style="display:none;">Start Copy Trading Today</h2>
+    <p class="ct-cta-desc vi-text">Tham gia nhóm Private của RichAITrading để được gợi ý trader chuyên nghiệp, theo dõi tín hiệu giao dịch và hỗ trợ 24/7 từ đội ngũ chuyên gia.</p>
+    <p class="ct-cta-desc en-text" style="display:none;">Join RichAITrading's Private Group for professional trader picks, trade signal updates, and 24/7 expert support.</p>
+    <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
+      <a href="https://t.me/+f4mK8TI6v_ZmM2Nl" target="_blank" rel="noopener noreferrer" class="ct-btn-primary" style="padding:13px 28px;font-size:.97rem;">
+        <i class="bi bi-telegram"></i>
+        <span class="vi-text">Tham Gia Nhóm Private</span>
+        <span class="en-text" style="display:none;">Join Private Group</span>
+      </a>
+      <a href="{% url 'services' %}" class="ct-btn-outline" style="padding:13px 28px;font-size:.97rem;">
+        <i class="bi bi-arrow-repeat"></i>
+        <span class="vi-text">Xem Dịch Vụ Backcom</span>
+        <span class="en-text" style="display:none;">View Backcom Services</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+</div>
+
+{# ===== HIDDEN GUIDE DATA ===== #}
+{% for exchange in copy_exchanges %}{% if exchange.guide_steps_pairs %}
+<div id="guide-data-{{ exchange.slug }}" class="ct-guide-data" style="display:none;" data-name="{{ exchange.name }}">
+  {% for vi_step, en_step in exchange.guide_steps_pairs %}{% if vi_step %}
+  <div data-vi="{{ vi_step }}" data-en="{{ en_step|default:vi_step }}"></div>
+  {% endif %}{% endfor %}
+</div>
+{% endif %}{% endfor %}
+
+{# ===== GUIDE MODAL ===== #}
+<div class="ct-modal-overlay" id="ctGuideModal" onclick="closeGuideModal(event)">
+  <div class="ct-modal">
+    <div class="ct-modal-header">
+      <div>
+        <div class="ct-modal-label vi-text">HƯỚNG DẪN</div>
+        <div class="ct-modal-label en-text" style="display:none;">STEP-BY-STEP GUIDE</div>
+        <h3 class="ct-modal-title" id="ctGuideTitle"></h3>
+      </div>
+      <button class="ct-modal-close" onclick="closeGuideModal()">&times;</button>
+    </div>
+    <div class="ct-modal-body" id="ctGuideBody"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  function applyLang(lang) {
+    var isEn = lang === 'en';
+    document.querySelectorAll('.vi-text').forEach(function(el) { el.style.display = isEn ? 'none' : ''; });
+    document.querySelectorAll('.en-text').forEach(function(el) { el.style.display = isEn ? '' : 'none'; });
+  }
+  applyLang(localStorage.getItem('ait-lang') || 'vi');
+  document.addEventListener('langChanged', function(e) { applyLang(e.detail); });
+})();
+
+function showGuide(slug) {
+  var data = document.getElementById('guide-data-' + slug);
+  if (!data) return;
+  var isEn = (localStorage.getItem('ait-lang') || 'vi') === 'en';
+  document.getElementById('ctGuideTitle').textContent = data.getAttribute('data-name');
+  var body = document.getElementById('ctGuideBody');
+  body.innerHTML = '';
+  var steps = data.querySelectorAll('[data-vi]');
+  steps.forEach(function(s, i) {
+    var text = isEn ? (s.getAttribute('data-en') || s.getAttribute('data-vi')) : s.getAttribute('data-vi');
+    var el = document.createElement('div');
+    el.className = 'ct-guide-step';
+    el.innerHTML = '<div class="ct-guide-num">' + (i + 1) + '</div><div class="ct-guide-text">' + text + '</div>';
+    body.appendChild(el);
+  });
+  document.getElementById('ctGuideModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeGuideModal(e) {
+  if (e && e.target !== document.getElementById('ctGuideModal')) return;
+  document.getElementById('ctGuideModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeGuideModal();
+});
+</script>
+{% endblock %}

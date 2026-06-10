@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog, AIPlanSettings, BrokerLink
+from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog, AIPlanSettings, BrokerLink, CopyTradeExchange
 
 
 @admin.register(TradingViewProduct)
@@ -39,6 +39,25 @@ class BrokerLinkAdmin(admin.ModelAdmin):
     list_filter = ('category', 'is_active')
     prepopulated_fields = {'slug': ('name',)}
     fields = ('name', 'slug', 'category', 'logo', 'register_url', 'partner_code', 'is_active', 'sort_order')
+
+
+@admin.register(CopyTradeExchange)
+class CopyTradeExchangeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'copy_trade_url', 'is_active', 'sort_order')
+    list_editable = ('is_active', 'sort_order')
+    prepopulated_fields = {'slug': ('name',)}
+    fieldsets = (
+        ('Thông tin cơ bản', {
+            'fields': ('name', 'slug', 'logo', 'copy_trade_url', 'register_url', 'is_active', 'sort_order'),
+        }),
+        ('Hiển thị card', {
+            'fields': ('tag_vi', 'tag_en', 'trader_count', 'trader_count_label_vi', 'trader_count_label_en'),
+        }),
+        ('Tính năng (VI)', {'fields': ('copy_features',)}),
+        ('Tính năng (EN)', {'fields': ('copy_features_en',), 'classes': ('collapse',)}),
+        ('Hướng dẫn (VI)', {'fields': ('guide_steps',)}),
+        ('Hướng dẫn (EN)', {'fields': ('guide_steps_en',), 'classes': ('collapse',)}),
+    )
 
 
 @admin.register(ChartAnalysisLog)
