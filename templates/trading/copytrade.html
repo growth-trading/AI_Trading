@@ -81,7 +81,7 @@
 .ct-step-desc { font-size: .87rem; color: var(--text-sub); line-height: 1.65; }
 
 /* ===== EXCHANGE CARDS ===== */
-.ct-exchanges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.ct-exchanges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .ct-exchange-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
   overflow: hidden; transition: all .2s; display: flex; flex-direction: column;
@@ -110,7 +110,9 @@
 .ct-exchange-features { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
 .ct-exchange-features li { display: flex; align-items: flex-start; gap: 8px; font-size: .87rem; color: var(--text-sub); line-height: 1.55; }
 .ct-exchange-features li i { color: var(--accent); margin-top: 2px; flex-shrink: 0; }
-.ct-exchange-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.ct-exchange-btns { display: flex; gap: 10px; flex-wrap: nowrap; align-items: stretch; }
+.ct-exchange-btns .ct-btn-primary,
+.ct-exchange-btns .ct-btn-guide { flex: 1; justify-content: center; padding: 12px 14px; font-size: .9rem; }
 
 /* ===== BUTTONS ===== */
 .ct-btn-primary {
@@ -128,6 +130,12 @@
   text-decoration: none; cursor: pointer; transition: all .2s; white-space: nowrap;
 }
 .ct-btn-outline:hover { background: rgba(59,130,246,.08); color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+.ct-register-hint {
+  font-size: .76rem; color: var(--text-sub); margin-top: 7px; line-height: 1.5;
+}
+.ct-register-hint a { color: var(--accent); text-decoration: none; }
+.ct-register-hint a:hover { text-decoration: underline; }
 
 /* ===== WARNING ===== */
 .ct-warning {
@@ -425,15 +433,8 @@
           {% if exchange.copy_trade_url %}
           <a href="{{ exchange.copy_trade_url }}" target="_blank" rel="noopener noreferrer" class="ct-btn-primary">
             <i class="bi bi-people-fill"></i>
-            <span class="vi-text">Vào Copy Trade {{ exchange.name }}</span>
-            <span class="en-text" style="display:none;">Go to {{ exchange.name }} Copy Trade</span>
-          </a>
-          {% endif %}
-          {% if exchange.register_url %}
-          <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer" class="ct-btn-outline">
-            <i class="bi bi-person-plus-fill"></i>
-            <span class="vi-text">Đăng Ký</span>
-            <span class="en-text" style="display:none;">Register</span>
+            <span class="vi-text">Vào Copy Trade</span>
+            <span class="en-text" style="display:none;">Let's Copy Trade</span>
           </a>
           {% endif %}
           {% if exchange.guide_steps_list %}
@@ -444,6 +445,13 @@
           </button>
           {% endif %}
         </div>
+        {% if exchange.register_url %}
+        <div class="ct-register-hint">
+          <i class="bi bi-info-circle me-1"></i>
+          <span class="vi-text">Chưa có tài khoản? <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer">Đăng ký tại đây</a></span>
+          <span class="en-text" style="display:none;">No account? <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer">Register here</a></span>
+        </div>
+        {% endif %}
       </div>
     </div>
     {% empty %}
@@ -542,7 +550,7 @@
     <p class="ct-cta-desc vi-text">Tham gia nhóm Private của RichAITrading để được gợi ý trader chuyên nghiệp, theo dõi tín hiệu giao dịch và hỗ trợ 24/7 từ đội ngũ chuyên gia.</p>
     <p class="ct-cta-desc en-text" style="display:none;">Join RichAITrading's Private Group for professional trader picks, trade signal updates, and 24/7 expert support.</p>
     <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
-      <a href="https://t.me/+f4mK8TI6v_ZmM2Nl" target="_blank" rel="noopener noreferrer" class="ct-btn-primary" style="padding:13px 28px;font-size:.97rem;">
+      <a href="https://t.me/Richfoundationsingnal1" target="_blank" rel="noopener noreferrer" class="ct-btn-primary" style="padding:13px 28px;font-size:.97rem;">
         <i class="bi bi-telegram"></i>
         <span class="vi-text">Tham Gia Nhóm Private</span>
         <span class="en-text" style="display:none;">Join Private Group</span>

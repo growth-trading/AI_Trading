@@ -80,12 +80,13 @@
 [data-theme="light"] .tv-product-card.coming-soon-card { background: #FFF5F5; border-color: rgba(239,68,68,.35); }
 
 .tv-product-icon {
-  width: 48px; height: 48px; border-radius: 12px;
+  width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
   background: linear-gradient(135deg, rgba(59,130,246,.2), rgba(99,102,241,.2));
   border: 1px solid rgba(59,130,246,.25);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem; color: var(--accent); margin-bottom: 14px;
+  font-size: 1.4rem; color: var(--accent);
 }
+.tv-product-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .tv-product-name { font-size: 1.12rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
 .tv-product-desc { font-size: .875rem; color: var(--text-sub); line-height: 1.6; margin-bottom: 18px; flex: 1; }
 
@@ -219,13 +220,14 @@
           </div>
         {% endif %}
 
-        <div class="tv-product-icon">
-          <i class="bi bi-graph-up-arrow"></i>
-        </div>
-
-        <div class="tv-product-name">
-          <span class="tv-content-vi">{{ item.product.name }}</span>
-          <span class="tv-content-en">{{ item.product.name_en|default:item.product.name }}</span>
+        <div class="tv-product-header">
+          <div class="tv-product-icon">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+          <div class="tv-product-name">
+            <span class="tv-content-vi">{{ item.product.name }}</span>
+            <span class="tv-content-en">{{ item.product.name_en|default:item.product.name }}</span>
+          </div>
         </div>
         <div class="tv-product-desc">
           <span class="tv-content-vi">{{ item.product.description }}</span>
