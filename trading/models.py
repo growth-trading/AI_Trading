@@ -252,3 +252,35 @@ class TradingSignal(models.Model):
     @property
     def tp_list(self):
         return [(i, getattr(self, f'tp{i}')) for i in range(1, 6) if getattr(self, f'tp{i}') is not None]
+
+    @property
+    def pnl_info(self):
+        """PNL ước tính ở 0.1 lot."""
+        from decimal import Decimal
+        LOT = Decimal('0.1')
+        ticker = self.symbol.upper().split(':')[-1]
+        if 'XAU' in ticker:
+            contract = Decimal('100')
+        elif 'XAG' in ticker:
+            contract = Decimal('5000')
+        elif any(c in ticker for c in ['BTC', 'ETH', 'BNB', 'SOL', 'XRP']):
+            contract = Decimal('1')
+        else:
+            contract = Decimal('100000')
+        direction = Decimal('1') if self.signal_type == 'BUY' else Decimal('-1')
+        if self.status in ('tp1', 'tp2', 'tp3', 'tp4', 'tp5'):
+            tp_num = int(self.status[2])
+            exit_price = getattr(self, f'tp{tp_num}')
+            if exit_price and self.entry:
+                return {'value': float((exit_price - self.entry) * direction * contract * LOT)}
+        elif self.status == 'sl':
+            if self.sl and self.entry:
+                return {'value': float((self.sl - self.entry) * direction * contract * LOT)}
+        elif self.status == 'active':
+            result = {}
+            if self.tp1 and self.entry:
+                result['tp1'] = float((self.tp1 - self.entry) * direction * contract * LOT)
+            if self.sl and self.entry:
+                result['sl'] = float((self.sl - self.entry) * direction * contract * LOT)
+            return result
+        return {}

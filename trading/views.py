@@ -112,8 +112,53 @@ def signals_view(request):
     if not request.user.is_email_verified:
         return redirect('verify_otp')
 
-    signals = TradingSignal.objects.all()[:100]
-    return render(request, 'trading/signals.html', {'signals': signals})
+    signals = TradingSignal.objects.order_by('-created_at')[:100]
+
+    def _calc_pnl(qs):
+        from decimal import Decimal
+        LOT = Decimal('0.1')
+        total = 0.0
+        for sig in qs.filter(status__in=['tp1','tp2','tp3','tp4','tp5','sl']):
+            ticker = sig.symbol.upper().split(':')[-1]
+            if 'XAU' in ticker:       contract = Decimal('100')
+            elif 'XAG' in ticker:     contract = Decimal('5000')
+            elif any(c in ticker for c in ['BTC','ETH','BNB','SOL','XRP']): contract = Decimal('1')
+            else:                     contract = Decimal('100000')
+            direction = Decimal('1') if sig.signal_type == 'BUY' else Decimal('-1')
+            if sig.status in ('tp1','tp2','tp3','tp4','tp5'):
+                tp_num = int(sig.status[2])
+                ep = getattr(sig, f'tp{tp_num}')
+                if ep and sig.entry:
+                    total += float((ep - sig.entry) * direction * contract * LOT)
+            elif sig.status == 'sl' and sig.sl and sig.entry:
+                total += float((sig.sl - sig.entry) * direction * contract * LOT)
+        return round(total, 2)
+
+    def _stats(qs):
+        wins   = qs.filter(status__in=['tp1','tp2','tp3','tp4','tp5']).count()
+        losses = qs.filter(status='sl').count()
+        active = qs.filter(status='active').count()
+        closed = wins + losses
+        return {
+            'total'   : qs.count(),
+            'wins'    : wins,
+            'losses'  : losses,
+            'active'  : active,
+            'win_rate': round(wins / closed * 100) if closed else 0,
+            'pnl'     : _calc_pnl(qs),
+        }
+
+    now         = timezone.now()
+    all_qs      = TradingSignal.objects.all()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    stats_data = {
+        'today': _stats(all_qs.filter(created_at__gte=today_start)),
+        'week' : _stats(all_qs.filter(created_at__gte=now - timedelta(days=7))),
+        'month': _stats(all_qs.filter(created_at__gte=now - timedelta(days=30))),
+        'all'  : _stats(all_qs),
+    }
+    return render(request, 'trading/signals.html', {'signals': signals, 'stats_data': stats_data})
 
 
 @csrf_exempt
@@ -132,9 +177,11 @@ def tradingview_webhook_view(request, secret):
 
     try:
         signal_raw = body.get('signal', '')
-        if 'long' in signal_raw.lower():
+        sig_up     = signal_raw.upper()
+
+        if 'LONG' in sig_up:
             signal_type = 'BUY'
-        elif 'short' in signal_raw.lower():
+        elif 'SHORT' in sig_up:
             signal_type = 'SELL'
         else:
             return JsonResponse({'ok': False, 'error': 'Unknown signal type'}, status=400)
@@ -142,12 +189,6 @@ def tradingview_webhook_view(request, secret):
         ticker   = body.get('ticker', '').upper()
         exchange = body.get('exchange', '').upper()
         symbol   = f"{exchange}:{ticker}" if exchange else ticker
-
-        interval_raw = body.get('interval', '5')
-        try:
-            timeframe = f"{int(interval_raw)}m"
-        except (ValueError, TypeError):
-            timeframe = str(interval_raw)
 
         def _dec(val):
             if val is None:
@@ -157,25 +198,60 @@ def tradingview_webhook_view(request, secret):
             except InvalidOperation:
                 return None
 
+        # symbol_variants: khớp cả "OANDA:XAUUSD" lẫn "XAUUSD" để tương thích lệnh cũ
+        symbol_variants = list({symbol, ticker})
+
+        # --- TP hit: "UT Long TP1", "UT Short TP4", ... ---
+        tp_match = re.search(r'TP(\d+)', sig_up)
+        if tp_match:
+            tp_num     = int(tp_match.group(1))
+            new_status = f'tp{tp_num}'
+            prev_ok    = ['active'] + [f'tp{i}' for i in range(1, tp_num)]
+            sig_obj = (
+                TradingSignal.objects
+                .filter(signal_type=signal_type, symbol__in=symbol_variants, status__in=prev_ok)
+                .order_by('-created_at').first()
+            )
+            if sig_obj:
+                sig_obj.status = new_status
+                sig_obj.save(update_fields=['status'])
+                logger.info('tv_webhook: TP%s hit %s %s', tp_num, signal_type, symbol)
+            return JsonResponse({'ok': True})
+
+        # --- SL hit: "UT Long SL", "UT Short SL", ... ---
+        if 'SL' in sig_up:
+            sig_obj = (
+                TradingSignal.objects
+                .filter(signal_type=signal_type, symbol__in=symbol_variants,
+                        status__in=['active', 'tp1', 'tp2', 'tp3', 'tp4'])
+                .order_by('-created_at').first()
+            )
+            if sig_obj:
+                sig_obj.status = 'sl'
+                sig_obj.save(update_fields=['status'])
+                logger.info('tv_webhook: SL hit %s %s', signal_type, symbol)
+            return JsonResponse({'ok': True})
+
+        # --- New signal ---
+        interval_raw = body.get('interval', '5')
+        try:
+            timeframe = f"{int(interval_raw)}m"
+        except (ValueError, TypeError):
+            timeframe = str(interval_raw)
+
         entry = _dec(body.get('close'))
         sl    = _dec(body.get('sl'))
         if not entry or not sl:
             return JsonResponse({'ok': False, 'error': 'Missing entry or sl'}, status=400)
 
         TradingSignal.objects.create(
-            signal_type=signal_type,
-            symbol=symbol,
-            timeframe=timeframe,
-            entry=entry,
-            sl=sl,
-            tp1=_dec(body.get('tp1')),
-            tp2=_dec(body.get('tp2')),
-            tp3=_dec(body.get('tp3')),
-            tp4=_dec(body.get('tp4')),
-            tp5=_dec(body.get('tp5')),
-            status='active',
+            signal_type=signal_type, symbol=symbol, timeframe=timeframe,
+            entry=entry, sl=sl,
+            tp1=_dec(body.get('tp1')), tp2=_dec(body.get('tp2')),
+            tp3=_dec(body.get('tp3')), tp4=_dec(body.get('tp4')),
+            tp5=_dec(body.get('tp5')), status='active',
         )
-        logger.info('tv_webhook: %s %s @ %s', signal_type, symbol, entry)
+        logger.info('tv_webhook: new %s %s @ %s', signal_type, symbol, entry)
 
     except Exception as exc:
         logger.exception('tv_webhook: error: %s', exc)

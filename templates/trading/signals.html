@@ -38,9 +38,60 @@
 }
 .sig-hero-tg:hover { background: rgba(59,130,246,.18); color: var(--accent); text-decoration: none; }
 
+/* ===== STATS PERIOD FILTER ===== */
+.sig-period-bar {
+  max-width: 1200px; margin: 24px auto 0; padding: 0 24px;
+  display: flex; align-items: center; gap: 8px;
+}
+.sig-period-btn {
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-sub);
+  border-radius: 8px; padding: 6px 16px; font-size: .8rem; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.sig-period-pnl {
+  font-size: .68rem; font-weight: 800; line-height: 1;
+}
+.sig-period-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.08); }
+.sig-period-btn:hover  { border-color: var(--accent); color: var(--accent); }
+
+/* ===== STATS BAR ===== */
+.sig-stats {
+  max-width: 1200px; margin: 10px auto 0; padding: 0 24px;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+}
+.sig-stat-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+  position: relative; overflow: hidden;
+}
+.sig-stat-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+}
+.sig-stat-card.stat-total::after  { background: rgba(99,102,241,.6); }
+.sig-stat-card.stat-active::after { background: rgba(59,130,246,.6); }
+.sig-stat-card.stat-win::after    { background: rgba(16,185,129,.6); }
+.sig-stat-card.stat-loss::after   { background: rgba(239,68,68,.6); }
+.sig-stat-card.stat-rate::after   { background: linear-gradient(90deg,#EF4444,#10B981); }
+.sig-stat-lbl { font-size: .68rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .06em; }
+.sig-stat-val { font-size: 1.6rem; font-weight: 900; line-height: 1.1; }
+.sig-stat-card.stat-total  .sig-stat-val { color: #818CF8; }
+.sig-stat-card.stat-active .sig-stat-val { color: #60A5FA; }
+.sig-stat-card.stat-win    .sig-stat-val { color: #10B981; }
+.sig-stat-card.stat-loss   .sig-stat-val { color: #EF4444; }
+.sig-stat-card.stat-rate   .sig-stat-val { color: var(--text-main); }
+.sig-stat-sub { font-size: .7rem; color: var(--text-sub); }
+.sig-winrate-bar { margin-top: 6px; height: 5px; background: rgba(239,68,68,.25); border-radius: 99px; overflow: hidden; }
+.sig-winrate-fill { height: 100%; background: #10B981; border-radius: 99px; transition: width .6s ease; }
+@media (max-width: 900px) { .sig-stats { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .sig-stats { grid-template-columns: repeat(2, 1fr); } }
+.stat-pnl .sig-stat-val { font-size: 1.25rem; }
+.stat-pnl .sig-stat-val.pnl-pos { color: #10B981; }
+.stat-pnl .sig-stat-val.pnl-neg { color: #EF4444; }
+
 /* ===== TOOLBAR ===== */
 .sig-toolbar {
-  max-width: 980px; margin: 0 auto; padding: 20px 24px 0;
+  max-width: 1200px; margin: 0 auto; padding: 20px 24px 0;
   display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
 }
 .sig-toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -56,57 +107,106 @@
 .sig-filter-sell.active { border-color: #EF4444; color: #EF4444; background: rgba(239,68,68,.08); }
 
 /* ===== GRID ===== */
-.sig-main { max-width: 980px; margin: 0 auto; padding: 20px 24px 60px; }
+.sig-main { max-width: 1200px; margin: 0 auto; padding: 20px 24px 60px; }
 .sig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 
 /* ===== CARD ===== */
 .sig-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
-  overflow: hidden; transition: all .2s; display: flex; flex-direction: column;
+  overflow: hidden; transition: all .22s; display: flex; flex-direction: column;
+  position: relative;
 }
-.sig-card:hover { border-color: rgba(59,130,246,.3); transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.2); }
+.sig-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; border-radius: 16px 0 0 16px;
+}
+.sig-card.buy-card::before  { background: linear-gradient(180deg,#10B981,#059669); }
+.sig-card.sell-card::before { background: linear-gradient(180deg,#EF4444,#DC2626); }
+.sig-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,.25); }
+.sig-card.buy-card:hover  { border-color: rgba(16,185,129,.35); box-shadow: 0 12px 36px rgba(16,185,129,.1); }
+.sig-card.sell-card:hover { border-color: rgba(239,68,68,.35);  box-shadow: 0 12px 36px rgba(239,68,68,.1); }
+
+/* Header */
 .sig-card-top {
-  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
+  padding: 13px 16px 13px 20px;
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-bottom: 1px solid var(--border);
 }
-.sig-card-head { display: flex; align-items: center; gap: 8px; }
+.sig-card-head { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .sig-type-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: .78rem; font-weight: 800; padding: 4px 10px; border-radius: 7px;
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  font-size: .72rem; font-weight: 800; padding: 3px 9px; border-radius: 6px; letter-spacing: .03em;
 }
-.sig-type-buy  { background: rgba(16,185,129,.12); color: #10B981; border: 1px solid rgba(16,185,129,.3); }
-.sig-type-sell { background: rgba(239,68,68,.12);  color: #EF4444; border: 1px solid rgba(239,68,68,.3); }
-.sig-symbol { font-size: .92rem; font-weight: 800; }
+.sig-type-buy  { background: rgba(16,185,129,.15); color: #10B981; border: 1px solid rgba(16,185,129,.35); }
+.sig-type-sell { background: rgba(239,68,68,.15);  color: #EF4444; border: 1px solid rgba(239,68,68,.35); }
+.sig-symbol { font-size: .88rem; font-weight: 800; }
 .sig-tf {
-  font-size: .7rem; color: var(--text-sub); background: var(--bg-main);
-  border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; font-weight: 600;
+  font-size: .67rem; color: var(--text-sub); background: rgba(255,255,255,.04);
+  border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px;
+  font-weight: 700; flex-shrink: 0; letter-spacing: .02em;
 }
-.sig-status-badge { font-size: .68rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
-.sig-status-active { background: rgba(59,130,246,.1);   color: var(--accent); border: 1px solid rgba(59,130,246,.25); }
-.sig-status-sl     { background: rgba(239,68,68,.1);    color: #EF4444;       border: 1px solid rgba(239,68,68,.25); }
-.sig-status-closed { background: rgba(148,163,184,.1);  color: var(--text-sub); border: 1px solid var(--border); }
-.sig-status-tp     { background: rgba(16,185,129,.1);   color: #10B981;       border: 1px solid rgba(16,185,129,.25); }
+.sig-status-badge { font-size: .67rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+.sig-status-active { background: rgba(59,130,246,.1);  color: #60A5FA; border: 1px solid rgba(59,130,246,.25); }
+.sig-status-sl     { background: rgba(239,68,68,.1);   color: #EF4444; border: 1px solid rgba(239,68,68,.25); }
+.sig-status-closed { background: rgba(148,163,184,.1); color: var(--text-sub); border: 1px solid var(--border); }
+.sig-status-tp     { background: rgba(16,185,129,.1);  color: #10B981; border: 1px solid rgba(16,185,129,.25); }
 
-.sig-card-body { padding: 14px 16px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; }
-.sig-col { display: flex; flex-direction: column; gap: 7px; }
-.sig-row { display: flex; align-items: center; gap: 7px; font-size: .8rem; }
-.sig-lbl { color: var(--text-sub); font-weight: 600; min-width: 44px; font-size: .75rem; }
-.sig-val { font-weight: 700; }
-.sig-val.entry  { color: var(--accent); }
-.sig-val.sl-val { color: #EF4444; }
-.sig-tp-row { display: flex; align-items: center; gap: 6px; font-size: .78rem; }
-.sig-tp-lbl { color: var(--text-sub); font-weight: 600; min-width: 32px; }
-.sig-tp-val { font-weight: 700; }
-.sig-tp-val.hit     { color: #10B981; }
-.sig-tp-val.pending { color: var(--text-main); }
-.sig-tp-check { color: #10B981; font-size: .7rem; }
+/* Entry + SL row */
+.sig-price-row {
+  padding: 12px 16px 12px 20px;
+  display: flex; align-items: center; gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.sig-price-block { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.sig-price-block + .sig-price-block { border-left: 1px solid var(--border); padding-left: 16px; margin-left: 0; }
+.sig-price-lbl { font-size: .68rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .06em; }
+.sig-price-val { font-size: 1.18rem; font-weight: 800; line-height: 1.2; }
+.sig-price-val.entry-val { color: var(--text-main); }
+.sig-price-val.sl-val    { color: #EF4444; }
 
+/* PNL row */
+.sig-pnl-row {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 0 4px; flex-wrap: wrap;
+}
+.sig-pnl-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 6px; padding: 3px 10px;
+  font-size: .78rem; font-weight: 700;
+}
+.pnl-win      { background: rgba(16,185,129,.12); color: #10B981; border: 1px solid rgba(16,185,129,.25); }
+.pnl-loss     { background: rgba(239,68,68,.12);  color: #EF4444; border: 1px solid rgba(239,68,68,.25); }
+.pnl-potential{ background: rgba(16,185,129,.08); color: #10B981; border: 1px solid rgba(16,185,129,.18); }
+.pnl-risk     { background: rgba(239,68,68,.08);  color: #EF4444; border: 1px solid rgba(239,68,68,.18); }
+.sig-pnl-lot  { font-size: .72rem; color: var(--text-sub); margin-left: 2px; }
+
+/* TP grid */
+.sig-tp-grid {
+  padding: 10px 12px 12px 16px;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px;
+  flex: 1;
+}
+.sig-tp-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+  border-radius: 7px; padding: 5px 2px; transition: all .15s; min-width: 0;
+}
+.sig-tp-cell.hit {
+  background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.3);
+}
+.sig-tp-cell-lbl { font-size: .6rem; font-weight: 700; color: var(--text-sub); letter-spacing: .02em; }
+.sig-tp-cell.hit .sig-tp-cell-lbl { color: #10B981; }
+.sig-tp-cell-val { font-size: .68rem; font-weight: 700; color: var(--text-main); text-align: center; line-height: 1.2; word-break: break-all; }
+.sig-tp-cell.hit .sig-tp-cell-val { color: #10B981; }
+.sig-tp-cell-check { font-size: .58rem; color: #10B981; line-height: 1; }
+
+/* Footer */
 .sig-card-footer {
-  padding: 8px 16px; border-top: 1px solid var(--border);
+  padding: 8px 16px 8px 20px; border-top: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
-.sig-time { font-size: .7rem; color: var(--text-sub); }
-.sig-note { font-size: .72rem; color: var(--text-sub); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+.sig-time { font-size: .68rem; color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
+.sig-note { font-size: .7rem; color: var(--text-sub); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
 
 /* ===== EMPTY ===== */
 .sig-empty { text-align: center; padding: 80px 24px; color: var(--text-sub); grid-column: 1/-1; }
@@ -142,6 +242,80 @@
     </div>
   </div>
 
+  {# ===== STATS ===== #}
+  {# Nhúng dữ liệu stats vào JS #}
+  <script>
+  var STATS_DATA = {
+    today: { total:{{ stats_data.today.total }}, wins:{{ stats_data.today.wins }}, losses:{{ stats_data.today.losses }}, active:{{ stats_data.today.active }}, win_rate:{{ stats_data.today.win_rate }}, pnl:{{ stats_data.today.pnl }} },
+    week:  { total:{{ stats_data.week.total }},  wins:{{ stats_data.week.wins }},  losses:{{ stats_data.week.losses }},  active:{{ stats_data.week.active }},  win_rate:{{ stats_data.week.win_rate }},  pnl:{{ stats_data.week.pnl }} },
+    month: { total:{{ stats_data.month.total }}, wins:{{ stats_data.month.wins }}, losses:{{ stats_data.month.losses }}, active:{{ stats_data.month.active }}, win_rate:{{ stats_data.month.win_rate }}, pnl:{{ stats_data.month.pnl }} },
+    all:   { total:{{ stats_data.all.total }},   wins:{{ stats_data.all.wins }},   losses:{{ stats_data.all.losses }},   active:{{ stats_data.all.active }},   win_rate:{{ stats_data.all.win_rate }},   pnl:{{ stats_data.all.pnl }} }
+  };
+  </script>
+
+  <div class="sig-period-bar">
+    <button class="sig-period-btn active" onclick="switchPeriod('today',this)">
+      <span class="vi-text">Hôm nay</span><span class="en-text" style="display:none;">Today</span>
+      <span class="sig-period-pnl" id="pbtn-pnl-today"></span>
+    </button>
+    <button class="sig-period-btn" onclick="switchPeriod('week',this)">
+      <span class="vi-text">7 ngày</span><span class="en-text" style="display:none;">7 days</span>
+      <span class="sig-period-pnl" id="pbtn-pnl-week"></span>
+    </button>
+    <button class="sig-period-btn" onclick="switchPeriod('month',this)">
+      <span class="vi-text">30 ngày</span><span class="en-text" style="display:none;">30 days</span>
+      <span class="sig-period-pnl" id="pbtn-pnl-month"></span>
+    </button>
+    <button class="sig-period-btn" onclick="switchPeriod('all',this)">
+      <span class="vi-text">Tất cả</span><span class="en-text" style="display:none;">All time</span>
+      <span class="sig-period-pnl" id="pbtn-pnl-all"></span>
+    </button>
+  </div>
+
+  <div class="sig-stats">
+    <div class="sig-stat-card stat-total">
+      <span class="sig-stat-lbl vi-text">Tổng lệnh</span>
+      <span class="sig-stat-lbl en-text" style="display:none;">Total</span>
+      <span class="sig-stat-val" id="stat-total">{{ stats_data.today.total }}</span>
+      <span class="sig-stat-sub vi-text">lệnh</span>
+      <span class="sig-stat-sub en-text" style="display:none;">trades</span>
+    </div>
+    <div class="sig-stat-card stat-active">
+      <span class="sig-stat-lbl vi-text">Đang chạy</span>
+      <span class="sig-stat-lbl en-text" style="display:none;">Active</span>
+      <span class="sig-stat-val" id="stat-active">{{ stats_data.today.active }}</span>
+      <span class="sig-stat-sub vi-text">lệnh mở</span>
+      <span class="sig-stat-sub en-text" style="display:none;">open</span>
+    </div>
+    <div class="sig-stat-card stat-win">
+      <span class="sig-stat-lbl vi-text">Thắng</span>
+      <span class="sig-stat-lbl en-text" style="display:none;">Wins</span>
+      <span class="sig-stat-val" id="stat-wins">{{ stats_data.today.wins }}</span>
+      <span class="sig-stat-sub vi-text">chạm TP</span>
+      <span class="sig-stat-sub en-text" style="display:none;">hit TP</span>
+    </div>
+    <div class="sig-stat-card stat-loss">
+      <span class="sig-stat-lbl vi-text">Thua</span>
+      <span class="sig-stat-lbl en-text" style="display:none;">Losses</span>
+      <span class="sig-stat-val" id="stat-losses">{{ stats_data.today.losses }}</span>
+      <span class="sig-stat-sub vi-text">chạm SL</span>
+      <span class="sig-stat-sub en-text" style="display:none;">hit SL</span>
+    </div>
+    <div class="sig-stat-card stat-rate">
+      <span class="sig-stat-lbl vi-text">Tỉ lệ thắng</span>
+      <span class="sig-stat-lbl en-text" style="display:none;">Win Rate</span>
+      <span class="sig-stat-val" id="stat-rate">{{ stats_data.today.win_rate }}<span style="font-size:1rem;font-weight:600;">%</span></span>
+      <div class="sig-winrate-bar">
+        <div class="sig-winrate-fill" id="stat-bar" style="width:{{ stats_data.today.win_rate }}%;"></div>
+      </div>
+    </div>
+    <div class="sig-stat-card stat-pnl">
+      <span class="sig-stat-lbl">P&L</span>
+      <span class="sig-stat-val" id="stat-pnl">{% if stats_data.today.pnl >= 0 %}+{% endif %}${{ stats_data.today.pnl }}</span>
+      <span class="sig-stat-sub">0.1 lot</span>
+    </div>
+  </div>
+
   {# ===== TOOLBAR ===== #}
   <div class="sig-toolbar">
     <div class="sig-toolbar-left">
@@ -163,8 +337,14 @@
     <div class="sig-grid" id="sigGrid">
 
       {% for sig in signals %}
-      <div class="sig-card" data-type="{{ sig.signal_type }}" data-status="{{ sig.status }}">
+      {% with pnl=sig.pnl_info %}
+      <div class="sig-card {% if sig.signal_type == 'BUY' %}buy-card{% else %}sell-card{% endif %}"
+           data-type="{{ sig.signal_type }}" data-status="{{ sig.status }}"
+           data-created="{{ sig.created_at|date:'U' }}"
+           data-pnl="{% if pnl.value %}{{ pnl.value|floatformat:2 }}{% else %}0{% endif %}">
+      {% endwith %}
 
+        <!-- Header -->
         <div class="sig-card-top">
           <div class="sig-card-head">
             <span class="sig-type-badge {% if sig.signal_type == 'BUY' %}sig-type-buy{% else %}sig-type-sell{% endif %}">
@@ -183,31 +363,58 @@
           </span>
         </div>
 
-        <div class="sig-card-body">
-          <div class="sig-col">
-            <div class="sig-row">
-              <span class="sig-lbl vi-text">Giá vào</span>
-              <span class="sig-lbl en-text" style="display:none;">Entry</span>
-              <span class="sig-val entry">{{ sig.entry }}</span>
-            </div>
-            <div class="sig-row">
-              <span class="sig-lbl">SL</span>
-              <span class="sig-val sl-val">{{ sig.sl }}</span>
-            </div>
+        <!-- Entry + SL -->
+        <div class="sig-price-row">
+          <div class="sig-price-block" style="padding-right:16px;">
+            <span class="sig-price-lbl vi-text">Giá vào</span>
+            <span class="sig-price-lbl en-text" style="display:none;">Entry</span>
+            <span class="sig-price-val entry-val">{{ sig.entry }}</span>
           </div>
-          <div class="sig-col">
-            {% for tp_num, tp_val in sig.tp_list %}
-            <div class="sig-tp-row">
-              <span class="sig-tp-lbl">TP{{ tp_num }}</span>
-              <span class="sig-tp-val {% if sig.tps_reached >= tp_num %}hit{% else %}pending{% endif %}">{{ tp_val }}</span>
-              {% if sig.tps_reached >= tp_num %}<i class="bi bi-check-circle-fill sig-tp-check"></i>{% endif %}
-            </div>
-            {% endfor %}
+          <div class="sig-price-block">
+            <span class="sig-price-lbl">Stop Loss</span>
+            <span class="sig-price-val sl-val">{{ sig.sl }}</span>
           </div>
         </div>
 
+        <!-- PNL 0.1 lot -->
+        {% with pnl=sig.pnl_info %}
+        {% if pnl %}
+        <div class="sig-pnl-row">
+          {% if sig.status == 'active' %}
+            {% if pnl.tp1 %}
+            <span class="sig-pnl-badge pnl-potential"><i class="bi bi-arrow-up-circle"></i> TP1 +${{ pnl.tp1|floatformat:2 }}</span>
+            {% endif %}
+            {% if pnl.sl %}
+            <span class="sig-pnl-badge pnl-risk"><i class="bi bi-arrow-down-circle"></i> SL -${{ pnl.sl|floatformat:2|slice:"1:" }}</span>
+            {% endif %}
+          {% else %}
+            {% if pnl.value %}
+              {% if pnl.value > 0 %}
+              <span class="sig-pnl-badge pnl-win"><i class="bi bi-graph-up-arrow"></i> +${{ pnl.value|floatformat:2 }}</span>
+              {% else %}
+              <span class="sig-pnl-badge pnl-loss"><i class="bi bi-graph-down-arrow"></i> -${{ pnl.value|floatformat:2|slice:"1:" }}</span>
+              {% endif %}
+            {% endif %}
+          {% endif %}
+          <span class="sig-pnl-lot">0.1 lot</span>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- TP Grid -->
+        <div class="sig-tp-grid">
+          {% for tp_num, tp_val in sig.tp_list %}
+          <div class="sig-tp-cell {% if sig.tps_reached >= tp_num %}hit{% endif %}">
+            <span class="sig-tp-cell-lbl">TP{{ tp_num }}</span>
+            <span class="sig-tp-cell-val">{{ tp_val }}</span>
+            {% if sig.tps_reached >= tp_num %}<span class="sig-tp-cell-check"><i class="bi bi-check-lg"></i></span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Footer -->
         <div class="sig-card-footer">
-          <span class="sig-time"><i class="bi bi-clock me-1"></i>{{ sig.created_at|date:"H:i — d/m/Y" }}</span>
+          <span class="sig-time"><i class="bi bi-clock"></i>{{ sig.created_at|date:"H:i — d/m/Y" }}</span>
           {% if sig.note %}<span class="sig-note" title="{{ sig.note }}">{{ sig.note }}</span>{% endif %}
         </div>
 
@@ -248,15 +455,99 @@
   });
 })();
 
+var currentPeriod = 'today';
+var currentFilter = 'all';
+
+function getPeriodStart(period) {
+  var now = new Date();
+  if (period === 'today') { var d = new Date(now); d.setHours(0,0,0,0); return d.getTime() / 1000; }
+  if (period === 'week')  return now.getTime() / 1000 - 7  * 86400;
+  if (period === 'month') return now.getTime() / 1000 - 30 * 86400;
+  return 0;
+}
+
+function fmtPnl(val) {
+  var abs = Math.abs(val).toFixed(2);
+  return (val >= 0 ? '+$' : '-$') + abs;
+}
+
+function computeStats(period, filter) {
+  var since = getPeriodStart(period);
+  var total = 0, wins = 0, losses = 0, active = 0, pnl = 0;
+  var TP_STATUSES = ['tp1','tp2','tp3','tp4','tp5'];
+  document.querySelectorAll('.sig-card').forEach(function(card) {
+    var ts = parseInt(card.dataset.created);
+    if (ts < since) return;
+    var type   = card.dataset.type;
+    var status = card.dataset.status;
+    var inFilter = filter === 'all'
+      || filter === type
+      || (filter === 'active' && status === 'active');
+    if (!inFilter) return;
+    total++;
+    if (TP_STATUSES.indexOf(status) >= 0) { wins++;  pnl += parseFloat(card.dataset.pnl || 0); }
+    else if (status === 'sl')             { losses++; pnl += parseFloat(card.dataset.pnl || 0); }
+    else if (status === 'active')         { active++; }
+  });
+  var closed = wins + losses;
+  return { total:total, wins:wins, losses:losses, active:active,
+           win_rate: closed ? Math.round(wins/closed*100) : 0,
+           pnl: Math.round(pnl * 100) / 100 };
+}
+
+function updateStatsDisplay(s) {
+  document.getElementById('stat-total').childNodes[0].nodeValue  = s.total;
+  document.getElementById('stat-active').childNodes[0].nodeValue = s.active;
+  document.getElementById('stat-wins').childNodes[0].nodeValue   = s.wins;
+  document.getElementById('stat-losses').childNodes[0].nodeValue = s.losses;
+  document.getElementById('stat-rate').childNodes[0].nodeValue   = s.win_rate;
+  document.getElementById('stat-bar').style.width = s.win_rate + '%';
+  var pnlEl = document.getElementById('stat-pnl');
+  if (pnlEl) {
+    pnlEl.textContent = fmtPnl(s.pnl);
+    pnlEl.className = 'sig-stat-val ' + (s.pnl >= 0 ? 'pnl-pos' : 'pnl-neg');
+  }
+}
+
+function updatePeriodBtns() {
+  ['today','week','month','all'].forEach(function(p) {
+    var el = document.getElementById('pbtn-pnl-' + p);
+    if (!el) return;
+    var s = computeStats(p, 'all');
+    el.textContent = fmtPnl(s.pnl);
+    el.style.color = s.pnl >= 0 ? '#10B981' : '#EF4444';
+  });
+}
+
+function applyCardVisibility() {
+  var since = getPeriodStart(currentPeriod);
+  document.querySelectorAll('.sig-card').forEach(function(card) {
+    var ts = parseInt(card.dataset.created);
+    var inPeriod = ts >= since;
+    var inFilter = currentFilter === 'all'
+      || currentFilter === card.dataset.type
+      || (currentFilter === 'active' && card.dataset.status === 'active');
+    card.style.display = (inPeriod && inFilter) ? '' : 'none';
+  });
+  updateStatsDisplay(computeStats(currentPeriod, currentFilter));
+}
+
+function switchPeriod(period, btn) {
+  document.querySelectorAll('.sig-period-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  currentPeriod = period;
+  applyCardVisibility();
+}
+
 function filterSignals(filter, btn) {
   document.querySelectorAll('.sig-filter-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
-  document.querySelectorAll('.sig-card').forEach(function(card) {
-    var show = filter === 'all'
-      || filter === card.dataset.type
-      || (filter === 'active' && card.dataset.status === 'active');
-    card.style.display = show ? '' : 'none';
-  });
+  currentFilter = filter;
+  applyCardVisibility();
 }
+
+// Khởi tạo
+applyCardVisibility();
+updatePeriodBtns();
 </script>
 {% endblock %}
