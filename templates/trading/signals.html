@@ -209,6 +209,22 @@
 .sig-empty { text-align: center; padding: 80px 24px; color: var(--text-sub); grid-column: 1/-1; }
 .sig-empty i { font-size: 3rem; display: block; margin-bottom: 16px; opacity: .35; }
 
+/* ===== PAGINATION ===== */
+.sig-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 28px 0 0; flex-wrap: wrap;
+}
+.sig-page-btn {
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-sub); border-radius: 8px; padding: 7px 13px;
+  font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .15s;
+  min-width: 36px; line-height: 1;
+}
+.sig-page-btn:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
+.sig-page-btn.active   { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.1); }
+.sig-page-btn:not(:disabled):not(.active):hover { border-color: var(--accent); color: var(--accent); }
+.sig-page-ellipsis { color: var(--text-sub); padding: 0 4px; line-height: 36px; font-size: .85rem; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px)  { .sig-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px)  { .sig-grid { grid-template-columns: 1fr; } .sig-hero-title { font-size: 1.8rem; } }
@@ -429,6 +445,7 @@
       {% endfor %}
 
     </div>
+    <div id="sig-pagination" class="sig-pagination"></div>
   </div>
 
 </div>
@@ -449,6 +466,8 @@
 
 var currentPeriod = 'today';
 var currentFilter = 'all';
+var currentPage   = 1;
+var PAGE_SIZE     = 6;
 
 function getPeriodStart(period) {
   var now = new Date();
@@ -504,21 +523,75 @@ function updateStatsDisplay(s) {
 
 function applyCardVisibility() {
   var since = getPeriodStart(currentPeriod);
+  var matched = [];
   document.querySelectorAll('.sig-card').forEach(function(card) {
     var ts = parseInt(card.dataset.created);
     var inPeriod = ts >= since;
     var inFilter = currentFilter === 'all'
       || currentFilter === card.dataset.type
       || (currentFilter === 'active' && card.dataset.status === 'active');
-    card.style.display = (inPeriod && inFilter) ? '' : 'none';
+    card.style.display = 'none';
+    if (inPeriod && inFilter) matched.push(card);
   });
+
+  var totalPages = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
+  currentPage = Math.min(currentPage, totalPages);
+  var start = (currentPage - 1) * PAGE_SIZE;
+  matched.forEach(function(card, i) {
+    card.style.display = (i >= start && i < start + PAGE_SIZE) ? '' : 'none';
+  });
+
   updateStatsDisplay(computeStats(currentPeriod, currentFilter));
+  renderPagination(currentPage, totalPages);
+}
+
+function renderPagination(current, total) {
+  var el = document.getElementById('sig-pagination');
+  if (!el) return;
+  if (total <= 1) { el.innerHTML = ''; return; }
+
+  // Tính các trang cần hiển thị
+  var pages = [];
+  if (total <= 7) {
+    for (var i = 1; i <= total; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (current > 4) pages.push('…');
+    var lo = Math.max(2, current - 2);
+    var hi = Math.min(total - 1, current + 2);
+    for (var i = lo; i <= hi; i++) pages.push(i);
+    if (current < total - 3) pages.push('…');
+    pages.push(total);
+  }
+
+  var html = '';
+  html += '<button class="sig-page-btn" ' + (current <= 1 ? 'disabled' : '') + ' onclick="goPage(' + (current-1) + ')"><i class="bi bi-chevron-left"></i></button>';
+  pages.forEach(function(p) {
+    if (p === '…') {
+      html += '<span class="sig-page-ellipsis">…</span>';
+    } else {
+      html += '<button class="sig-page-btn' + (p === current ? ' active' : '') + '" onclick="goPage(' + p + ')">' + p + '</button>';
+    }
+  });
+  html += '<button class="sig-page-btn" ' + (current >= total ? 'disabled' : '') + ' onclick="goPage(' + (current+1) + ')"><i class="bi bi-chevron-right"></i></button>';
+  el.innerHTML = html;
+}
+
+function goPage(page) {
+  currentPage = page;
+  applyCardVisibility();
+  var bar = document.querySelector('.sig-period-bar');
+  if (bar) {
+    var top = bar.getBoundingClientRect().top + window.pageYOffset - 80;
+    window.scrollTo({ top: top, behavior: 'smooth' });
+  }
 }
 
 function switchPeriod(period, btn) {
   document.querySelectorAll('.sig-period-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   currentPeriod = period;
+  currentPage   = 1;
   applyCardVisibility();
 }
 
@@ -526,6 +599,7 @@ function filterSignals(filter, btn) {
   document.querySelectorAll('.sig-filter-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   currentFilter = filter;
+  currentPage   = 1;
   applyCardVisibility();
 }
 
