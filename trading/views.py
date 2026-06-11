@@ -43,7 +43,6 @@ from django.views.decorators.csrf import csrf_exempt
 from accounts.models import CustomUser, pay_referral_commission
 from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings, BrokerLink, CopyTradeExchange, TradingSignal
 from .services import compute_indicators_local, analyze_with_gemini
-from .telegram_parser import parse_signal_message
 
 
 @require_GET
@@ -118,11 +117,11 @@ def signals_view(request):
 
 
 @csrf_exempt
-def telegram_webhook_view(request, secret):
+def tradingview_webhook_view(request, secret):
     if request.method != 'POST':
         return JsonResponse({'ok': False}, status=405)
 
-    expected = getattr(settings, 'TELEGRAM_WEBHOOK_SECRET', '')
+    expected = getattr(settings, 'TV_WEBHOOK_SECRET', '')
     if not expected or secret != expected:
         return JsonResponse({'ok': False}, status=403)
 
@@ -131,72 +130,58 @@ def telegram_webhook_view(request, secret):
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({'ok': False}, status=400)
 
-    # Hỗ trợ cả message (group/private) và channel_post
-    msg = body.get('message') or body.get('channel_post')
-    if not msg:
-        return JsonResponse({'ok': True})
-
-    text = msg.get('text') or msg.get('caption') or ''
-    if not text:
-        return JsonResponse({'ok': True})
-
-    parsed = parse_signal_message(text)
-    if not parsed:
-        return JsonResponse({'ok': True})
-
     try:
-        _handle_parsed_signal(parsed)
-    except Exception as exc:
-        logger.exception('telegram_webhook: error processing signal: %s', exc)
+        signal_raw = body.get('signal', '')
+        if 'long' in signal_raw.lower():
+            signal_type = 'BUY'
+        elif 'short' in signal_raw.lower():
+            signal_type = 'SELL'
+        else:
+            return JsonResponse({'ok': False, 'error': 'Unknown signal type'}, status=400)
 
-    return JsonResponse({'ok': True})
+        ticker   = body.get('ticker', '').upper()
+        exchange = body.get('exchange', '').upper()
+        symbol   = f"{exchange}:{ticker}" if exchange else ticker
 
+        interval_raw = body.get('interval', '5')
+        try:
+            timeframe = f"{int(interval_raw)}m"
+        except (ValueError, TypeError):
+            timeframe = str(interval_raw)
 
-def _handle_parsed_signal(parsed):
-    ptype = parsed['type']
-    d = parsed['data']
+        def _dec(val):
+            if val is None:
+                return None
+            try:
+                return Decimal(str(val))
+            except InvalidOperation:
+                return None
 
-    if ptype == 'new_signal':
+        entry = _dec(body.get('close'))
+        sl    = _dec(body.get('sl'))
+        if not entry or not sl:
+            return JsonResponse({'ok': False, 'error': 'Missing entry or sl'}, status=400)
+
         TradingSignal.objects.create(
-            signal_type=d['signal_type'],
-            symbol=d['symbol'],
-            timeframe=d['timeframe'],
-            entry=d['entry'],
-            sl=d['sl'],
-            tp1=d.get('tp1'),
-            tp2=d.get('tp2'),
-            tp3=d.get('tp3'),
-            tp4=d.get('tp4'),
-            tp5=d.get('tp5'),
+            signal_type=signal_type,
+            symbol=symbol,
+            timeframe=timeframe,
+            entry=entry,
+            sl=sl,
+            tp1=_dec(body.get('tp1')),
+            tp2=_dec(body.get('tp2')),
+            tp3=_dec(body.get('tp3')),
+            tp4=_dec(body.get('tp4')),
+            tp5=_dec(body.get('tp5')),
             status='active',
         )
+        logger.info('tv_webhook: %s %s @ %s', signal_type, symbol, entry)
 
-    elif ptype == 'tp_update':
-        tp_num = d['tp_num']
-        # Tìm signal active gần nhất trùng type + symbol
-        prev_statuses = ['active'] + [f'tp{i}' for i in range(1, tp_num)]
-        signal = (
-            TradingSignal.objects
-            .filter(signal_type=d['signal_type'], symbol=d['symbol'], status__in=prev_statuses)
-            .order_by('-created_at')
-            .first()
-        )
-        if signal:
-            signal.status = d['new_status']
-            signal.save(update_fields=['status'])
+    except Exception as exc:
+        logger.exception('tv_webhook: error: %s', exc)
+        return JsonResponse({'ok': False}, status=500)
 
-    elif ptype == 'sl_hit':
-        signal = (
-            TradingSignal.objects
-            .filter(signal_type=d['signal_type'], symbol=d['symbol'], status__in=[
-                'active', 'tp1', 'tp2', 'tp3', 'tp4',
-            ])
-            .order_by('-created_at')
-            .first()
-        )
-        if signal:
-            signal.status = 'sl'
-            signal.save(update_fields=['status'])
+    return JsonResponse({'ok': True})
 
 
 

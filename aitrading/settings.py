@@ -131,8 +131,7 @@ MT5_SERVER   = config('MT5_SERVER',   default='')
 
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 
-TELEGRAM_BOT_TOKEN      = config('TELEGRAM_BOT_TOKEN', default='')
-TELEGRAM_WEBHOOK_SECRET = config('TELEGRAM_WEBHOOK_SECRET', default='')
+TV_WEBHOOK_SECRET = config('TV_WEBHOOK_SECRET', default='')
 
 # Referral payout — gửi USDT tự động từ ví admin
 ADMIN_PRIVATE_KEY = config('ADMIN_PRIVATE_KEY', default='')
