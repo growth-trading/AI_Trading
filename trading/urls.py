@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
@@ -12,4 +12,6 @@ urlpatterns = [
     path('trade-status/<int:log_id>/', views.trade_status_view, name='trade_status'),
     path('services/', views.services_view, name='services'),
     path('copy-trade/', views.copy_trade_view, name='copy_trade'),
+    path('signals/', views.signals_view, name='signals'),
+    re_path(r'^tg-webhook/(?P<secret>[A-Za-z0-9_-]+)/$', views.telegram_webhook_view, name='telegram_webhook'),
 ]

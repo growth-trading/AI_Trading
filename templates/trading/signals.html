@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Tín hiệu giao dịch — RichAITrading{% endblock %}
+
+{% block extra_css %}
+<style>
+.sig-page { padding-top: 72px; min-height: 100vh; }
+
+/* ===== HERO ===== */
+.sig-hero {
+  padding: 52px 24px 40px; text-align: center;
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.sig-hero::before {
+  content: ''; position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(245,158,11,.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+.sig-hero-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+.sig-hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25);
+  color: #F59E0B; border-radius: 99px; padding: 5px 14px;
+  font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.sig-hero-title {
+  font-size: 2.4rem; font-weight: 900; line-height: 1.15; margin-bottom: 14px;
+}
+.sig-hero-desc { font-size: .95rem; color: var(--text-sub); line-height: 1.75; margin-bottom: 28px; }
+.sig-hero-tg {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25);
+  color: var(--accent); border-radius: 10px; padding: 9px 20px;
+  font-size: .88rem; font-weight: 700; text-decoration: none; transition: all .2s;
+}
+.sig-hero-tg:hover { background: rgba(59,130,246,.18); color: var(--accent); text-decoration: none; }
+
+/* ===== TOOLBAR ===== */
+.sig-toolbar {
+  max-width: 980px; margin: 0 auto; padding: 20px 24px 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.sig-toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sig-count { font-size: .82rem; color: var(--text-sub); }
+.sig-filter-btn {
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-sub);
+  border-radius: 8px; padding: 6px 16px; font-size: .82rem; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+}
+.sig-filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.08); }
+.sig-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sig-filter-buy.active  { border-color: #10B981; color: #10B981; background: rgba(16,185,129,.08); }
+.sig-filter-sell.active { border-color: #EF4444; color: #EF4444; background: rgba(239,68,68,.08); }
+
+/* ===== GRID ===== */
+.sig-main { max-width: 980px; margin: 0 auto; padding: 20px 24px 60px; }
+.sig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* ===== CARD ===== */
+.sig-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; transition: all .2s; display: flex; flex-direction: column;
+}
+.sig-card:hover { border-color: rgba(59,130,246,.3); transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.2); }
+.sig-card-top {
+  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.sig-card-head { display: flex; align-items: center; gap: 8px; }
+.sig-type-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .78rem; font-weight: 800; padding: 4px 10px; border-radius: 7px;
+}
+.sig-type-buy  { background: rgba(16,185,129,.12); color: #10B981; border: 1px solid rgba(16,185,129,.3); }
+.sig-type-sell { background: rgba(239,68,68,.12);  color: #EF4444; border: 1px solid rgba(239,68,68,.3); }
+.sig-symbol { font-size: .92rem; font-weight: 800; }
+.sig-tf {
+  font-size: .7rem; color: var(--text-sub); background: var(--bg-main);
+  border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; font-weight: 600;
+}
+.sig-status-badge { font-size: .68rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
+.sig-status-active { background: rgba(59,130,246,.1);   color: var(--accent); border: 1px solid rgba(59,130,246,.25); }
+.sig-status-sl     { background: rgba(239,68,68,.1);    color: #EF4444;       border: 1px solid rgba(239,68,68,.25); }
+.sig-status-closed { background: rgba(148,163,184,.1);  color: var(--text-sub); border: 1px solid var(--border); }
+.sig-status-tp     { background: rgba(16,185,129,.1);   color: #10B981;       border: 1px solid rgba(16,185,129,.25); }
+
+.sig-card-body { padding: 14px 16px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; }
+.sig-col { display: flex; flex-direction: column; gap: 7px; }
+.sig-row { display: flex; align-items: center; gap: 7px; font-size: .8rem; }
+.sig-lbl { color: var(--text-sub); font-weight: 600; min-width: 44px; font-size: .75rem; }
+.sig-val { font-weight: 700; }
+.sig-val.entry  { color: var(--accent); }
+.sig-val.sl-val { color: #EF4444; }
+.sig-tp-row { display: flex; align-items: center; gap: 6px; font-size: .78rem; }
+.sig-tp-lbl { color: var(--text-sub); font-weight: 600; min-width: 32px; }
+.sig-tp-val { font-weight: 700; }
+.sig-tp-val.hit     { color: #10B981; }
+.sig-tp-val.pending { color: var(--text-main); }
+.sig-tp-check { color: #10B981; font-size: .7rem; }
+
+.sig-card-footer {
+  padding: 8px 16px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.sig-time { font-size: .7rem; color: var(--text-sub); }
+.sig-note { font-size: .72rem; color: var(--text-sub); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+
+/* ===== EMPTY ===== */
+.sig-empty { text-align: center; padding: 80px 24px; color: var(--text-sub); grid-column: 1/-1; }
+.sig-empty i { font-size: 3rem; display: block; margin-bottom: 16px; opacity: .35; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px)  { .sig-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .sig-grid { grid-template-columns: 1fr; } .sig-hero-title { font-size: 1.8rem; } }
+@media (max-width: 768px)  { .sig-toolbar, .sig-main { padding-inline: 16px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sig-page">
+
+  {# ===== HERO ===== #}
+  <div class="sig-hero">
+    <div class="sig-hero-inner">
+      <div class="sig-hero-badge">
+        <i class="bi bi-broadcast"></i>
+        <span class="vi-text">Tín Hiệu Trực Tiếp</span>
+        <span class="en-text" style="display:none;">Live Signals</span>
+      </div>
+      <h1 class="sig-hero-title vi-text">Tín Hiệu Rich Foundation</h1>
+      <h1 class="sig-hero-title en-text" style="display:none;">Rich Foundation Signals</h1>
+      <p class="sig-hero-desc vi-text">Tín hiệu giao dịch được cập nhật từ nhóm chuyên gia Rich Foundation — bao gồm giá vào, TP và SL chi tiết cho từng lệnh.</p>
+      <p class="sig-hero-desc en-text" style="display:none;">Trading signals updated from Rich Foundation expert group — including entry price, TP and SL details for each trade.</p>
+      <a href="https://t.me/Richfoundationsingnal1" target="_blank" rel="noopener noreferrer" class="sig-hero-tg">
+        <i class="bi bi-telegram"></i>
+        <span class="vi-text">Tham Gia Nhóm Tín Hiệu</span>
+        <span class="en-text" style="display:none;">Join Signal Group</span>
+      </a>
+    </div>
+  </div>
+
+  {# ===== TOOLBAR ===== #}
+  <div class="sig-toolbar">
+    <div class="sig-toolbar-left">
+      <button class="sig-filter-btn active" onclick="filterSignals('all', this)">
+        <span class="vi-text">Tất cả</span><span class="en-text" style="display:none;">All</span>
+        <span style="margin-left:4px;opacity:.6;">({{ signals|length }})</span>
+      </button>
+      <button class="sig-filter-btn sig-filter-buy" onclick="filterSignals('BUY', this)">▲ BUY</button>
+      <button class="sig-filter-btn sig-filter-sell" onclick="filterSignals('SELL', this)">▼ SELL</button>
+      <button class="sig-filter-btn sig-filter-active" onclick="filterSignals('active', this)">
+        <i class="bi bi-circle-fill me-1" style="font-size:.5rem;color:var(--accent);vertical-align:middle;"></i>
+        <span class="vi-text">Đang chạy</span><span class="en-text" style="display:none;">Active</span>
+      </button>
+    </div>
+  </div>
+
+  {# ===== CARD GRID ===== #}
+  <div class="sig-main">
+    <div class="sig-grid" id="sigGrid">
+
+      {% for sig in signals %}
+      <div class="sig-card" data-type="{{ sig.signal_type }}" data-status="{{ sig.status }}">
+
+        <div class="sig-card-top">
+          <div class="sig-card-head">
+            <span class="sig-type-badge {% if sig.signal_type == 'BUY' %}sig-type-buy{% else %}sig-type-sell{% endif %}">
+              {% if sig.signal_type == 'BUY' %}<i class="bi bi-arrow-up-short"></i>{% else %}<i class="bi bi-arrow-down-short"></i>{% endif %}
+              {{ sig.signal_type }}
+            </span>
+            <span class="sig-symbol">{{ sig.symbol }}</span>
+            <span class="sig-tf">{{ sig.timeframe }}</span>
+          </div>
+          <span class="sig-status-badge
+            {% if sig.status == 'active' %}sig-status-active
+            {% elif sig.status == 'sl' %}sig-status-sl
+            {% elif sig.status == 'closed' %}sig-status-closed
+            {% else %}sig-status-tp{% endif %}">
+            {{ sig.get_status_display }}
+          </span>
+        </div>
+
+        <div class="sig-card-body">
+          <div class="sig-col">
+            <div class="sig-row">
+              <span class="sig-lbl vi-text">Giá vào</span>
+              <span class="sig-lbl en-text" style="display:none;">Entry</span>
+              <span class="sig-val entry">{{ sig.entry }}</span>
+            </div>
+            <div class="sig-row">
+              <span class="sig-lbl">SL</span>
+              <span class="sig-val sl-val">{{ sig.sl }}</span>
+            </div>
+          </div>
+          <div class="sig-col">
+            {% for tp_num, tp_val in sig.tp_list %}
+            <div class="sig-tp-row">
+              <span class="sig-tp-lbl">TP{{ tp_num }}</span>
+              <span class="sig-tp-val {% if sig.tps_reached >= tp_num %}hit{% else %}pending{% endif %}">{{ tp_val }}</span>
+              {% if sig.tps_reached >= tp_num %}<i class="bi bi-check-circle-fill sig-tp-check"></i>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="sig-card-footer">
+          <span class="sig-time"><i class="bi bi-clock me-1"></i>{{ sig.created_at|date:"H:i — d/m/Y" }}</span>
+          {% if sig.note %}<span class="sig-note" title="{{ sig.note }}">{{ sig.note }}</span>{% endif %}
+        </div>
+
+      </div>
+      {% empty %}
+      <div class="sig-empty">
+        <i class="bi bi-broadcast"></i>
+        <p class="vi-text" style="margin-bottom:6px;font-size:.95rem;">Chưa có tín hiệu nào được đăng.</p>
+        <p class="en-text" style="display:none;margin-bottom:6px;font-size:.95rem;">No signals posted yet.</p>
+        <p style="font-size:.85rem;margin-bottom:20px;">
+          <span class="vi-text">Tham gia nhóm Telegram để nhận tín hiệu mới nhất từ đội ngũ chuyên gia.</span>
+          <span class="en-text" style="display:none;">Join our Telegram group to receive the latest signals from our expert team.</span>
+        </p>
+        <a href="https://t.me/Richfoundationsingnal1" target="_blank" rel="noopener noreferrer" class="sig-hero-tg">
+          <i class="bi bi-telegram"></i>
+          <span class="vi-text">Tham Gia Nhóm</span>
+          <span class="en-text" style="display:none;">Join Group</span>
+        </a>
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  var isEn = (localStorage.getItem('ait-lang') || 'vi') === 'en';
+  document.querySelectorAll('.vi-text').forEach(function(el) { el.style.display = isEn ? 'none' : ''; });
+  document.querySelectorAll('.en-text').forEach(function(el) { el.style.display = isEn ? '' : 'none'; });
+  document.addEventListener('langChanged', function(e) {
+    var en = e.detail === 'en';
+    document.querySelectorAll('.vi-text').forEach(function(el) { el.style.display = en ? 'none' : ''; });
+    document.querySelectorAll('.en-text').forEach(function(el) { el.style.display = en ? '' : 'none'; });
+  });
+})();
+
+function filterSignals(filter, btn) {
+  document.querySelectorAll('.sig-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.sig-card').forEach(function(card) {
+    var show = filter === 'all'
+      || filter === card.dataset.type
+      || (filter === 'active' && card.dataset.status === 'active');
+    card.style.display = show ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

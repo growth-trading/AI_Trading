@@ -39,9 +39,11 @@ from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
 
+from django.views.decorators.csrf import csrf_exempt
 from accounts.models import CustomUser, pay_referral_commission
-from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings, BrokerLink, CopyTradeExchange
+from .models import ChartAnalysisLog, TradingViewProduct, UserTVSubscription, AIPlanSettings, BrokerLink, CopyTradeExchange, TradingSignal
 from .services import compute_indicators_local, analyze_with_gemini
+from .telegram_parser import parse_signal_message
 
 
 @require_GET
@@ -102,6 +104,99 @@ def copy_trade_view(request):
     brokers = {b.slug: b for b in BrokerLink.objects.filter(is_active=True)}
     copy_exchanges = CopyTradeExchange.objects.filter(is_active=True)
     return render(request, 'trading/copytrade.html', {'brokers': brokers, 'copy_exchanges': copy_exchanges})
+
+
+@require_GET
+def signals_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if not request.user.is_email_verified:
+        return redirect('verify_otp')
+
+    signals = TradingSignal.objects.all()[:100]
+    return render(request, 'trading/signals.html', {'signals': signals})
+
+
+@csrf_exempt
+def telegram_webhook_view(request, secret):
+    if request.method != 'POST':
+        return JsonResponse({'ok': False}, status=405)
+
+    expected = getattr(settings, 'TELEGRAM_WEBHOOK_SECRET', '')
+    if not expected or secret != expected:
+        return JsonResponse({'ok': False}, status=403)
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'ok': False}, status=400)
+
+    # Hỗ trợ cả message (group/private) và channel_post
+    msg = body.get('message') or body.get('channel_post')
+    if not msg:
+        return JsonResponse({'ok': True})
+
+    text = msg.get('text') or msg.get('caption') or ''
+    if not text:
+        return JsonResponse({'ok': True})
+
+    parsed = parse_signal_message(text)
+    if not parsed:
+        return JsonResponse({'ok': True})
+
+    try:
+        _handle_parsed_signal(parsed)
+    except Exception as exc:
+        logger.exception('telegram_webhook: error processing signal: %s', exc)
+
+    return JsonResponse({'ok': True})
+
+
+def _handle_parsed_signal(parsed):
+    ptype = parsed['type']
+    d = parsed['data']
+
+    if ptype == 'new_signal':
+        TradingSignal.objects.create(
+            signal_type=d['signal_type'],
+            symbol=d['symbol'],
+            timeframe=d['timeframe'],
+            entry=d['entry'],
+            sl=d['sl'],
+            tp1=d.get('tp1'),
+            tp2=d.get('tp2'),
+            tp3=d.get('tp3'),
+            tp4=d.get('tp4'),
+            tp5=d.get('tp5'),
+            status='active',
+        )
+
+    elif ptype == 'tp_update':
+        tp_num = d['tp_num']
+        # Tìm signal active gần nhất trùng type + symbol
+        prev_statuses = ['active'] + [f'tp{i}' for i in range(1, tp_num)]
+        signal = (
+            TradingSignal.objects
+            .filter(signal_type=d['signal_type'], symbol=d['symbol'], status__in=prev_statuses)
+            .order_by('-created_at')
+            .first()
+        )
+        if signal:
+            signal.status = d['new_status']
+            signal.save(update_fields=['status'])
+
+    elif ptype == 'sl_hit':
+        signal = (
+            TradingSignal.objects
+            .filter(signal_type=d['signal_type'], symbol=d['symbol'], status__in=[
+                'active', 'tp1', 'tp2', 'tp3', 'tp4',
+            ])
+            .order_by('-created_at')
+            .first()
+        )
+        if signal:
+            signal.status = 'sl'
+            signal.save(update_fields=['status'])
 
 
 

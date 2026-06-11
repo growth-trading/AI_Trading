@@ -580,6 +580,58 @@
   .bnex-stats-grid { grid-template-columns: 1fr 1fr; }
   .okx-proc-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== SIGNAL PANEL ===== */
+.svc-sidebar-divider { border: none; border-top: 1px solid var(--border); margin: 10px 8px; }
+.sig-panel { padding: 28px 32px; }
+.sig-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.sig-panel-title { font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+.sig-panel-badge { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; background: rgba(59,130,246,.12); color: var(--accent); border: 1px solid rgba(59,130,246,.25); border-radius: 99px; padding: 3px 10px; }
+.sig-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+.sig-filter-btn { background: var(--bg-main); border: 1px solid var(--border); color: var(--text-sub); border-radius: 8px; padding: 6px 14px; font-size: .8rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+.sig-filter-btn.active, .sig-filter-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.08); }
+.sig-grid { display: flex; flex-direction: column; gap: 14px; }
+.sig-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden; transition: border-color .2s;
+}
+.sig-card:hover { border-color: rgba(59,130,246,.3); }
+.sig-card-top { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sig-card-head { display: flex; align-items: center; gap: 10px; }
+.sig-type-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .8rem; font-weight: 800; letter-spacing: .04em;
+  padding: 4px 10px; border-radius: 7px;
+}
+.sig-type-buy  { background: rgba(16,185,129,.12); color: #10B981; border: 1px solid rgba(16,185,129,.3); }
+.sig-type-sell { background: rgba(239,68,68,.12);  color: #EF4444; border: 1px solid rgba(239,68,68,.3); }
+.sig-symbol { font-size: .95rem; font-weight: 800; }
+.sig-tf { font-size: .75rem; color: var(--text-sub); background: var(--bg-main); border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; font-weight: 600; }
+.sig-status-badge { font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+.sig-status-active { background: rgba(59,130,246,.1); color: var(--accent); border: 1px solid rgba(59,130,246,.25); }
+.sig-status-sl     { background: rgba(239,68,68,.1); color: #EF4444; border: 1px solid rgba(239,68,68,.25); }
+.sig-status-closed { background: rgba(148,163,184,.1); color: var(--text-sub); border: 1px solid var(--border); }
+.sig-status-tp     { background: rgba(16,185,129,.1); color: #10B981; border: 1px solid rgba(16,185,129,.25); }
+.sig-card-body { padding: 14px 18px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.sig-entry-sl { display: flex; flex-direction: column; gap: 8px; }
+.sig-tps { display: flex; flex-direction: column; gap: 6px; }
+.sig-row { display: flex; align-items: center; gap: 8px; font-size: .82rem; }
+.sig-row-lbl { color: var(--text-sub); font-weight: 600; min-width: 52px; }
+.sig-row-val { font-weight: 700; color: var(--text-main); }
+.sig-row-val.entry { color: var(--accent); }
+.sig-row-val.sl-val { color: #EF4444; }
+.sig-tp-row { display: flex; align-items: center; gap: 6px; font-size: .8rem; }
+.sig-tp-lbl { color: var(--text-sub); font-weight: 600; min-width: 36px; }
+.sig-tp-val { font-weight: 700; }
+.sig-tp-val.hit { color: #10B981; }
+.sig-tp-val.pending { color: var(--text-main); }
+.sig-tp-check { color: #10B981; font-size: .75rem; }
+.sig-card-footer { padding: 8px 18px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.sig-time { font-size: .73rem; color: var(--text-sub); }
+.sig-note { font-size: .75rem; color: var(--text-sub); font-style: italic; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sig-empty { text-align: center; padding: 64px 24px; color: var(--text-sub); }
+.sig-empty i { font-size: 2.5rem; display: block; margin-bottom: 14px; opacity: .4; }
+@media (max-width: 600px) { .sig-card-body { grid-template-columns: 1fr; } .sig-panel { padding: 20px 16px; } }
 </style>
 {% endblock %}
 
@@ -634,6 +686,93 @@
         {% endif %}
       </div>
       {% endfor %}
+
+      <!-- ===== SIGNAL PANEL ===== -->
+      <div class="broker-panel" id="panel-signals">
+        <div class="sig-panel">
+          <div class="sig-panel-header">
+            <div class="sig-panel-title">
+              <i class="bi bi-lightning-charge-fill" style="color:#F59E0B;"></i>
+              <span class="vi-text">Tín Hiệu Rich Foundation</span>
+              <span class="en-text" style="display:none;">Rich Foundation Signals</span>
+              <span class="sig-panel-badge vi-text">Live</span>
+            </div>
+            <div class="sig-filter">
+              <button class="sig-filter-btn active" onclick="filterSignals('all', this)">
+                <span class="vi-text">Tất cả</span><span class="en-text" style="display:none;">All</span>
+              </button>
+              <button class="sig-filter-btn" onclick="filterSignals('BUY', this)">BUY</button>
+              <button class="sig-filter-btn" onclick="filterSignals('SELL', this)">SELL</button>
+              <button class="sig-filter-btn" onclick="filterSignals('active', this)">
+                <span class="vi-text">Đang chạy</span><span class="en-text" style="display:none;">Active</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="sig-grid" id="sigGrid">
+            {% for sig in signals %}
+            <div class="sig-card" data-type="{{ sig.signal_type }}" data-status="{{ sig.status }}">
+              <div class="sig-card-top">
+                <div class="sig-card-head">
+                  <span class="sig-type-badge {% if sig.signal_type == 'BUY' %}sig-type-buy{% else %}sig-type-sell{% endif %}">
+                    {% if sig.signal_type == 'BUY' %}<i class="bi bi-arrow-up-short"></i>{% else %}<i class="bi bi-arrow-down-short"></i>{% endif %}
+                    {{ sig.signal_type }}
+                  </span>
+                  <span class="sig-symbol">{{ sig.symbol }}</span>
+                  <span class="sig-tf">{{ sig.timeframe }}</span>
+                </div>
+                <span class="sig-status-badge
+                  {% if sig.status == 'active' %}sig-status-active
+                  {% elif sig.status == 'sl' %}sig-status-sl
+                  {% elif sig.status == 'closed' %}sig-status-closed
+                  {% else %}sig-status-tp{% endif %}">
+                  {{ sig.get_status_display }}
+                </span>
+              </div>
+
+              <div class="sig-card-body">
+                <div class="sig-entry-sl">
+                  <div class="sig-row">
+                    <span class="sig-row-lbl vi-text">Giá vào</span>
+                    <span class="sig-row-lbl en-text" style="display:none;">Entry</span>
+                    <span class="sig-row-val entry">{{ sig.entry }}</span>
+                  </div>
+                  <div class="sig-row">
+                    <span class="sig-row-lbl">SL</span>
+                    <span class="sig-row-val sl-val">{{ sig.sl }}</span>
+                  </div>
+                </div>
+                <div class="sig-tps">
+                  {% for tp_num, tp_val in sig.tp_list %}
+                  <div class="sig-tp-row">
+                    <span class="sig-tp-lbl">TP{{ tp_num }}</span>
+                    <span class="sig-tp-val {% if sig.tps_reached >= tp_num %}hit{% else %}pending{% endif %}">{{ tp_val }}</span>
+                    {% if sig.tps_reached >= tp_num %}<i class="bi bi-check-circle-fill sig-tp-check"></i>{% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="sig-card-footer">
+                <span class="sig-time"><i class="bi bi-clock me-1"></i>{{ sig.created_at|date:"H:i d/m/Y" }}</span>
+                {% if sig.note %}<span class="sig-note" title="{{ sig.note }}">{{ sig.note }}</span>{% endif %}
+              </div>
+            </div>
+            {% empty %}
+            <div class="sig-empty">
+              <i class="bi bi-broadcast"></i>
+              <p class="vi-text">Chưa có tín hiệu nào. Theo dõi nhóm Telegram để nhận tín hiệu mới nhất.</p>
+              <p class="en-text" style="display:none;">No signals yet. Follow our Telegram group for the latest signals.</p>
+              <a href="https://t.me/Richfoundationsingnal1" target="_blank" rel="noopener noreferrer" class="bnex-btn-outline" style="margin-top:16px;display:inline-flex;align-items:center;gap:7px;">
+                <i class="bi bi-telegram"></i>
+                <span class="vi-text">Tham Gia Nhóm Tín Hiệu</span>
+                <span class="en-text" style="display:none;">Join Signal Group</span>
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
 
       <!-- ===== CHUNG — TẠI SAO CHỌN RICHAITRADING ===== -->
       <div class="bkex-section bkex-section-alt svc-common-why">
@@ -738,6 +877,19 @@ function switchOkxTab(n) {
   panel.querySelectorAll('.reg-panel').forEach(function(p, i) { p.classList.toggle('active', i + 1 === n); });
 }
 
+function filterSignals(filter, btn) {
+  document.querySelectorAll('.sig-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.sig-card').forEach(function(card) {
+    var type = card.dataset.type;
+    var status = card.dataset.status;
+    var show = filter === 'all'
+      || filter === type
+      || (filter === 'active' && status === 'active');
+    card.style.display = show ? '' : 'none';
+  });
+}
+
 function switchBroker(slug) {
   document.querySelectorAll('.broker-panel').forEach(function(p) { p.classList.remove('active'); });
   var t = document.getElementById('panel-' + slug);
@@ -750,10 +902,21 @@ function switchBroker(slug) {
 }
 
 (function() {
-  var saved = sessionStorage.getItem('svc-broker');
-  if (saved && document.getElementById('panel-' + saved)) {
-    switchBroker(saved);
+  function handleHash() {
+    if (window.location.hash === '#signals') {
+      switchBroker('signals');
+      history.replaceState(null, '', window.location.pathname);
+      return true;
+    }
+    return false;
   }
+  if (!handleHash()) {
+    var saved = sessionStorage.getItem('svc-broker');
+    if (saved && document.getElementById('panel-' + saved)) {
+      switchBroker(saved);
+    }
+  }
+  window.addEventListener('hashchange', handleHash);
 })();
 
 function copyText(text, btn) {

@@ -212,3 +212,43 @@ class ChartAnalysisLog(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class TradingSignal(models.Model):
+    SIGNAL_TYPE = [('BUY', 'BUY'), ('SELL', 'SELL')]
+    STATUS = [
+        ('active', 'Đang chạy'),
+        ('tp1', 'Chạm TP1'), ('tp2', 'Chạm TP2'), ('tp3', 'Chạm TP3'),
+        ('tp4', 'Chạm TP4'), ('tp5', 'Chạm TP5'),
+        ('sl', 'Chạm SL'), ('closed', 'Đã đóng'),
+    ]
+
+    signal_type = models.CharField(max_length=4, choices=SIGNAL_TYPE)
+    symbol = models.CharField(max_length=20, default='XAUUSD')
+    timeframe = models.CharField(max_length=10, default='5m')
+    entry = models.DecimalField(max_digits=14, decimal_places=2)
+    tp1 = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    tp2 = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    tp3 = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    tp4 = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    tp5 = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    sl = models.DecimalField(max_digits=14, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS, default='active')
+    note = models.TextField(blank=True, help_text='Ghi chú thêm (tuỳ chọn)')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Tín hiệu giao dịch'
+        verbose_name_plural = 'Tín hiệu giao dịch'
+
+    def __str__(self):
+        return f"{self.signal_type} {self.symbol} @ {self.entry} — {self.get_status_display()}"
+
+    @property
+    def tps_reached(self):
+        return {'tp1': 1, 'tp2': 2, 'tp3': 3, 'tp4': 4, 'tp5': 5}.get(self.status, 0)
+
+    @property
+    def tp_list(self):
+        return [(i, getattr(self, f'tp{i}')) for i in range(1, 6) if getattr(self, f'tp{i}') is not None]

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog, AIPlanSettings, BrokerLink, CopyTradeExchange
+from .models import TradingViewProduct, UserTVSubscription, ChartAnalysisLog, AIPlanSettings, BrokerLink, CopyTradeExchange, TradingSignal
 
 
 @admin.register(TradingViewProduct)
@@ -65,3 +65,16 @@ class ChartAnalysisLogAdmin(admin.ModelAdmin):
     list_display = ('user', 'symbol', 'interval', 'signal', 'confidence', 'created_at')
     list_filter = ('signal', 'symbol')
     readonly_fields = ('created_at',)
+
+
+@admin.register(TradingSignal)
+class TradingSignalAdmin(admin.ModelAdmin):
+    list_display = ('signal_type', 'symbol', 'timeframe', 'entry', 'sl', 'status', 'created_at')
+    list_editable = ('status',)
+    list_filter = ('signal_type', 'symbol', 'status')
+    fieldsets = (
+        ('Tín hiệu', {'fields': ('signal_type', 'symbol', 'timeframe', 'status', 'created_at')}),
+        ('Giá', {'fields': ('entry', 'sl')}),
+        ('Take Profit', {'fields': ('tp1', 'tp2', 'tp3', 'tp4', 'tp5')}),
+        ('Ghi chú', {'fields': ('note',)}),
+    )

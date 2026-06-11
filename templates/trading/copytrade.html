@@ -296,6 +296,89 @@
   </div>
 </div>
 
+{# ===== EXCHANGE CARDS (từ DB) ===== #}
+<div class="ct-section">
+  <h2 class="ct-heading vi-text">Các Sàn Hỗ Trợ Copy Trade</h2>
+  <h2 class="ct-heading en-text" style="display:none;">Exchanges Supporting Copy Trade</h2>
+  <p class="ct-subheading vi-text">Chọn sàn phù hợp — tất cả miễn phí, tự động và hỗ trợ người mới bắt đầu.</p>
+  <p class="ct-subheading en-text" style="display:none;">Choose an exchange — all free, automated, and beginner-friendly.</p>
+  <div class="ct-exchanges">
+
+    {% for exchange in copy_exchanges %}
+    <div class="ct-exchange-card">
+      <div class="ct-exchange-header">
+        <div class="ct-exchange-logo">
+          {% if exchange.logo %}
+            <img src="{{ exchange.logo.url }}" alt="{{ exchange.name }}">
+          {% else %}
+            <span style="font-size:.85rem;font-weight:900;color:var(--text-main);">{{ exchange.name|slice:":3"|upper }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <div class="ct-exchange-name">{{ exchange.name }}</div>
+          {% if exchange.tag_vi %}
+          <div class="ct-exchange-tag vi-text">{{ exchange.tag_vi }}</div>
+          <div class="ct-exchange-tag en-text" style="display:none;">{{ exchange.tag_en|default:exchange.tag_vi }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="ct-exchange-body">
+        {% if exchange.trader_count %}
+        <div class="ct-exchange-rate">
+          <span class="ct-exchange-rate-num">{{ exchange.trader_count }}</span>
+          <span class="ct-exchange-rate-lbl vi-text">{{ exchange.trader_count_label_vi|default:"Trader để chọn" }}</span>
+          <span class="ct-exchange-rate-lbl en-text" style="display:none;">{{ exchange.trader_count_label_en|default:"Traders available" }}</span>
+        </div>
+        {% endif %}
+        {% if exchange.copy_features_pairs %}
+        <ul class="ct-exchange-features">
+          {% for vi_feat, en_feat in exchange.copy_features_pairs %}
+          {% if vi_feat %}
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span class="vi-text">{{ vi_feat }}</span>
+            <span class="en-text" style="display:none;">{{ en_feat|default:vi_feat }}</span>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="ct-exchange-btns">
+          {% if exchange.copy_trade_url %}
+          <a href="{{ exchange.copy_trade_url }}" target="_blank" rel="noopener noreferrer" class="ct-btn-primary">
+            <i class="bi bi-people-fill"></i>
+            <span class="vi-text">Vào Copy Trade</span>
+            <span class="en-text" style="display:none;">Let's Copy Trade</span>
+          </a>
+          {% endif %}
+          {% if exchange.guide_steps_list %}
+          <button class="ct-btn-guide" onclick="showGuide('{{ exchange.slug }}')">
+            <i class="bi bi-book-half"></i>
+            <span class="vi-text">Hướng dẫn</span>
+            <span class="en-text" style="display:none;">Guide</span>
+          </button>
+          {% endif %}
+        </div>
+        {% if exchange.register_url %}
+        <div class="ct-register-hint">
+          <i class="bi bi-info-circle me-1"></i>
+          <span class="vi-text">Chưa có tài khoản? <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer">Đăng ký tại đây</a></span>
+          <span class="en-text" style="display:none;">No account? <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer">Register here</a></span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text-sub);">
+      <i class="bi bi-hourglass" style="font-size:2rem;margin-bottom:12px;display:block;"></i>
+      <p class="vi-text">Chưa có sàn nào được cấu hình. Vui lòng liên hệ Admin.</p>
+      <p class="en-text" style="display:none;">No exchanges configured yet. Please contact Admin.</p>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
 {# ===== WHAT IS COPY TRADE ===== #}
 <div class="ct-section">
   <div class="ct-what-grid">
@@ -380,89 +463,6 @@
     </div>
   </div>
 </div>
-</div>
-
-{# ===== EXCHANGE CARDS (từ DB) ===== #}
-<div class="ct-section">
-  <h2 class="ct-heading vi-text">Các Sàn Hỗ Trợ Copy Trade</h2>
-  <h2 class="ct-heading en-text" style="display:none;">Exchanges Supporting Copy Trade</h2>
-  <p class="ct-subheading vi-text">Chọn sàn phù hợp — tất cả miễn phí, tự động và hỗ trợ người mới bắt đầu.</p>
-  <p class="ct-subheading en-text" style="display:none;">Choose an exchange — all free, automated, and beginner-friendly.</p>
-  <div class="ct-exchanges">
-
-    {% for exchange in copy_exchanges %}
-    <div class="ct-exchange-card">
-      <div class="ct-exchange-header">
-        <div class="ct-exchange-logo">
-          {% if exchange.logo %}
-            <img src="{{ exchange.logo.url }}" alt="{{ exchange.name }}">
-          {% else %}
-            <span style="font-size:.85rem;font-weight:900;color:var(--text-main);">{{ exchange.name|slice:":3"|upper }}</span>
-          {% endif %}
-        </div>
-        <div>
-          <div class="ct-exchange-name">{{ exchange.name }}</div>
-          {% if exchange.tag_vi %}
-          <div class="ct-exchange-tag vi-text">{{ exchange.tag_vi }}</div>
-          <div class="ct-exchange-tag en-text" style="display:none;">{{ exchange.tag_en|default:exchange.tag_vi }}</div>
-          {% endif %}
-        </div>
-      </div>
-      <div class="ct-exchange-body">
-        {% if exchange.trader_count %}
-        <div class="ct-exchange-rate">
-          <span class="ct-exchange-rate-num">{{ exchange.trader_count }}</span>
-          <span class="ct-exchange-rate-lbl vi-text">{{ exchange.trader_count_label_vi|default:"Trader để chọn" }}</span>
-          <span class="ct-exchange-rate-lbl en-text" style="display:none;">{{ exchange.trader_count_label_en|default:"Traders available" }}</span>
-        </div>
-        {% endif %}
-        {% if exchange.copy_features_pairs %}
-        <ul class="ct-exchange-features">
-          {% for vi_feat, en_feat in exchange.copy_features_pairs %}
-          {% if vi_feat %}
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span class="vi-text">{{ vi_feat }}</span>
-            <span class="en-text" style="display:none;">{{ en_feat|default:vi_feat }}</span>
-          </li>
-          {% endif %}
-          {% endfor %}
-        </ul>
-        {% endif %}
-        <div class="ct-exchange-btns">
-          {% if exchange.copy_trade_url %}
-          <a href="{{ exchange.copy_trade_url }}" target="_blank" rel="noopener noreferrer" class="ct-btn-primary">
-            <i class="bi bi-people-fill"></i>
-            <span class="vi-text">Vào Copy Trade</span>
-            <span class="en-text" style="display:none;">Let's Copy Trade</span>
-          </a>
-          {% endif %}
-          {% if exchange.guide_steps_list %}
-          <button class="ct-btn-guide" onclick="showGuide('{{ exchange.slug }}')">
-            <i class="bi bi-book-half"></i>
-            <span class="vi-text">Hướng dẫn</span>
-            <span class="en-text" style="display:none;">Guide</span>
-          </button>
-          {% endif %}
-        </div>
-        {% if exchange.register_url %}
-        <div class="ct-register-hint">
-          <i class="bi bi-info-circle me-1"></i>
-          <span class="vi-text">Chưa có tài khoản? <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer">Đăng ký tại đây</a></span>
-          <span class="en-text" style="display:none;">No account? <a href="{{ exchange.register_url }}" target="_blank" rel="noopener noreferrer">Register here</a></span>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-    {% empty %}
-    <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text-sub);">
-      <i class="bi bi-hourglass" style="font-size:2rem;margin-bottom:12px;display:block;"></i>
-      <p class="vi-text">Chưa có sàn nào được cấu hình. Vui lòng liên hệ Admin.</p>
-      <p class="en-text" style="display:none;">No exchanges configured yet. Please contact Admin.</p>
-    </div>
-    {% endfor %}
-
-  </div>
 </div>
 
 {# ===== TIPS ===== #}
