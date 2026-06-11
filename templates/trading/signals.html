@@ -47,10 +47,6 @@
   background: var(--bg-card); border: 1px solid var(--border); color: var(--text-sub);
   border-radius: 8px; padding: 6px 16px; font-size: .8rem; font-weight: 700;
   cursor: pointer; transition: all .15s;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-}
-.sig-period-pnl {
-  font-size: .68rem; font-weight: 800; line-height: 1;
 }
 .sig-period-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,.08); }
 .sig-period-btn:hover  { border-color: var(--accent); color: var(--accent); }
@@ -58,7 +54,7 @@
 /* ===== STATS BAR ===== */
 .sig-stats {
   max-width: 1200px; margin: 10px auto 0; padding: 0 24px;
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
 }
 .sig-stat-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
@@ -73,6 +69,7 @@
 .sig-stat-card.stat-win::after    { background: rgba(16,185,129,.6); }
 .sig-stat-card.stat-loss::after   { background: rgba(239,68,68,.6); }
 .sig-stat-card.stat-rate::after   { background: linear-gradient(90deg,#EF4444,#10B981); }
+.sig-stat-card.stat-pnl::after    { background: rgba(245,158,11,.6); }
 .sig-stat-lbl { font-size: .68rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .06em; }
 .sig-stat-val { font-size: 1.6rem; font-weight: 900; line-height: 1.1; }
 .sig-stat-card.stat-total  .sig-stat-val { color: #818CF8; }
@@ -83,8 +80,8 @@
 .sig-stat-sub { font-size: .7rem; color: var(--text-sub); }
 .sig-winrate-bar { margin-top: 6px; height: 5px; background: rgba(239,68,68,.25); border-radius: 99px; overflow: hidden; }
 .sig-winrate-fill { height: 100%; background: #10B981; border-radius: 99px; transition: width .6s ease; }
-@media (max-width: 900px) { .sig-stats { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 560px) { .sig-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1100px) { .sig-stats { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px)  { .sig-stats { grid-template-columns: repeat(2, 1fr); } }
 .stat-pnl .sig-stat-val { font-size: 1.25rem; }
 .stat-pnl .sig-stat-val.pnl-pos { color: #10B981; }
 .stat-pnl .sig-stat-val.pnl-neg { color: #EF4444; }
@@ -256,19 +253,15 @@
   <div class="sig-period-bar">
     <button class="sig-period-btn active" onclick="switchPeriod('today',this)">
       <span class="vi-text">Hôm nay</span><span class="en-text" style="display:none;">Today</span>
-      <span class="sig-period-pnl" id="pbtn-pnl-today"></span>
     </button>
     <button class="sig-period-btn" onclick="switchPeriod('week',this)">
       <span class="vi-text">7 ngày</span><span class="en-text" style="display:none;">7 days</span>
-      <span class="sig-period-pnl" id="pbtn-pnl-week"></span>
     </button>
     <button class="sig-period-btn" onclick="switchPeriod('month',this)">
       <span class="vi-text">30 ngày</span><span class="en-text" style="display:none;">30 days</span>
-      <span class="sig-period-pnl" id="pbtn-pnl-month"></span>
     </button>
     <button class="sig-period-btn" onclick="switchPeriod('all',this)">
       <span class="vi-text">Tất cả</span><span class="en-text" style="display:none;">All time</span>
-      <span class="sig-period-pnl" id="pbtn-pnl-all"></span>
     </button>
   </div>
 
@@ -312,7 +305,6 @@
     <div class="sig-stat-card stat-pnl">
       <span class="sig-stat-lbl">P&L</span>
       <span class="sig-stat-val" id="stat-pnl">{% if stats_data.today.pnl >= 0 %}+{% endif %}${{ stats_data.today.pnl }}</span>
-      <span class="sig-stat-sub">0.1 lot</span>
     </div>
   </div>
 
@@ -509,15 +501,6 @@ function updateStatsDisplay(s) {
   }
 }
 
-function updatePeriodBtns() {
-  ['today','week','month','all'].forEach(function(p) {
-    var el = document.getElementById('pbtn-pnl-' + p);
-    if (!el) return;
-    var s = computeStats(p, 'all');
-    el.textContent = fmtPnl(s.pnl);
-    el.style.color = s.pnl >= 0 ? '#10B981' : '#EF4444';
-  });
-}
 
 function applyCardVisibility() {
   var since = getPeriodStart(currentPeriod);
@@ -548,6 +531,5 @@ function filterSignals(filter, btn) {
 
 // Khởi tạo
 applyCardVisibility();
-updatePeriodBtns();
 </script>
 {% endblock %}
