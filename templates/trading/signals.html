@@ -367,7 +367,8 @@
             {% elif sig.status == 'sl' %}sig-status-sl
             {% elif sig.status == 'closed' %}sig-status-closed
             {% else %}sig-status-tp{% endif %}">
-            {{ sig.get_status_display }}
+            <span class="vi-text">{{ sig.get_status_display }}</span>
+            <span class="en-text" style="display:none;">{% if sig.status == 'active' %}Active{% elif sig.status == 'sl' %}Hit SL{% elif sig.status == 'closed' %}Closed{% elif sig.status == 'tp1' %}Hit TP1{% elif sig.status == 'tp2' %}Hit TP2{% elif sig.status == 'tp3' %}Hit TP3{% elif sig.status == 'tp4' %}Hit TP4{% elif sig.status == 'tp5' %}Hit TP5{% endif %}</span>
           </span>
         </div>
 
@@ -379,7 +380,8 @@
             <span class="sig-price-val entry-val">{{ sig.entry }}</span>
           </div>
           <div class="sig-price-block">
-            <span class="sig-price-lbl">Stop Loss</span>
+            <span class="sig-price-lbl vi-text">Cắt lỗ</span>
+            <span class="sig-price-lbl en-text" style="display:none;">Stop Loss</span>
             <span class="sig-price-val sl-val">{{ sig.sl }}</span>
           </div>
         </div>
