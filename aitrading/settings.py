@@ -9,6 +9,9 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 _allowed_hosts = config('ALLOWED_HOSTS', default='*')
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(',')]
 
+_csrf_origins = config('CSRF_TRUSTED_ORIGINS', default='')
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
+
 INSTALLED_APPS = [
     'aitrading.apps.AitradingConfig',
     'django.contrib.admin',
